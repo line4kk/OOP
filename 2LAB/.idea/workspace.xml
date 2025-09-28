@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/IdentityFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/IdentityFunctionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/SqrFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/SqrFunctionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,12 +38,12 @@
     &quot;assignee&quot;: &quot;line4kk&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/line4kk/OOP.git&quot;,
-    &quot;accountId&quot;: &quot;696e2595-4976-4d8f-ae27-3c3fcc944169&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/line4kk/OOP.git",
+    "accountId": "5bce04a1-5750-47ac-91b7-b727e3ce88c2"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -56,12 +57,14 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.SqrFunctionTest.applyPositiveNumbers.executor": "Run",
+    "JUnit.SqrFunctionTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "IdentityFunction",
+    "git-widget-placeholder": "tasks-Y",
     "kotlin-language-version-configured": "true",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
@@ -76,7 +79,7 @@
       <recent name="functions" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="JUnit.SqrFunctionTest">
     <configuration name="IdentityFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
@@ -92,8 +95,41 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="SqrFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.SqrFunctionTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SqrFunctionTest.applyPositiveNumbers" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.SqrFunctionTest" />
+      <option name="METHOD_NAME" value="applyPositiveNumbers" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.SqrFunctionTest" />
+        <item itemvalue="JUnit.SqrFunctionTest.applyPositiveNumbers" />
         <item itemvalue="JUnit.IdentityFunctionTest" />
       </list>
     </recent_temporary>
