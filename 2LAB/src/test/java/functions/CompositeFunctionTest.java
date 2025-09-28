@@ -20,4 +20,17 @@ class CompositeFunctionTest {
         assertEquals(5, n.apply(5));
         assertEquals(5, p.apply(5));
     }
+
+    @Test
+    void testCompositeOfSqr() {
+        SqrFunction f = new SqrFunction();
+        SqrFunction g = new SqrFunction();
+        CompositeFunction h = new CompositeFunction(f, g);  // g(f(x))
+
+        assertEquals(81, h.apply(3));
+        assertEquals(625, h.apply(-5));
+        assertEquals(1, h.apply(1));
+        assertEquals(0, h.apply(0));
+    }
+
 }
