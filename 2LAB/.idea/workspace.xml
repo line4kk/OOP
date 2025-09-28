@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/SqrFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/SqrFunctionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/DeBoorAlgorithmFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
@@ -27,7 +27,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/.." value="main" />
+        <entry key="$PROJECT_DIR$/.." value="De-Boor's-Algorithm-V2" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -38,12 +38,12 @@
     &quot;assignee&quot;: &quot;line4kk&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/line4kk/OOP.git",
-    "accountId": "5bce04a1-5750-47ac-91b7-b727e3ce88c2"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/line4kk/OOP.git&quot;,
+    &quot;accountId&quot;: &quot;5bce04a1-5750-47ac-91b7-b727e3ce88c2&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -57,14 +57,18 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.DeBoorAlgorithmFunctionTest.executor": "Run",
+    "JUnit.DeBoorAlgorithmFunctionTest.testLinearFun.executor": "Debug",
+    "JUnit.DeBoorAlgorithmFunctionTest.testLinearSpline.executor": "Debug",
+    "JUnit.DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds.executor": "Debug",
     "JUnit.SqrFunctionTest.applyPositiveNumbers.executor": "Run",
-    "JUnit.SqrFunctionTest.executor": "Run",
+    "JUnit.SqrFunctionTest.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "tasks-Y",
+    "git-widget-placeholder": "De-Boor's-Algorithm",
     "kotlin-language-version-configured": "true",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
@@ -79,8 +83,8 @@
       <recent name="functions" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.SqrFunctionTest">
-    <configuration name="IdentityFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="JUnit.DeBoorAlgorithmFunctionTest">
+    <configuration name="DeBoorAlgorithmFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
         <pattern>
@@ -89,8 +93,40 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.IdentityFunctionTest" />
+      <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
       <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DeBoorAlgorithmFunctionTest.testLinearFun" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
+      <option name="METHOD_NAME" value="testLinearFun" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
+      <option name="METHOD_NAME" value="testLinearSplineAtEnds" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -128,9 +164,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.SqrFunctionTest" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testLinearFun" />
         <item itemvalue="JUnit.SqrFunctionTest.applyPositiveNumbers" />
-        <item itemvalue="JUnit.IdentityFunctionTest" />
+        <item itemvalue="JUnit.SqrFunctionTest" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds" />
       </list>
     </recent_temporary>
   </component>
@@ -142,6 +180,30 @@
       <option name="presentableId" value="Default" />
       <updated>1758967656600</updated>
     </task>
+    <task id="LOCAL-00001" summary="Добавил тест, где обе функции Sqr">
+      <option name="closed" value="true" />
+      <created>1759051195715</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759051195715</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Добавил тест, где обе функции Sqr" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавил тест, где обе функции Sqr" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java</url>
+          <line>17</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
