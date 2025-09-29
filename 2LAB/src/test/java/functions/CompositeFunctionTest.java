@@ -33,4 +33,21 @@ class CompositeFunctionTest {
         assertEquals(0, h.apply(0));
     }
 
+    @Test
+    void testCompositeOfComposites(){
+        SqrFunction f = new SqrFunction();
+        IdentityFunction g = new IdentityFunction();
+        CompositeFunction comp1 = new CompositeFunction(f, g);  // g(f(x))
+
+        SqrFunction h = new SqrFunction();
+        CompositeFunction comp2 = new CompositeFunction(comp1, h);
+        CompositeFunction compOfComps = new CompositeFunction(comp2, comp1);
+
+        assertEquals(81, comp2.apply(3));
+        assertEquals(256, compOfComps.apply(2));
+
+
+
+    }
+
 }
