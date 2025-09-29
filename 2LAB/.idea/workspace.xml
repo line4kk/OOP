@@ -4,14 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2176a4c3-3700-4cc3-87d7-4ba74d01b6fc" name="Changes" comment="Функция сложной функции CompositeFunction. Покрыта тестами">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/TabulatedFunction.java" afterDir="false" />
+    <list default="true" id="2176a4c3-3700-4cc3-87d7-4ba74d01b6fc" name="Changes" comment="Реализована функция AbstractTabulatedFunction">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -26,10 +33,28 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "TabulatedFunction"
+    "git-widget-placeholder": "task-andThen"
   }
 }]]></component>
   <component name="TaskManager">
+    <task id="LOCAL-00001" summary="Реализована функция AbstractTabulatedFunction">
+      <option name="closed" value="true" />
+      <created>1759159079733</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759159079733</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Реализована функция AbstractTabulatedFunction" />
+    <option name="LAST_COMMIT_MESSAGE" value="Реализована функция AbstractTabulatedFunction" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/2LAB$functions_in_2LAB.ic" NAME="functions in 2LAB Coverage Results" MODIFIED="1759146529862" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>functions.*</FILTER>
+    </SUITE>
   </component>
 </project>
