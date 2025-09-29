@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable{
 
     private Node head = null;
 
@@ -163,5 +163,60 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
     @Override
     protected double extrapolateRight(double x) {
         return interpolate(x, count - 2);
+    }
+
+    @Override
+    public void insert(double x, double y) {
+        // Если список пустой, просто добавляем узел
+        if (head == null) {
+            addNode(x, y);
+            return;
+        }
+
+        // Проверяем, существует ли уже узел с таким x
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            if (Math.abs(current.x - x) < 1e-12) {
+                current.y = y;
+                return;
+            }
+            current = current.next;
+        }
+
+        // Ищем место для вставки
+        Node newNode = new Node();
+        newNode.x = x;
+        newNode.y = y;
+
+        // Случай 1: Вставка в начало
+        if (x < head.x) {
+            newNode.next = head;
+            newNode.prev = head.prev;
+            head.prev.next = newNode;
+            head.prev = newNode;
+            head = newNode;
+            count++;
+            return;
+        }
+
+        // Случай 2: Вставка в конец
+        if (x > head.prev.x) {
+            addNode(x, y);
+            return;
+        }
+
+        // Случай 3: Вставка в середину
+        current = head;
+        for (int i = 0; i < count; i++) {
+            if (x > current.x && x < current.next.x) {
+                newNode.next = current.next;
+                newNode.prev = current;
+                current.next.prev = newNode;
+                current.next = newNode;
+                count++;
+                return;
+            }
+            current = current.next;
+        }
     }
 }
