@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2176a4c3-3700-4cc3-87d7-4ba74d01b6fc" name="Changes" comment="Реализована функция AbstractTabulatedFunction">
+    <list default="true" id="93497377-5bc1-4926-843b-d3b3d13703b2" name="Changes" comment="Добавлена CompositeFunction в MathFunction, исправлена AbstractTabulatedFunction">
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/MathFunctionTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,16 +16,11 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
+        <option value="JUnit5 Test Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$/.." value="main" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectLevelVcsManager">
@@ -33,24 +28,44 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.MathFunctionTest.executor": "Run",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
     "git-widget-placeholder": "task-andThen"
   }
 }]]></component>
-  <component name="TaskManager">
-    <task id="LOCAL-00001" summary="Реализована функция AbstractTabulatedFunction">
-      <option name="closed" value="true" />
-      <created>1759159079733</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1759159079733</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
-    <servers />
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="functions" />
+    </key>
   </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="Реализована функция AbstractTabulatedFunction" />
-    <option name="LAST_COMMIT_MESSAGE" value="Реализована функция AbstractTabulatedFunction" />
+  <component name="RunManager">
+    <configuration name="MathFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.MathFunctionTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.MathFunctionTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <servers />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/2LAB$functions_in_2LAB.ic" NAME="functions in 2LAB Coverage Results" MODIFIED="1759146529862" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
