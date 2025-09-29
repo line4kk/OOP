@@ -10,7 +10,7 @@ public abstract  class AbstractTabulatedFunction implements TabulatedFunction{
     protected abstract double extrapolateRight(double x); // экстраполяция справа
     protected abstract double interpolate(double x, int floorIndex); // интерполяция с указанием индекса интервала
 
-    // Заищённый метод с реализацией интерполяции
+    // Защищённый метод с реализацией интерполяции
     protected double interpolate(double x, double leftX, double rightX,
                                  double leftY, double rightY) {
         return leftY + (rightY - leftY) * (x - leftX) / (rightX - leftX);
