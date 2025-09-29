@@ -2,10 +2,9 @@ package functions;
 import java.util.Arrays;
 
 // Класс для хранения данных в массиве
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
-    private final double[] xValues;
-    private final double[] yValues;
-    private final int count;
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+    private double[] xValues;
+    private double[] yValues;
 
     // Конструктор класса с двумя параметрами типа double[]
     public ArrayTabulatedFunction(double[] xValues, double[] yValues){
@@ -180,5 +179,43 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
                 return interpolate(x, floorIndexOfX(x));
             }
         }
+    }
+
+    @Override
+    public void insert(double x, double y){
+        int xIndex = indexOfX(x);
+        if (xIndex != -1)
+            setY(xIndex, y);
+        else{
+            double[] newXValues = new double[count+1];
+            double[] newYValues = new double[count+1];
+
+            int insertIndex = 0;
+            while (insertIndex < count && x > xValues[insertIndex]) {
+                insertIndex++;
+            }
+
+            // Копируем элементы до позиции вставки
+            if (insertIndex > 0) {
+                System.arraycopy(xValues, 0, newXValues, 0, insertIndex);
+                System.arraycopy(yValues, 0, newYValues, 0, insertIndex);
+            }
+
+            // Вставляем новый элемент
+            newXValues[insertIndex] = x;
+            newYValues[insertIndex] = y;
+
+            // Копируем оставшиеся элементы
+            if (insertIndex < count) {
+                System.arraycopy(xValues, insertIndex, newXValues, insertIndex + 1, count - insertIndex);
+                System.arraycopy(yValues, insertIndex, newYValues, insertIndex + 1, count - insertIndex);
+            }
+
+            this.xValues = newXValues;
+            this.yValues = newYValues;
+            this.count++;
+
+        }
+
     }
 }

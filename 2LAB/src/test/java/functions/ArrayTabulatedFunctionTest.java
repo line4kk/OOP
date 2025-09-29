@@ -514,5 +514,46 @@ class ArrayTabulatedFunctionTest {
         assertEquals(5.0, chain.apply(0.0), 1e-10);
         assertEquals(5.0, chain.apply(1.0), 1e-10);
         assertEquals(5.0, chain.apply(2.0), 1e-10);
+
+
+    }
+
+    @Test
+    void testInsertNewPointInMiddle() {
+        double[] xValues = {1.0, 2.0, 4.0};
+        double[] yValues = {10.0, 20.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.insert(3.0, 30.0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(3.0, function.getX(2), 1e-10);
+        assertEquals(30.0, function.getY(2), 1e-10);
+    }
+
+    @Test
+    void testInsertExistingPoint() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 999.0);
+
+        assertEquals(3, function.getCount());
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(999.0, function.getY(1), 1e-10);
+    }
+
+    @Test
+    void testInsertAtBeginning() {
+        double[] xValues = {2.0, 3.0};
+        double[] yValues = {20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.insert(1.0, 10.0);
+
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(10.0, function.getY(0), 1e-10);
     }
 }
