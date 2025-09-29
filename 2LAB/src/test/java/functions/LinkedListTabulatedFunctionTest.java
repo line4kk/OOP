@@ -88,4 +88,58 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(7, fun1.interpolate(7, 3));
         assertEquals(14, fun2.interpolate(4, fun2.getCount()-2));
     }
+
+    double[] xValuesA1 = {0.0, 1.0, 2.0, 3.0};
+    double[] yValuesA1 = {0.0, 1.0, 4.0, 9.0};
+    ArrayTabulatedFunction tabFunA1 = new ArrayTabulatedFunction(xValuesA1, yValuesA1);
+
+    double[] xValuesA2 = {1.0, 2.0, 3.0, 4.0};
+    double[] yValuesA2 = {1.0, 0.5, 1.5, 2.0};
+    ArrayTabulatedFunction tabFunA2 = new ArrayTabulatedFunction(xValuesA2, yValuesA2);
+
+
+    double[] xValuesL1 = {0.0, 1.0, 2.0, 3.0};
+    double[] yValuesL1 = {0.0, 3.0, 6.0, 9.0};
+    LinkedListTabulatedFunction tabFunL1 = new LinkedListTabulatedFunction(xValuesL1, yValuesL1);
+
+    double[] xValuesL2 = {0.0, 1.0, 2.0, 3.0};
+    double[] yValuesL2 = {0.0, 0.5, 1.0, 1.5};
+    LinkedListTabulatedFunction tabFunL2 = new LinkedListTabulatedFunction(xValuesL2, yValuesL2);
+
+    @Test
+    void testBothArray(){
+        CompositeFunction comp1 = new CompositeFunction(tabFunA1, tabFunA2);  // A2(A1)
+        CompositeFunction comp2 = new CompositeFunction(tabFunA2, tabFunA1);  // A1(A2)
+
+        assertEquals(2.0, comp1.apply(2.0));
+        assertEquals(1.0, comp2.apply(1.0));
+    }
+
+    @Test
+    void testBothLinkedList(){
+        CompositeFunction comp1 = new CompositeFunction(tabFunL1, tabFunL2);  // L2(L1)
+        CompositeFunction comp2 = new CompositeFunction(tabFunL2, tabFunL1);  // L1(L2)
+
+        assertEquals(6.0, comp1.apply(4));
+        assertEquals(15.0, comp2.apply(10));
+    }
+
+    @Test
+    void testMix(){
+        CompositeFunction comp1 = new CompositeFunction(tabFunL2, tabFunA1);  // A1(L2)
+        CompositeFunction comp2 = new CompositeFunction(tabFunA2, tabFunL1);  // L1(A2)
+
+        assertEquals(2.5, comp1.apply(3));
+        assertEquals(15, comp2.apply(10));
+    }
+
+    @Test
+    void testTabulatedAndOther(){
+        SqrFunction sqr = new SqrFunction();
+        CompositeFunction comp1 = new CompositeFunction(tabFunL1, sqr);
+        CompositeFunction comp2 = new CompositeFunction(sqr, tabFunL2);
+
+        assertEquals(900, comp1.apply(10));
+        assertEquals(200, comp2.apply(20));
+    }
 }
