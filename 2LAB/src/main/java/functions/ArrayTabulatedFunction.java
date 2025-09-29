@@ -2,9 +2,10 @@ package functions;
 import java.util.Arrays;
 
 // Класс для хранения данных в массиве
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
     private double[] xValues;
     private double[] yValues;
+    private int count;
 
     // Конструктор класса с двумя параметрами типа double[]
     public ArrayTabulatedFunction(double[] xValues, double[] yValues){
@@ -217,5 +218,18 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
         }
 
+    }
+    @Override
+    public void remove(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Индекс выходит за размер");
+        }
+
+        for (int i = index; i < count - 1; i++) {
+            xValues[i] = xValues[i + 1];
+            yValues[i] = yValues[i + 1];
+        }
+
+        count--;
     }
 }

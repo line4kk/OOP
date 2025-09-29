@@ -556,4 +556,81 @@ class ArrayTabulatedFunctionTest {
         assertEquals(1.0, function.getX(0), 1e-10);
         assertEquals(10.0, function.getY(0), 1e-10);
     }
+    //---------------------
+    //---------------------
+    // Тесты для remove
+    //---------------------
+    //---------------------
+    @Test
+    public void testRemoveFirstElement() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(0);
+
+        assertEquals(3, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(3.0, function.getX(1), 1e-10);
+        assertEquals(4.0, function.getX(2), 1e-10);
+        assertEquals(20.0, function.getY(0), 1e-10);
+        assertEquals(30.0, function.getY(1), 1e-10);
+        assertEquals(40.0, function.getY(2), 1e-10);
+        assertEquals(2.0, function.leftBound(), 1e-10);
+        assertEquals(4.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testRemoveLastElement() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(3);
+
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(3.0, function.getX(2), 1e-10);
+        assertEquals(10.0, function.getY(0), 1e-10);
+        assertEquals(20.0, function.getY(1), 1e-10);
+        assertEquals(30.0, function.getY(2), 1e-10);
+        assertEquals(1.0, function.leftBound(), 1e-10);
+        assertEquals(3.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testRemoveMiddleElement() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1);
+
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(3.0, function.getX(1), 1e-10);
+        assertEquals(4.0, function.getX(2), 1e-10);
+        assertEquals(10.0, function.getY(0), 1e-10);
+        assertEquals(30.0, function.getY(1), 1e-10);
+        assertEquals(40.0, function.getY(2), 1e-10);
+    }
+
+    @Test
+    public void testRemoveMultipleElements() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0, 50.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1); // Удаляем элемент 2.0
+        function.remove(2); // Теперь удаляем элемент 4.0 (индекс изменился)
+
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(3.0, function.getX(1), 1e-10);
+        assertEquals(5.0, function.getX(2), 1e-10);
+        assertEquals(10.0, function.getY(0), 1e-10);
+        assertEquals(30.0, function.getY(1), 1e-10);
+        assertEquals(50.0, function.getY(2), 1e-10);
+    }
 }
