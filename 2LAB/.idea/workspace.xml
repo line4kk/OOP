@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/DeBoorAlgorithmFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="Алгоритм Де-Бура. Пройден 1/1 тест">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/functions/DeBoorAlgorithmFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/DeBoorAlgorithmFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,9 +57,11 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "JUnit.DeBoorAlgorithmFunctionTest.executor": "Run",
+    "JUnit.DeBoorAlgorithmFunctionTest.testAtKnotsStartAndEnd.executor": "Debug",
     "JUnit.DeBoorAlgorithmFunctionTest.testLinearFun.executor": "Debug",
     "JUnit.DeBoorAlgorithmFunctionTest.testLinearSpline.executor": "Debug",
     "JUnit.DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds.executor": "Debug",
+    "JUnit.DeBoorAlgorithmFunctionTest.testMonotonicControlPoints.executor": "Debug",
     "JUnit.SqrFunctionTest.applyPositiveNumbers.executor": "Run",
     "JUnit.SqrFunctionTest.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -99,6 +100,22 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="DeBoorAlgorithmFunctionTest.testAtKnotsStartAndEnd" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
+      <option name="METHOD_NAME" value="testAtKnotsStartAndEnd" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="DeBoorAlgorithmFunctionTest.testLinearFun" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
@@ -115,7 +132,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DeBoorAlgorithmFunctionTest.testLinearSpline" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
         <pattern>
@@ -125,13 +142,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="functions" />
       <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
-      <option name="METHOD_NAME" value="testLinearSplineAtEnds" />
+      <option name="METHOD_NAME" value="testLinearSpline" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SqrFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="DeBoorAlgorithmFunctionTest.testMonotonicControlPoints" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
         <pattern>
@@ -140,23 +157,8 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.SqrFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SqrFunctionTest.applyPositiveNumbers" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.SqrFunctionTest" />
-      <option name="METHOD_NAME" value="applyPositiveNumbers" />
+      <option name="MAIN_CLASS_NAME" value="functions.DeBoorAlgorithmFunctionTest" />
+      <option name="METHOD_NAME" value="testMonotonicControlPoints" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -165,10 +167,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testAtKnotsStartAndEnd" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testMonotonicControlPoints" />
+        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testLinearSpline" />
         <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testLinearFun" />
-        <item itemvalue="JUnit.SqrFunctionTest.applyPositiveNumbers" />
-        <item itemvalue="JUnit.SqrFunctionTest" />
-        <item itemvalue="JUnit.DeBoorAlgorithmFunctionTest.testLinearSplineAtEnds" />
       </list>
     </recent_temporary>
   </component>
@@ -188,22 +190,20 @@
       <option name="project" value="LOCAL" />
       <updated>1759051195715</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Алгоритм Де-Бура. Пройден 1/1 тест">
+      <option name="closed" value="true" />
+      <created>1759088263202</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759088263202</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Добавил тест, где обе функции Sqr" />
-    <option name="LAST_COMMIT_MESSAGE" value="Добавил тест, где обе функции Sqr" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/test/java/functions/DeBoorAlgorithmFunctionTest.java</url>
-          <line>17</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Алгоритм Де-Бура. Пройден 1/1 тест" />
+    <option name="LAST_COMMIT_MESSAGE" value="Алгоритм Де-Бура. Пройден 1/1 тест" />
   </component>
 </project>
