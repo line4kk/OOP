@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2176a4c3-3700-4cc3-87d7-4ba74d01b6fc" name="Changes" comment="Реализована функция AbstractTabulatedFunction">
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/LinkedListTabulatedFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/LinkedListTabulatedFunctionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/MathFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +19,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="JUnit5 Test Class" />
       </list>
     </option>
   </component>
@@ -33,9 +36,59 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "task-andThen"
+    "JUnit.LinkedListTabulatedFunctionTest.executor": "Run",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "LinkedListTabulatedFunction"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="functions" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JUnit.LinkedListTabulatedFunctionTest">
+    <configuration name="LinkedListTabulatedFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.LinkedListTabulatedFunctionTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LinkedListTabulatedFunctionTest.extrapolateLeft" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.LinkedListTabulatedFunctionTest" />
+      <option name="METHOD_NAME" value="extrapolateLeft" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.LinkedListTabulatedFunctionTest" />
+        <item itemvalue="JUnit.LinkedListTabulatedFunctionTest.extrapolateLeft" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="TaskManager">
     <task id="LOCAL-00001" summary="Реализована функция AbstractTabulatedFunction">
       <option name="closed" value="true" />
