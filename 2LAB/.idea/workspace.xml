@@ -4,24 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="Объединение: De-Boor + базовые функции">
+    <list default="true" id="2176a4c3-3700-4cc3-87d7-4ba74d01b6fc" name="Changes" comment="Функция сложной функции CompositeFunction. Покрыта тестами">
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/TabulatedFunction.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/functions/CompositeFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/CompositeFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/functions/CompositeFunctionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/functions/CompositeFunctionTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Interface" />
-        <option value="Class" />
-        <option value="JUnit5 Test Class" />
-      </list>
-    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -31,189 +21,15 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;line4kk&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/line4kk/OOP.git&quot;,
-    &quot;accountId&quot;: &quot;5bce04a1-5750-47ac-91b7-b727e3ce88c2&quot;
-  }
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 6
-}</component>
-  <component name="ProjectId" id="33HIdCLZm4HwoENRuDQjs1NtInx" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
-  <component name="ProjectViewState">
-    <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showLibraryContents" value="true" />
-  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "JUnit.CompositeFunctionTest.executor": "Run",
-    "JUnit.ConstantFunctionTest.executor": "Run",
-    "JUnit.DeBoorAlgorithmFunctionTest.executor": "Run",
-    "JUnit.DeBoorAlgorithmFunctionTest.testAtKnotsStartAndEnd.executor": "Debug",
-    "JUnit.DeBoorAlgorithmFunctionTest.testLinearFun.executor": "Debug",
-    "JUnit.DeBoorAlgorithmFunctionTest.testLinearSpline.executor": "Debug",
-    "JUnit.DeBoorAlgorithmFunctionTest.testMonotonicControlPoints.executor": "Debug",
-    "JUnit.SimpleIterationMethodFunctionTest.executor": "Run",
-    "JUnit.SqrFunctionTest.applyPositiveNumbers.executor": "Run",
-    "JUnit.SqrFunctionTest.executor": "Run",
-    "JUnit.UnitFunctionTest.executor": "Run",
-    "JUnit.ZeroFunctionTest.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "CompositeFunction",
-    "kotlin-language-version-configured": "true",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2"
+    "git-widget-placeholder": "TabulatedFunction"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CreateTestDialog.Recents.Supers">
-      <recent name="" />
-    </key>
-    <key name="CreateTestDialog.RecentsKey">
-      <recent name="functions" />
-    </key>
-  </component>
-  <component name="RunManager" selected="JUnit.CompositeFunctionTest">
-    <configuration name="CompositeFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.CompositeFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CompositeFunctionTest.testCompositeOfComposites" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.CompositeFunctionTest" />
-      <option name="METHOD_NAME" value="testCompositeOfComposites" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SimpleIterationMethodFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.SimpleIterationMethodFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="UnitFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.UnitFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ZeroFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.ZeroFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="JUnit.CompositeFunctionTest" />
-        <item itemvalue="JUnit.CompositeFunctionTest.testCompositeOfComposites" />
-        <item itemvalue="JUnit.ZeroFunctionTest" />
-        <item itemvalue="JUnit.UnitFunctionTest" />
-        <item itemvalue="JUnit.SimpleIterationMethodFunctionTest" />
-      </list>
-    </recent_temporary>
-  </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="" />
-      <created>1758967656600</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1758967656600</updated>
-    </task>
-    <task id="LOCAL-00001" summary="Добавил тест, где обе функции Sqr">
-      <option name="closed" value="true" />
-      <created>1759051195715</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1759051195715</updated>
-    </task>
-    <task id="LOCAL-00002" summary="Алгоритм Де-Бура. Пройден 1/1 тест">
-      <option name="closed" value="true" />
-      <created>1759088263202</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1759088263202</updated>
-    </task>
-    <task id="LOCAL-00003" summary="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами">
-      <option name="closed" value="true" />
-      <created>1759030157297</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1759030157297</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
     <servers />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="Добавил тест, где обе функции Sqr" />
-    <MESSAGE value="Алгоритм Де-Бура. Пройден 1/1 тест" />
-    <MESSAGE value="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами" />
-    <option name="LAST_COMMIT_MESSAGE" value="merge: De-Boor + базовые функции" />
   </component>
 </project>
