@@ -33,7 +33,7 @@ class MathFunctionTest {
     }
 
     @Test
-    // Проверка 3 функций
+    // Проверка 3 функций, вхоженных подряд
     public void testAndThenChainThreeFunctions() {
         // f(x) = x²
         MathFunction f = new MathFunction() {
