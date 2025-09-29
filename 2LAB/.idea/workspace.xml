@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/SimpleIterationMethodFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/SimpleIterationMethodFunctionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/ConstantFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/UnitFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/ZeroFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/ConstantFunctionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/UnitFunctionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/functions/ZeroFunctionTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/functions/SqrFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/SqrFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/functions/SimpleIterationMethodFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/SimpleIterationMethodFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,15 +61,18 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.ConstantFunctionTest.executor": "Run",
     "JUnit.SimpleIterationMethodFunctionTest.executor": "Run",
     "JUnit.SqrFunctionTest.applyPositiveNumbers.executor": "Run",
     "JUnit.SqrFunctionTest.executor": "Run",
+    "JUnit.UnitFunctionTest.executor": "Run",
+    "JUnit.ZeroFunctionTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "task-simple-iteration-method",
+    "git-widget-placeholder": "task-Constant-Function",
     "kotlin-language-version-configured": "true",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
@@ -80,8 +87,8 @@
       <recent name="functions" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.SimpleIterationMethodFunctionTest">
-    <configuration name="IdentityFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="JUnit.UnitFunctionTest">
+    <configuration name="ConstantFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="2LAB" />
       <extension name="coverage">
         <pattern>
@@ -90,7 +97,7 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.IdentityFunctionTest" />
+      <option name="MAIN_CLASS_NAME" value="functions.ConstantFunctionTest" />
       <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -106,21 +113,6 @@
       </extension>
       <option name="PACKAGE_NAME" value="functions" />
       <option name="MAIN_CLASS_NAME" value="functions.SimpleIterationMethodFunctionTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="SqrFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="2LAB" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="functions.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="functions" />
-      <option name="MAIN_CLASS_NAME" value="functions.SqrFunctionTest" />
       <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -142,12 +134,43 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="UnitFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.UnitFunctionTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ZeroFunctionTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="2LAB" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="functions.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="functions" />
+      <option name="MAIN_CLASS_NAME" value="functions.ZeroFunctionTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.UnitFunctionTest" />
+        <item itemvalue="JUnit.ZeroFunctionTest" />
+        <item itemvalue="JUnit.ConstantFunctionTest" />
         <item itemvalue="JUnit.SimpleIterationMethodFunctionTest" />
-        <item itemvalue="JUnit.SqrFunctionTest" />
         <item itemvalue="JUnit.SqrFunctionTest.applyPositiveNumbers" />
-        <item itemvalue="JUnit.IdentityFunctionTest" />
       </list>
     </recent_temporary>
   </component>

@@ -15,6 +15,7 @@ public class SimpleIterationMethodFunction implements MathFunction {
         this.maxIterations = maxIterations; // максимальное количество итераций
     }
 
+    @Override
     public double apply(double assumption) {
 
         double currentX = assumption;
