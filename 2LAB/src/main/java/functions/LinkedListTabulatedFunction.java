@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
 
     private Node head = null;
 
@@ -218,5 +218,25 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             }
             current = current.next;
         }
+    }
+
+    @Override
+    public void remove(int index) {
+        if (count == 1) {  // Если в списке только один узел
+            head = null;
+            count = 0;
+            return;
+        }
+
+        Node nodeToRemove = getNode(index);
+
+        if (index == 0) {  // Если удаляем головной узел
+            head = head.next;
+        }
+
+        nodeToRemove.prev.next = nodeToRemove.next;
+        nodeToRemove.next.prev = nodeToRemove.prev;
+
+        count--;
     }
 }

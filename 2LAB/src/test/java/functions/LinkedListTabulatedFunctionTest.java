@@ -383,4 +383,43 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(0, function.floorIndexOfX(1.0));  // Равно первому
         assertEquals(3, function.floorIndexOfX(4.0));  // Больше всех
     }
+
+    @Test
+    void testRemoveFromMiddle() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.remove(1); // Удаляем средний элемент
+
+        assertEquals(2, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(3.0, function.getX(1), 1e-10);
+    }
+
+    @Test
+    void testRemoveFromBeginning() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.remove(0); // Удаляем первый элемент
+
+        assertEquals(2, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(3.0, function.getX(1), 1e-10);
+    }
+
+    @Test
+    void testRemoveFromEnd() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.remove(2); // Удаляем последний элемент
+
+        assertEquals(2, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+    }
 }
