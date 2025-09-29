@@ -142,4 +142,245 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(900, comp1.apply(10));
         assertEquals(200, comp2.apply(20));
     }
+
+    @Test
+    public void testInsertIntoEmptyList() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[0], new double[0]);
+
+        function.insert(2.0, 20.0);
+
+        assertEquals(1, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(20.0, function.getY(0), 1e-10);
+        assertEquals(2.0, function.leftBound(), 1e-10);
+        assertEquals(2.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testInsertAtBeginning() {
+        double[] xValues = {2.0, 3.0, 4.0};
+        double[] yValues = {20.0, 30.0, 40.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.0, 10.0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(10.0, function.getY(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(1.0, function.leftBound(), 1e-10);
+        assertEquals(4.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testInsertAtEnd() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(4.0, 40.0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(4.0, function.getX(3), 1e-10);
+        assertEquals(40.0, function.getY(3), 1e-10);
+        assertEquals(3.0, function.getX(2), 1e-10);
+        assertEquals(1.0, function.leftBound(), 1e-10);
+        assertEquals(4.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testInsertInMiddle() {
+        double[] xValues = {1.0, 3.0, 5.0};
+        double[] yValues = {10.0, 30.0, 50.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0);
+        function.insert(4.0, 40.0);
+
+        assertEquals(5, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(3.0, function.getX(2), 1e-10);
+        assertEquals(4.0, function.getX(3), 1e-10);
+        assertEquals(5.0, function.getX(4), 1e-10);
+        assertEquals(20.0, function.getY(1), 1e-10);
+        assertEquals(40.0, function.getY(3), 1e-10);
+    }
+
+    @Test
+    public void testInsertDuplicateX() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 25.0); // Замена существующего значения
+
+        assertEquals(3, function.getCount()); // Количество не изменилось
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(25.0, function.getY(1), 1e-10); // Значение обновилось
+        assertEquals(10.0, function.getY(0), 1e-10); // Другие значения не изменились
+        assertEquals(30.0, function.getY(2), 1e-10);
+    }
+
+    @Test
+    public void testInsertMultipleInRandomOrder() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[0], new double[0]);
+
+        // Вставляем в случайном порядке
+        function.insert(5.0, 50.0);
+        function.insert(1.0, 10.0);
+        function.insert(3.0, 30.0);
+        function.insert(2.0, 20.0);
+        function.insert(4.0, 40.0);
+
+        assertEquals(5, function.getCount());
+        // Проверяем упорядоченность
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(3.0, function.getX(2), 1e-10);
+        assertEquals(4.0, function.getX(3), 1e-10);
+        assertEquals(5.0, function.getX(4), 1e-10);
+
+        assertEquals(10.0, function.getY(0), 1e-10);
+        assertEquals(20.0, function.getY(1), 1e-10);
+        assertEquals(30.0, function.getY(2), 1e-10);
+        assertEquals(40.0, function.getY(3), 1e-10);
+        assertEquals(50.0, function.getY(4), 1e-10);
+    }
+
+    @Test
+    public void testInsertWithSingleElementList() {
+        double[] xValues = {2.0};
+        double[] yValues = {20.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.0, 10.0); // В начало
+        function.insert(3.0, 30.0); // В конец
+
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(1), 1e-10);
+        assertEquals(3.0, function.getX(2), 1e-10);
+    }
+
+    @Test
+    public void testInsertWithTwoElementList() {
+        double[] xValues = {1.0, 3.0};
+        double[] yValues = {10.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0); // В середину
+        function.insert(0.5, 5.0);  // В начало
+        function.insert(4.0, 40.0); // В конец
+
+        assertEquals(5, function.getCount());
+        assertEquals(0.5, function.getX(0), 1e-10);
+        assertEquals(1.0, function.getX(1), 1e-10);
+        assertEquals(2.0, function.getX(2), 1e-10);
+        assertEquals(3.0, function.getX(3), 1e-10);
+        assertEquals(4.0, function.getX(4), 1e-10);
+    }
+
+    @Test
+    public void testInsertMaintainsCircularStructure() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.5, 15.0);
+
+        assertEquals(4, function.getCount());
+        // Проверяем, что структура осталась циклической
+        assertEquals(function.leftBound(), function.getX(0), 1e-10);
+        assertEquals(function.rightBound(), function.getX(3), 1e-10);
+
+        // Проверяем, что можно пройти по кругу
+        double firstX = function.getX(0);
+        double lastX = function.getX(3);
+        // В циклическом списке последний элемент должен ссылаться на первый
+        // Это проверяется через внутреннюю структуру, но мы можем проверить через границы
+        assertEquals(1.0, function.leftBound(), 1e-10);
+        assertEquals(3.0, function.rightBound(), 1e-10);
+    }
+
+    @Test
+    public void testInsertWithNegativeValues() {
+        double[] xValues = {-2.0, 0.0, 2.0};
+        double[] yValues = {-20.0, 0.0, 20.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(-3.0, -30.0); // В начало
+        function.insert(-1.0, -10.0); // В середину
+        function.insert(3.0, 30.0);   // В конец
+
+        assertEquals(6, function.getCount());
+        assertEquals(-3.0, function.getX(0), 1e-10);
+        assertEquals(-2.0, function.getX(1), 1e-10);
+        assertEquals(-1.0, function.getX(2), 1e-10);
+        assertEquals(0.0, function.getX(3), 1e-10);
+        assertEquals(2.0, function.getX(4), 1e-10);
+        assertEquals(3.0, function.getX(5), 1e-10);
+    }
+
+    @Test
+    public void testInsertWithDecimalValues() {
+        double[] xValues = {1.1, 2.2, 3.3};
+        double[] yValues = {11.0, 22.0, 33.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.5, 15.0);
+        function.insert(2.8, 28.0);
+        function.insert(0.5, 5.0);
+
+        assertEquals(6, function.getCount());
+        assertEquals(0.5, function.getX(0), 1e-10);
+        assertEquals(1.1, function.getX(1), 1e-10);
+        assertEquals(1.5, function.getX(2), 1e-10);
+        assertEquals(2.2, function.getX(3), 1e-10);
+        assertEquals(2.8, function.getX(4), 1e-10);
+        assertEquals(3.3, function.getX(5), 1e-10);
+    }
+
+    @Test
+    public void testInsertThenApply() {
+        double[] xValues = {1.0, 3.0};
+        double[] yValues = {10.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0);
+
+        // Проверяем, что интерполяция работает корректно после вставки
+        assertEquals(10.0, function.apply(1.0), 1e-10);
+        assertEquals(20.0, function.apply(2.0), 1e-10);
+        assertEquals(30.0, function.apply(3.0), 1e-10);
+        assertEquals(15.0, function.apply(1.5), 1e-10); // Интерполяция
+        assertEquals(25.0, function.apply(2.5), 1e-10); // Интерполяция
+    }
+
+    @Test
+    public void testInsertThenIndexOfX() {
+        double[] xValues = {1.0, 3.0};
+        double[] yValues = {10.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0);
+
+        assertEquals(0, function.indexOfX(1.0));
+        assertEquals(1, function.indexOfX(2.0));
+        assertEquals(2, function.indexOfX(3.0));
+        assertEquals(-1, function.indexOfX(4.0));
+    }
+
+    @Test
+    public void testInsertThenFloorIndexOfX() {
+        double[] xValues = {1.0, 3.0};
+        double[] yValues = {10.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0);
+
+        assertEquals(0, function.floorIndexOfX(0.5));  // Меньше всех
+        assertEquals(0, function.floorIndexOfX(1.0));  // Равно первому
+        assertEquals(3, function.floorIndexOfX(4.0));  // Больше всех
+    }
 }
