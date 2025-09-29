@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d6731570-2999-4300-90f9-b4ba9cf11a7a" name="Changes" comment="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами">
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/ConstantFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/UnitFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/functions/ZeroFunction.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/ConstantFunctionTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/UnitFunctionTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/functions/ZeroFunctionTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/functions/SimpleIterationMethodFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/functions/SimpleIterationMethodFunction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/functions/AbstractTabulatedFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,8 +16,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Interface" />
-        <option value="Class" />
         <option value="JUnit5 Test Class" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -72,7 +65,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "task-Constant-Function",
+    "git-widget-placeholder": "task-Abstract-Tabulated",
     "kotlin-language-version-configured": "true",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
@@ -219,5 +212,10 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами" />
     <option name="LAST_COMMIT_MESSAGE" value="Реализован класс SqrFunction, реализующий MathFunction. Покрыт тестами" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/2LAB$functions_in_2LAB.ic" NAME="functions in 2LAB Coverage Results" MODIFIED="1759146529862" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>functions.*</FILTER>
+    </SUITE>
   </component>
 </project>
