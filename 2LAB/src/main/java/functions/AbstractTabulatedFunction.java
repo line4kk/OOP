@@ -3,7 +3,7 @@ package functions;
 // Абстрактный класс для табличных функций, реализующий общую логику интерполяции и экстраполяции
 public abstract  class AbstractTabulatedFunction implements TabulatedFunction{
 
-    protected int count; // Приватное поле count
+    protected int count = 0; // Приватное поле count
 
     protected abstract int floorIndexOfX(double x); // поиск интеравала x
     protected abstract double extrapolateLeft(double x); // экстраполяция слева
