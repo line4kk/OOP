@@ -4,6 +4,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     private Node head = null;
 
+    static class Node {
+        public Node next, prev;
+        public double x, y;
+    }
+
     private void addNode(double x, double y){  // Добавить узел в конец списка
         if (head == null){
             head = new Node();
