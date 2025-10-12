@@ -1,5 +1,6 @@
 package functions;
 import java.util.Arrays;
+import java.util.Iterator;
 
 // Класс для хранения данных в массиве
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
@@ -228,5 +229,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
 
         count--;
+    }
+
+    public Iterator<Point> iterator() {
+        throw new UnsupportedOperationException();
     }
 }
