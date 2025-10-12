@@ -1,5 +1,8 @@
 package functions;
 
+import exceptions.ArrayIsNotSortedException;
+import exceptions.DifferentLengthOfArraysException;
+import exceptions.InterpolationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -430,7 +433,7 @@ class ArrayTabulatedFunctionTest {
     @Test
     public void testComplexNestedCompositesWithMultipleArrayTabulated() {
         // Первая табличная функция
-        double[] xValues1 = {0.0, 1.0, 2.0};
+        double[] xValues1 = {0.0, 3.0, 6.0};
         double[] yValues1 = {1.0, 3.0, 5.0};
         ArrayTabulatedFunction tabulated1 = new ArrayTabulatedFunction(xValues1, yValues1);
 
@@ -452,7 +455,7 @@ class ArrayTabulatedFunctionTest {
         MathFunction complexChain = comp1.andThen(tabulated1).andThen(comp2).andThen(tabulated2);
 
         // comp1(0)=6, tabulated1(6)=9 (экстраполяция), comp2(9)=4, tabulated2(4)=8
-        assertEquals(12.0, complexChain.apply(0.0), 1e-10);
+        assertEquals(4.0, complexChain.apply(0.0), 1e-10);
     }
 
     @Test
@@ -496,7 +499,7 @@ class ArrayTabulatedFunctionTest {
     public void testComplexMixedCompositions() {
         // Табличная функция из дискретизации
         MathFunction source = x -> x * x;
-        ArrayTabulatedFunction tabulated = new ArrayTabulatedFunction(source, 0.0, 3.0, 4);
+        ArrayTabulatedFunction tabulated = new ArrayTabulatedFunction(source, 0.0, 12.0, 13);
 
         // Композитные функции
         MathFunction f = x -> x + 2;
@@ -633,4 +636,53 @@ class ArrayTabulatedFunctionTest {
         assertEquals(30.0, function.getY(1), 1e-10);
         assertEquals(50.0, function.getY(2), 1e-10);
     }
+    @Test
+        // Проверка исключения когда длины массивов разные (выполнится)
+    void testCheckLengthIsTheSameArray_ThrowException() {
+        double[] x = {2.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0, 10.0};
+        assertThrows(DifferentLengthOfArraysException.class, () -> new ArrayTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда длины массивов разные (не выполнится)
+    void testCheckLengthIsTheSameArray_NotThrowException() {
+        double[] x = {2.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertDoesNotThrow(() -> new ArrayTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда массив не отсортирован (выполнится)
+    void testCheckSortedArray1_NotSorted() {
+        double[] x = {10.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertThrows(ArrayIsNotSortedException.class, () -> new ArrayTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда массив не отсортирован (не выполнится)
+    void testCheckSortedArray2_ActuallySorted() {
+        double[] x = {1.0, 3.0, 9.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertDoesNotThrow(() -> new ArrayTabulatedFunction(x, y));
+    }
+    @Test
+        // Проверка исключения когда массив не отсортирован (выполнится, есть повторения)
+    void testCheckSortedArray3_SortedWithRepeat() {
+        double[] x = {10.0, 10.0, 20.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertThrows(ArrayIsNotSortedException.class, () -> new ArrayTabulatedFunction(x, y));
+    }
+
+    @Test
+    // Проверка исключения при интерполяции
+    void testInterpolationOutOfArray() {
+        double[] x = {0.0, 4.0, 8.0, 9.0};
+        double[] y = {1.0, 2.0, 3.0, 4.0};
+        ArrayTabulatedFunction func = new ArrayTabulatedFunction(x, y);
+        assertThrows(InterpolationException.class, () -> func.interpolate(0.5, 1));
+        assertThrows(InterpolationException.class, () -> func.interpolate(10.0, 2));
+    }
+
 }

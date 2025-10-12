@@ -1,4 +1,6 @@
 package functions;
+import exceptions.InterpolationException;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -13,14 +15,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (xValues.length < 2) {
             throw new IllegalArgumentException("В массиве меньше 2 элементов");
         }
-        if (xValues.length != yValues.length){
-            throw new IllegalArgumentException("Разная длина массивов");
-        }
-        for (int i = 1; i < xValues.length; i++){
-            if (xValues[i] <= xValues[i-1]){
-                throw new IllegalArgumentException("xVal не упорядочены");
-            }
-        }
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
 
         this.count = xValues.length;
         this.xValues = Arrays.copyOf(xValues, count);
@@ -143,7 +140,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (count == 1) {
             return yValues[0];
         }
-        return interpolate(x, 0);
+        return interpolate(x, xValues[0], xValues[1], yValues[0], yValues[1]);
     }
 
     @Override
@@ -151,17 +148,24 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (count == 1) {
             return yValues[0];
         }
-        return interpolate(x, count - 2);
+        return interpolate(x, xValues[count - 2], xValues[count - 1], yValues[count - 2], yValues[count - 1]);
     }
 
     public double interpolate(double x, int floorIndex) {
         if (floorIndex < 0 || floorIndex >= count - 1) {
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }
+        double x1 = xValues[floorIndex];
+        double x2 = xValues[floorIndex + 1];
+        double y1 = yValues[floorIndex];
+        double y2 = yValues[floorIndex + 1];
+
+        if (x < x1 || x > x2) {
+            throw new InterpolationException("x не попадает в диапазон от " + x1 + " до " + x2);
+        }
 
         // Интерполяция между floorIndex и floorIndex + 1
-        return interpolate(x, xValues[floorIndex], xValues[floorIndex + 1],
-                yValues[floorIndex], yValues[floorIndex + 1]);
+        return interpolate(x, x1, x2, y1, y2);
     }
 
     @Override

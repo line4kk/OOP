@@ -1,5 +1,8 @@
 package functions;
 
+import exceptions.ArrayIsNotSortedException;
+import exceptions.DifferentLengthOfArraysException;
+import exceptions.InterpolationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,14 +109,14 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void extrapolateLeft() {
-        assertEquals(-1, fun1.interpolate(-1, 0));
-        assertEquals(14, fun2.interpolate(-4, 0));
+        assertEquals(-1, fun1.extrapolateLeft(-1));
+        assertEquals(14, fun2.extrapolateLeft(-4));
     }
 
     @Test
     void extrapolateRight() {
-        assertEquals(7, fun1.interpolate(7, 2));
-        assertEquals(14, fun2.interpolate(4, 5));
+        assertEquals(7, fun1.extrapolateRight(7));
+        assertEquals(14, fun2.extrapolateRight(4));
     }
 
     double[] xValuesA1 = {0.0, 1.0, 2.0, 3.0};
@@ -396,5 +399,53 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(2, function.getCount());
         assertEquals(1.0, function.getX(0), 1e-10);
         assertEquals(2.0, function.getX(1), 1e-10);
+    }
+    @Test
+        // Проверка исключения когда длины массивов разные (выполнится)
+    void testCheckLengthIsTheSameList_ThrowException() {
+        double[] x = {2.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0, 10.0};
+        assertThrows(DifferentLengthOfArraysException.class, () -> new LinkedListTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда длины массивов разные (не выполнится)
+    void testCheckLengthIsTheSameList_NotThrowException() {
+        double[] x = {2.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertDoesNotThrow(() -> new LinkedListTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда массив не отсортирован (выполнится)
+    void testCheckSortedList1_NotSorted() {
+        double[] x = {10.0, 3.0, 4.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertThrows(ArrayIsNotSortedException.class, () -> new LinkedListTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения когда массив не отсортирован (не выполнится)
+    void testCheckSortedList2_ActuallySorted() {
+        double[] x = {1.0, 3.0, 9.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertDoesNotThrow(() -> new LinkedListTabulatedFunction(x, y));
+    }
+    @Test
+        // Проверка исключения когда массив не отсортирован (выполнится, есть повторения)
+    void testCheckSortedList3_SortedWithRepeat() {
+        double[] x = {10.0, 10.0, 20.0};
+        double[] y = {1.0, 1.5, 2.0};
+        assertThrows(ArrayIsNotSortedException.class, () -> new LinkedListTabulatedFunction(x, y));
+    }
+
+    @Test
+        // Проверка исключения при интерполяции
+    void testInterpolationOutOfLinkedList() {
+        double[] x = {0.0, 4.0, 8.0, 9.0};
+        double[] y = {1.0, 2.0, 3.0, 4.0};
+        LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(x, y);
+        assertThrows(InterpolationException.class, () -> func.interpolate(0.1, 1));
+        assertThrows(InterpolationException.class, () -> func.interpolate(25.0, 2));
     }
 }
