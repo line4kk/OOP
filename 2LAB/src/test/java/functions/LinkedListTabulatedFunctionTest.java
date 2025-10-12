@@ -5,6 +5,9 @@ import exceptions.DifferentLengthOfArraysException;
 import exceptions.InterpolationException;
 import org.junit.jupiter.api.Test;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LinkedListTabulatedFunctionTest {
@@ -447,5 +450,31 @@ class LinkedListTabulatedFunctionTest {
         LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(x, y);
         assertThrows(InterpolationException.class, () -> func.interpolate(0.1, 1));
         assertThrows(InterpolationException.class, () -> func.interpolate(25.0, 2));
+    }
+
+    @Test
+    void iterator() {
+        Iterator<Point> iterator = fun1.iterator();
+        int ind = 0;
+
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(fun1.getX(ind), point.x);
+            assertEquals(fun1.getY(ind), point.y);
+            ind++;
+        }
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
+
+
+        ind = 0;
+
+        for (Point point : fun2) {
+            assertEquals(fun2.getX(ind), point.x);
+            assertEquals(fun2.getY(ind), point.y);
+            ind++;
+        }
+
+
+
     }
 }

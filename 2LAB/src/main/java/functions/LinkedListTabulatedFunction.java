@@ -2,6 +2,7 @@ package functions;
 
 import exceptions.InterpolationException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
 
@@ -259,7 +260,33 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         count--;
     }
 
-    public Iterator<Point> iterator() {
-        throw new UnsupportedOperationException();
+    @Override
+    public Iterator<Point> iterator() {  // Объект итератора
+        Iterator<Point> iter = new Iterator<Point>() {
+            Node node = head;
+
+            @Override
+            public boolean hasNext() {
+                return node != null;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext())  // Если следующего элемента нет, то выбрасываем исключение
+                    throw new NoSuchElementException();
+                else {
+                    Point point = new Point(node.x, node.y);
+                    // Переходим на следующий элемент или на null
+                    if (node.next == head)
+                        node = null;
+                    else
+                        node = node.next;
+                    return point;
+                }
+            }
+        };
+
+        return iter;
+
     }
 }
