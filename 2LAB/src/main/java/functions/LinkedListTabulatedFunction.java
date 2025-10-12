@@ -1,5 +1,7 @@
 package functions;
 
+import exceptions.InterpolationException;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
 
     private Node head = null;
@@ -42,6 +44,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues){  // Задать функцию по спискам x, y
         if (xValues.length < 2)
             throw new IllegalArgumentException("Размер таблицы меньше минимального");
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
+
         for (int i = 0; i < xValues.length; i++){
             addNode(xValues[i], yValues[i]);
         }
@@ -155,6 +161,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     protected double interpolate(double x, int floorIndex) {
         Node floor = getNode(floorIndex);
         Node ceil = getNode(floorIndex + 1);
+
+        if (x < floor.x || x > ceil.x) {
+            throw new InterpolationException("x не попадает в диапазон от " + floor.x + " до " + ceil.x);
+        }
+
         double yFloor = floor.y;
         double xFloor = floor.x;
         double yCeil = ceil.y;
@@ -165,12 +176,16 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double extrapolateLeft(double x) {
-        return interpolate(x, 0);
+        Node floor = getNode(0);
+        Node ceil = getNode(1);
+        return interpolate(x, floor.x, ceil.x, floor.y, ceil.y);
     }
 
     @Override
     protected double extrapolateRight(double x) {
-        return interpolate(x, count - 2);
+        Node floor = getNode(count - 2);
+        Node ceil = getNode(count - 1);
+        return interpolate(x, floor.x, ceil.x, floor.y, ceil.y);
     }
 
     @Override
