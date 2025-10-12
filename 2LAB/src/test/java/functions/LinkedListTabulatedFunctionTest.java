@@ -12,6 +12,16 @@ class LinkedListTabulatedFunctionTest {
     LinkedListTabulatedFunction fun1 = new LinkedListTabulatedFunction(xValues, yValues);
     LinkedListTabulatedFunction fun2 = new LinkedListTabulatedFunction(sqr, -3.0, 3.0, 7);
 
+    @Test
+    void testLinkedListTabulatedFunction() {
+        double[] xValues = {1.0};
+        double[] yValues = {2.0};
+        IllegalArgumentException exc1 = assertThrows(IllegalArgumentException.class, () -> new LinkedListTabulatedFunction(xValues, yValues));
+        IllegalArgumentException exc2 = assertThrows(IllegalArgumentException.class, () -> new LinkedListTabulatedFunction(sqr, -3.0, 3.0, 1));
+
+        assertEquals("Размер таблицы меньше минимального", exc1.getMessage());
+        assertEquals("Количество точек меньше минимального", exc2.getMessage());
+    }
 
     @Test
     void getCount() {
@@ -37,6 +47,12 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(2.0, fun1.getX(2));
         assertEquals(-3.0, fun2.getX(0));
         assertEquals(-1.0, fun2.getX(2));
+
+        assertThrows(IllegalArgumentException.class, () -> fun1.getX(-1));
+        assertThrows(IllegalArgumentException.class, () -> fun1.getX(4));
+
+        assertThrows(IllegalArgumentException.class, () -> fun2.getX(-1));
+        assertThrows(IllegalArgumentException.class, () -> fun2.getX(7));
     }
 
     @Test
@@ -45,12 +61,21 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(2.0, fun1.getY(2));
         assertEquals(9.0, fun2.getY(0));
         assertEquals(1.0, fun2.getY(2));
+
+        assertThrows(IllegalArgumentException.class, () -> fun1.getY(-1));
+        assertThrows(IllegalArgumentException.class, () -> fun1.getY(4));
+
+        assertThrows(IllegalArgumentException.class, () -> fun2.getY(-1));
+        assertThrows(IllegalArgumentException.class, () -> fun2.getY(7));
     }
 
     @Test
     void setY() {
         fun2.setY(3, 2);
         assertEquals(2, fun2.getY(3));
+
+        assertThrows(IllegalArgumentException.class, () -> fun1.setY(4, 5));
+        assertThrows(IllegalArgumentException.class, () -> fun1.setY(-1, 3));
     }
 
     @Test
@@ -69,12 +94,14 @@ class LinkedListTabulatedFunctionTest {
     void floorIndexOfX() {
         assertEquals(0, fun1.floorIndexOfX(0.5));
         assertEquals(4, fun2.floorIndexOfX(1.5));
+
+        assertThrows(IllegalArgumentException.class, () -> fun1.floorIndexOfX(-0.5));
     }
 
     @Test
     void interpolate() {
         assertEquals(0.5, fun1.interpolate(0.5, 0));
-        assertEquals(0.5, fun1.interpolate(0.5, 0));
+        assertEquals(0.5, fun2.interpolate(0.5, 3));
     }
 
     @Test
@@ -85,8 +112,8 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void extrapolateRight() {
-        assertEquals(7, fun1.interpolate(7, 3));
-        assertEquals(14, fun2.interpolate(4, fun2.getCount()-2));
+        assertEquals(7, fun1.interpolate(7, 2));
+        assertEquals(14, fun2.interpolate(4, 5));
     }
 
     double[] xValuesA1 = {0.0, 1.0, 2.0, 3.0};
@@ -143,18 +170,6 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(200, comp2.apply(20));
     }
 
-    @Test
-    public void testInsertIntoEmptyList() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[0], new double[0]);
-
-        function.insert(2.0, 20.0);
-
-        assertEquals(1, function.getCount());
-        assertEquals(2.0, function.getX(0), 1e-10);
-        assertEquals(20.0, function.getY(0), 1e-10);
-        assertEquals(2.0, function.leftBound(), 1e-10);
-        assertEquals(2.0, function.rightBound(), 1e-10);
-    }
 
     @Test
     public void testInsertAtBeginning() {
@@ -222,46 +237,6 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(30.0, function.getY(2), 1e-10);
     }
 
-    @Test
-    public void testInsertMultipleInRandomOrder() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[0], new double[0]);
-
-        // Вставляем в случайном порядке
-        function.insert(5.0, 50.0);
-        function.insert(1.0, 10.0);
-        function.insert(3.0, 30.0);
-        function.insert(2.0, 20.0);
-        function.insert(4.0, 40.0);
-
-        assertEquals(5, function.getCount());
-        // Проверяем упорядоченность
-        assertEquals(1.0, function.getX(0), 1e-10);
-        assertEquals(2.0, function.getX(1), 1e-10);
-        assertEquals(3.0, function.getX(2), 1e-10);
-        assertEquals(4.0, function.getX(3), 1e-10);
-        assertEquals(5.0, function.getX(4), 1e-10);
-
-        assertEquals(10.0, function.getY(0), 1e-10);
-        assertEquals(20.0, function.getY(1), 1e-10);
-        assertEquals(30.0, function.getY(2), 1e-10);
-        assertEquals(40.0, function.getY(3), 1e-10);
-        assertEquals(50.0, function.getY(4), 1e-10);
-    }
-
-    @Test
-    public void testInsertWithSingleElementList() {
-        double[] xValues = {2.0};
-        double[] yValues = {20.0};
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
-
-        function.insert(1.0, 10.0); // В начало
-        function.insert(3.0, 30.0); // В конец
-
-        assertEquals(3, function.getCount());
-        assertEquals(1.0, function.getX(0), 1e-10);
-        assertEquals(2.0, function.getX(1), 1e-10);
-        assertEquals(3.0, function.getX(2), 1e-10);
-    }
 
     @Test
     public void testInsertWithTwoElementList() {
@@ -379,7 +354,7 @@ class LinkedListTabulatedFunctionTest {
 
         function.insert(2.0, 20.0);
 
-        assertEquals(0, function.floorIndexOfX(0.5));  // Меньше всех
+        assertThrows(IllegalArgumentException.class, () -> function.floorIndexOfX(0.5));  // Меньше всех
         assertEquals(0, function.floorIndexOfX(1.0));  // Равно первому
         assertEquals(3, function.floorIndexOfX(4.0));  // Больше всех
     }

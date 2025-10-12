@@ -120,7 +120,7 @@ class ArrayTabulatedFunctionTest {
         double[] yValues = {2.0, 4.0, 6.0, 8.0, 10.0};
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        assertEquals(0, function.floorIndexOfX(0.5));   // Меньше всех
+        assertThrows(IllegalArgumentException.class, () -> function.floorIndexOfX(0.5));   // Меньше всех
         assertEquals(0, function.floorIndexOfX(1.0));   // Равно первому
         assertEquals(0, function.floorIndexOfX(1.5));   // Между 1 и 2
         assertEquals(1, function.floorIndexOfX(2.5));   // Между 2 и 3
