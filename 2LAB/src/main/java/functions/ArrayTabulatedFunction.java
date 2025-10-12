@@ -119,7 +119,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public int floorIndexOfX(double x) {
         // Когда все значения больше x
         if (x < xValues[0]) {
-            return 0;
+            throw new IllegalArgumentException();
         }
 
         // Когда x больше всех значений
@@ -154,9 +154,6 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     }
 
     public double interpolate(double x, int floorIndex) {
-        if (count == 1) {
-            return yValues[0];
-        }
         if (floorIndex < 0 || floorIndex >= count - 1) {
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }

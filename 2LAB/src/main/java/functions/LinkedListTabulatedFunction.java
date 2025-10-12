@@ -29,6 +29,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     private Node getNode(int index){  // Найти ноду по индексу
+        if (index < 0 || index >= count)
+            throw new IllegalArgumentException();
         Node res = head;
 
         for (int i = 1; i <= index; i++)
@@ -38,12 +40,16 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues){  // Задать функцию по спискам x, y
+        if (xValues.length < 2)
+            throw new IllegalArgumentException("Размер таблицы меньше минимального");
         for (int i = 0; i < xValues.length; i++){
             addNode(xValues[i], yValues[i]);
         }
     }
 
     public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count){  // Задать функцию с помощью дискретизации
+        if (count < 2)  // Должно быть хотя-бы 2 точки, иначе - размер таблицы будет меньше минимального
+            throw new IllegalArgumentException("Количество точек меньше минимального");
         if (xFrom > xTo) {
             double xTemp = xFrom;
             xFrom = xTo;
@@ -127,8 +133,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected int floorIndexOfX(double x) {
-        if (x < head.x) {  // Если все элементы массива больше x
-            return 0;
+        if (x < head.x) {  // Если x меньше левой границы
+            throw new IllegalArgumentException();
         }
         if (x > head.prev.x) {  // Если все элементы массива меньше x
             return count;
@@ -147,9 +153,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double interpolate(double x, int floorIndex) {
-        if (count == 1)
-            return head.y;
-
         Node floor = getNode(floorIndex);
         Node ceil = getNode(floorIndex + 1);
         double yFloor = floor.y;
@@ -172,11 +175,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public void insert(double x, double y) {
-        // Если список пустой, просто добавляем узел
-        if (head == null) {
-            addNode(x, y);
-            return;
-        }
 
         // Проверяем, существует ли уже узел с таким x
         Node current = head;
