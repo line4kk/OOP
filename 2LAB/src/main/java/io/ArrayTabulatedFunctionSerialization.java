@@ -3,14 +3,13 @@ package io;
 import functions.ArrayTabulatedFunction;
 import functions.TabulatedFunction;
 import functions.MathFunction;
-import operations.MiddleSteppingDifferentialOperator;
 import operations.TabulatedDifferentialOperator;
 
 import java.io.*;
 
 public class ArrayTabulatedFunctionSerialization {
     public static void main(String[] args) {
-        String filePath = "output/serialized array functions.bin";
+        String filePath = "2LAB/output/serialized array functions.bin";
 
         // Сериализация
         System.out.println("Сериализация начата");
@@ -18,9 +17,9 @@ public class ArrayTabulatedFunctionSerialization {
                 FileOutputStream fileOut = new FileOutputStream(filePath);
                 BufferedOutputStream bufferedOut = new BufferedOutputStream(fileOut)
         ) {
-            // Создаём функцию y = sqrt(x)
-            double[] xValues = {1.0, 4.0, 9.0, 16.0, 25.0};
-            double[] yValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+            // Создаём функцию y = 1/x
+            double[] xValues =  {1.0, 2.0, 3.0, 4.0, 5.0};
+            double[] yValues = {1.0, 0.5, 0.333, 0.25, 0.2};
             ArrayTabulatedFunction originalFunction = new ArrayTabulatedFunction(xValues, yValues);
 
             TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator ();
