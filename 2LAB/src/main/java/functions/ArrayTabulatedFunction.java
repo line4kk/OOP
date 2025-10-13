@@ -1,12 +1,18 @@
 package functions;
 import exceptions.InterpolationException;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 // Класс для хранения данных в массиве
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable{
+
+    @Serial
+    private static final long serialVersionUID = -6372191640806238470L;
+
     private double[] xValues;
     private double[] yValues;
     private int count;
