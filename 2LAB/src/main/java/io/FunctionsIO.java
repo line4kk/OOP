@@ -110,12 +110,10 @@ public final class FunctionsIO {
     public static TabulatedFunction deserialize(BufferedInputStream stream)
             throws IOException, ClassNotFoundException {
         // Оборачиваем BufferedInputStream в ObjectInputStream для десериализации
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(stream)) {
+        ObjectInputStream objectInputStream = new ObjectInputStream(stream);
+        // Читаем объект и приводим к типу TabulatedFunction;
+        TabulatedFunction function = (TabulatedFunction) objectInputStream.readObject();
 
-            // Читаем объект и приводим к типу TabulatedFunction
-            TabulatedFunction function = (TabulatedFunction) objectInputStream.readObject();
-
-            return function;
-        }
+        return function;
     }
 }
