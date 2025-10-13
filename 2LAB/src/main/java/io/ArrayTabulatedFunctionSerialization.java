@@ -23,24 +23,17 @@ public class ArrayTabulatedFunctionSerialization {
             double[] yValues = {1.0, 2.0, 3.0, 4.0, 5.0};
             ArrayTabulatedFunction originalFunction = new ArrayTabulatedFunction(xValues, yValues);
 
-            // Создаём оператор дифференцирования с шагом 0.001
             TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator ();
 
             // Вычисляем первую производную
             MathFunction derived1 = operator.derive(originalFunction);
-            if (!(derived1 instanceof TabulatedFunction)) {
-                throw new IllegalStateException("Первая производная не реализует TabulatedFunction: " + derived1.getClass().getName());
-            }
-            TabulatedFunction firstDerivative = (TabulatedFunction) derived1;
+            TabulatedFunction firstDerivative = (TabulatedFunction)derived1;
 
             // Вычисляем вторую производную
             MathFunction derived2 = operator.derive(firstDerivative);
-            if (!(derived2 instanceof TabulatedFunction)) {
-                throw new IllegalStateException("Вторая производная не реализует TabulatedFunction: " + derived2.getClass().getName());
-            }
-            TabulatedFunction secondDerivative = (TabulatedFunction) derived2;
+            TabulatedFunction secondDerivative = (TabulatedFunction)derived2;
 
-            // Сериализуем все три функции в поток
+            // Сериализуем все три функции
             FunctionsIO.serialize(bufferedOut, originalFunction);
             FunctionsIO.serialize(bufferedOut, firstDerivative);
             FunctionsIO.serialize(bufferedOut, secondDerivative);
@@ -60,11 +53,12 @@ public class ArrayTabulatedFunctionSerialization {
                 BufferedInputStream bufferedIn = new BufferedInputStream(fileIn)
         ) {
             TabulatedFunction originalFunction = FunctionsIO.deserialize(bufferedIn);
-            TabulatedFunction firstDerivative = FunctionsIO.deserialize(bufferedIn);
-            TabulatedFunction secondDerivative = FunctionsIO.deserialize(bufferedIn);
-
             System.out.println("Функция 1: " + originalFunction.toString());
+
+            TabulatedFunction firstDerivative = FunctionsIO.deserialize(bufferedIn);
             System.out.println("Функция 2: " + firstDerivative.toString());
+
+            TabulatedFunction secondDerivative = FunctionsIO.deserialize(bufferedIn);
             System.out.println("Функция 3: " + secondDerivative.toString());
 
             System.out.println("Десериализация завершена");
