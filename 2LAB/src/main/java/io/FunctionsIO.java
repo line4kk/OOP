@@ -3,6 +3,7 @@ package io;
 import functions.Point;
 import functions.TabulatedFunction;
 import functions.factory.TabulatedFunctionFactory;
+import operations.TabulatedFunctionOperationService;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -24,6 +25,7 @@ public final class FunctionsIO {
             }
             stream.flush();
         }
+    }
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function) throws IOException {
         PrintWriter printWriter = new PrintWriter(writer);
 
