@@ -106,4 +106,16 @@ public final class FunctionsIO {
         // Поток не закрыт, все данные перекидываются с flush
         objectOutputStream.flush();
     }
+
+    public static TabulatedFunction deserialize(BufferedInputStream stream)
+            throws IOException, ClassNotFoundException {
+        // Оборачиваем BufferedInputStream в ObjectInputStream для десериализации
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(stream)) {
+
+            // Читаем объект и приводим к типу TabulatedFunction
+            TabulatedFunction function = (TabulatedFunction) objectInputStream.readObject();
+
+            return function;
+        }
+    }
 }
