@@ -98,5 +98,15 @@ public class TabulatedFunctionOperationService {
         });
     }
 
+    // Умножение
+    public TabulatedFunction multiplication(TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, (u, v) -> u * v);
+    }
+
+    // Деление
+    public TabulatedFunction devision(TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, (u, v) -> u / v);
+    }
+
 
 }
