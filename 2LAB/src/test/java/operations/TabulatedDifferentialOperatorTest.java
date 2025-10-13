@@ -23,10 +23,10 @@ class TabulatedDifferentialOperatorTest {
 
         TabulatedFunction derivativeFun = operator.derive(fun);
 
-        assertEquals(3.0, derivativeFun.getY(0));
-        assertEquals(3.0, derivativeFun.getY(1));
-        assertEquals(3.0, derivativeFun.getY(2));
-        assertEquals(3.0, derivativeFun.getY(3));
+        assertEquals(3.0, derivativeFun.getY(0), 1e-10);
+        assertEquals(3.0, derivativeFun.getY(1), 1e-10);
+        assertEquals(3.0, derivativeFun.getY(2), 1e-10);
+        assertEquals(3.0, derivativeFun.getY(3), 1e-10);
 
     }
 
@@ -42,10 +42,10 @@ class TabulatedDifferentialOperatorTest {
 
         TabulatedFunction derivativeFun = operator.derive(fun);
 
-        assertEquals(77.0, derivativeFun.getY(0));
-        assertEquals(77.0, derivativeFun.getY(1));
-        assertEquals(77.0, derivativeFun.getY(2));
-        assertEquals(77.0, derivativeFun.getY(3));
+        assertEquals(77.0, derivativeFun.getY(0), 1e-10);
+        assertEquals(77.0, derivativeFun.getY(1), 1e-10);
+        assertEquals(77.0, derivativeFun.getY(2), 1e-10);
+        assertEquals(77.0, derivativeFun.getY(3), 1e-10);
 
     }
 }
