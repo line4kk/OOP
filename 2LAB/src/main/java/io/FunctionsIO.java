@@ -79,4 +79,23 @@ public final class FunctionsIO {
             throw new IOException("Некорректный формат числа", e);
         }
     }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory) throws IOException {
+        // Оборачиваем в DataInputStream для чтения примитивов
+        try (DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+
+            int count = dataInputStream.readInt();
+
+            double[] xValues = new double[count];
+            double[] yValues = new double[count];
+
+            for (int i = 0; i < count; i++) {
+                xValues[i] = dataInputStream.readDouble(); // читаем x
+                yValues[i] = dataInputStream.readDouble(); // читаем y
+            }
+
+            // Используем фабрику для создания функции
+            return factory.create(xValues, yValues);
+        }
+    }
 }
