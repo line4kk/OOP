@@ -98,4 +98,12 @@ public final class FunctionsIO {
             return factory.create(xValues, yValues);
         }
     }
+    public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
+        // Создаём поток для сериализации
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(stream);
+        // Сериализуем функцию
+        objectOutputStream.writeObject(function);
+        // Поток не закрыт, все данные перекидываются с flush
+        objectOutputStream.flush();
+    }
 }
