@@ -23,6 +23,11 @@ class TabulatedDifferentialOperatorTest {
 
         TabulatedFunction derivativeFun = operator.derive(fun);
 
+        assertEquals(0.0, derivativeFun.getX(0), 1e-10);
+        assertEquals(1.0, derivativeFun.getX(1), 1e-10);
+        assertEquals(2.0, derivativeFun.getX(2), 1e-10);
+        assertEquals(4.0, derivativeFun.getX(3), 1e-10);
+
         assertEquals(3.0, derivativeFun.getY(0), 1e-10);
         assertEquals(3.0, derivativeFun.getY(1), 1e-10);
         assertEquals(3.0, derivativeFun.getY(2), 1e-10);
@@ -41,6 +46,11 @@ class TabulatedDifferentialOperatorTest {
         LinkedListTabulatedFunction fun = new LinkedListTabulatedFunction(xValues, yValues);
 
         TabulatedFunction derivativeFun = operator.derive(fun);
+
+        assertEquals(0.0, derivativeFun.getX(0), 1e-10);
+        assertEquals(1.0, derivativeFun.getX(1), 1e-10);
+        assertEquals(2.0, derivativeFun.getX(2), 1e-10);
+        assertEquals(5.0, derivativeFun.getX(3), 1e-10);
 
         assertEquals(77.0, derivativeFun.getY(0), 1e-10);
         assertEquals(77.0, derivativeFun.getY(1), 1e-10);
