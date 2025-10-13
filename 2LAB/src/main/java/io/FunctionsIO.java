@@ -3,6 +3,7 @@ package io;
 import functions.Point;
 import functions.TabulatedFunction;
 import functions.factory.TabulatedFunctionFactory;
+import operations.TabulatedFunctionOperationService;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -24,6 +25,7 @@ public final class FunctionsIO {
             }
             stream.flush();
         }
+    }
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function) throws IOException {
         PrintWriter printWriter = new PrintWriter(writer);
 
@@ -75,6 +77,25 @@ public final class FunctionsIO {
             return factory.create(xValues, yValues);
         } catch(NumberFormatException e) {
             throw new IOException("Некорректный формат числа", e);
+        }
+    }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory) throws IOException {
+        // Оборачиваем в DataInputStream для чтения примитивов
+        try (DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+
+            int count = dataInputStream.readInt();
+
+            double[] xValues = new double[count];
+            double[] yValues = new double[count];
+
+            for (int i = 0; i < count; i++) {
+                xValues[i] = dataInputStream.readDouble(); // читаем x
+                yValues[i] = dataInputStream.readDouble(); // читаем y
+            }
+
+            // Используем фабрику для создания функции
+            return factory.create(xValues, yValues);
         }
     }
 }
