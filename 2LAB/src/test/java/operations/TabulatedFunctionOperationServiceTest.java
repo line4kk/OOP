@@ -159,5 +159,6 @@ class TabulatedFunctionOperationServiceTest {
         TabulatedFunction listResult = service.subtract(func1, func2);
         assertTrue(listResult instanceof LinkedListTabulatedFunction);
 
+
     }
 }
