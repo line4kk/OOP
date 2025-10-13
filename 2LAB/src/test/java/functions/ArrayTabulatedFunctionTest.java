@@ -3,6 +3,7 @@ package functions;
 import exceptions.ArrayIsNotSortedException;
 import exceptions.DifferentLengthOfArraysException;
 import exceptions.InterpolationException;
+import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -683,6 +684,40 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction func = new ArrayTabulatedFunction(x, y);
         assertThrows(InterpolationException.class, () -> func.interpolate(0.5, 1));
         assertThrows(InterpolationException.class, () -> func.interpolate(10.0, 2));
+    }
+
+    @Test
+            // Тест итератора в массивах с помощью цикла while
+    public void testArrayTabulatedFunctionIterator1() {
+        double[] xValues = {0.0, 3.0, 6.0, 9.0, 12.0};
+        double[] yValues = {0.0, -1.0, -2.0, -3.0, -4.0};
+        ArrayTabulatedFunction f = new ArrayTabulatedFunction(xValues, yValues);
+
+        Iterator<Point> iterator = f.iterator();
+        int index = 0;
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(xValues[index], point.x, 1e-10);
+            assertEquals(yValues[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(xValues.length, index);
+    }
+
+    @Test
+    // Тест итератора в массивах с помощью цикла for-each
+    public void testArrayTabulatedFunctionIterator2() {
+        double[] xValues = {0.0, 10.0, 20.0, 30.0, 40.0};
+        double[] yValues = {0.0, -2.0, -4.0, -6.0, -8.0};
+        ArrayTabulatedFunction tabulatedFunction = new ArrayTabulatedFunction(xValues, yValues);
+
+        int index = 0;
+        for (Point point : tabulatedFunction) {
+            assertEquals(xValues[index], point.x, 1e-10);
+            assertEquals(yValues[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(xValues.length, index);
     }
 
 }

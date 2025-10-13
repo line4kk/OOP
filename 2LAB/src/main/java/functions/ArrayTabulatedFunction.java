@@ -3,6 +3,7 @@ import exceptions.InterpolationException;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 // Класс для хранения данных в массиве
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
@@ -235,7 +236,28 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         count--;
     }
 
+    @Override
     public Iterator<Point> iterator() {
-        throw new UnsupportedOperationException();
+        Iterator<Point> iter = new Iterator<Point>() {
+            private int i = 0;
+
+            @Override
+            public boolean hasNext() {
+                return i < count;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                else {
+                    Point point = new Point(xValues[i], yValues[i]);
+                    i++;
+                    return point;
+                }
+            }
+        };
+        return iter;
     }
 }
