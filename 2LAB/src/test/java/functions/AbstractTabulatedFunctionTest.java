@@ -43,4 +43,16 @@ class AbstractTabulatedFunctionTest {
         double[] x = {10.0, 10.0, 20.0};
         assertThrows(ArrayIsNotSortedException.class, () -> AbstractTabulatedFunction.checkSorted(x));
     }
+
+    @Test
+    void testToString() {
+        double[] xValues = {1.0, 6.0, 7.0, 10.0};
+        double[] yValues = {49.0, 53.1, 0, 6.0};
+        LinkedListTabulatedFunction fun1 = new LinkedListTabulatedFunction(xValues, yValues);
+        ArrayTabulatedFunction fun2 = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertEquals("LinkedListTabulatedFunction size = 4\n[1.0; 49.0]\n[6.0; 53.1]\n[7.0; 0.0]\n[10.0; 6.0]", fun1.toString());
+        assertEquals("ArrayTabulatedFunction size = 4\n[1.0; 49.0]\n[6.0; 53.1]\n[7.0; 0.0]\n[10.0; 6.0]", fun2.toString());
+
+    }
 }

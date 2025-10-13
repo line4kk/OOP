@@ -2,6 +2,7 @@ package functions;
 
 import exceptions.ArrayIsNotSortedException;
 import exceptions.DifferentLengthOfArraysException;
+import operations.TabulatedFunctionOperationService;
 
 // Абстрактный класс для табличных функций, реализующий общую логику интерполяции и экстраполяции
 public abstract  class AbstractTabulatedFunction implements TabulatedFunction{
@@ -65,5 +66,22 @@ public abstract  class AbstractTabulatedFunction implements TabulatedFunction{
         // Вызов метода интерполяции
         int floorIndex = floorIndexOfX(x);
         return interpolate(x, floorIndex);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(getClass().getSimpleName());
+        builder.append(" size = ").append(this.getCount());
+
+        Point[] points = TabulatedFunctionOperationService.asPoints(this);
+
+        for (Point point : points) {
+            builder.append("\n");
+            builder.append("[").append(point.x).append("; ").append(point.y).append("]");
+        }
+
+        return builder.toString();
     }
 }
