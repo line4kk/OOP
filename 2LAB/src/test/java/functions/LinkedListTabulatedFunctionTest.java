@@ -106,20 +106,20 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void interpolate() {
-        assertEquals(0.5, fun1.interpolate(0.5, 0));
-        assertEquals(0.5, fun2.interpolate(0.5, 3));
+        assertEquals(0.5, fun1.interpolate(0.5, 0), 1e-10);
+        assertEquals(0.5, fun2.interpolate(0.5, 3), 1e-10);
     }
 
     @Test
     void extrapolateLeft() {
-        assertEquals(-1, fun1.extrapolateLeft(-1));
-        assertEquals(14, fun2.extrapolateLeft(-4));
+        assertEquals(-1, fun1.extrapolateLeft(-1), 1e-10);
+        assertEquals(14, fun2.extrapolateLeft(-4), 1e-10);
     }
 
     @Test
     void extrapolateRight() {
-        assertEquals(7, fun1.extrapolateRight(7));
-        assertEquals(14, fun2.extrapolateRight(4));
+        assertEquals(7, fun1.extrapolateRight(7), 1e-10);
+        assertEquals(14, fun2.extrapolateRight(4), 1e-10);
     }
 
     double[] xValuesA1 = {0.0, 1.0, 2.0, 3.0};
@@ -144,8 +144,8 @@ class LinkedListTabulatedFunctionTest {
         CompositeFunction comp1 = new CompositeFunction(tabFunA1, tabFunA2);  // A2(A1)
         CompositeFunction comp2 = new CompositeFunction(tabFunA2, tabFunA1);  // A1(A2)
 
-        assertEquals(2.0, comp1.apply(2.0));
-        assertEquals(1.0, comp2.apply(1.0));
+        assertEquals(2.0, comp1.apply(2.0), 1e-10);
+        assertEquals(1.0, comp2.apply(1.0), 1e-10);
     }
 
     @Test
@@ -153,8 +153,8 @@ class LinkedListTabulatedFunctionTest {
         CompositeFunction comp1 = new CompositeFunction(tabFunL1, tabFunL2);  // L2(L1)
         CompositeFunction comp2 = new CompositeFunction(tabFunL2, tabFunL1);  // L1(L2)
 
-        assertEquals(6.0, comp1.apply(4));
-        assertEquals(15.0, comp2.apply(10));
+        assertEquals(6.0, comp1.apply(4), 1e-10);
+        assertEquals(15.0, comp2.apply(10), 1e-10);
     }
 
     @Test
@@ -162,8 +162,8 @@ class LinkedListTabulatedFunctionTest {
         CompositeFunction comp1 = new CompositeFunction(tabFunL2, tabFunA1);  // A1(L2)
         CompositeFunction comp2 = new CompositeFunction(tabFunA2, tabFunL1);  // L1(A2)
 
-        assertEquals(2.5, comp1.apply(3));
-        assertEquals(15, comp2.apply(10));
+        assertEquals(2.5, comp1.apply(3), 1e-10);
+        assertEquals(15, comp2.apply(10), 1e-10);
     }
 
     @Test
@@ -172,8 +172,8 @@ class LinkedListTabulatedFunctionTest {
         CompositeFunction comp1 = new CompositeFunction(tabFunL1, sqr);
         CompositeFunction comp2 = new CompositeFunction(sqr, tabFunL2);
 
-        assertEquals(900, comp1.apply(10));
-        assertEquals(200, comp2.apply(20));
+        assertEquals(900, comp1.apply(10), 1e-10);
+        assertEquals(200, comp2.apply(20), 1e-10);
     }
 
 
@@ -459,8 +459,8 @@ class LinkedListTabulatedFunctionTest {
 
         while (iterator.hasNext()) {
             Point point = iterator.next();
-            assertEquals(fun1.getX(ind), point.x);
-            assertEquals(fun1.getY(ind), point.y);
+            assertEquals(fun1.getX(ind), point.x, 1e-10);
+            assertEquals(fun1.getY(ind), point.y, 1e-10);
             ind++;
         }
         assertThrows(NoSuchElementException.class, () -> iterator.next());
@@ -469,8 +469,8 @@ class LinkedListTabulatedFunctionTest {
         ind = 0;
 
         for (Point point : fun2) {
-            assertEquals(fun2.getX(ind), point.x);
-            assertEquals(fun2.getY(ind), point.y);
+            assertEquals(fun2.getX(ind), point.x, 1e-10);
+            assertEquals(fun2.getY(ind), point.y, 1e-10);
             ind++;
         }
 

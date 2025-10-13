@@ -31,8 +31,8 @@ class IdentityFunctionTest {
     void applyTestLargeNumbers(){
         assertEquals(4975387, function.apply(4975387));
         assertEquals(-56784165, function.apply(-56784165));
-        assertEquals(514145.953618, function.apply(514145.953618));
-        assertEquals(-76315.4151, function.apply(-76315.4151));
+        assertEquals(514145.953618, function.apply(514145.953618), 1e-10);
+        assertEquals(-76315.4151, function.apply(-76315.4151), 1e-10);
         assertEquals(100000000, function.apply(100000000));
     }
 }
