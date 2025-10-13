@@ -7,6 +7,7 @@ import functions.Point;
 import functions.TabulatedFunction;
 import functions.factory.ArrayTabulatedFunctionFactory;
 import functions.factory.LinkedListTabulatedFunctionFactory;
+import functions.factory.TabulatedFunctionFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -158,7 +159,15 @@ class TabulatedFunctionOperationServiceTest {
         service.setFactory(new LinkedListTabulatedFunctionFactory());
         TabulatedFunction listResult = service.subtract(func1, func2);
         assertTrue(listResult instanceof LinkedListTabulatedFunction);
+    }
 
+    @Test
+    public void testConstructorWithArrayFactory() {
+        TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService(factory);
 
+        assertNotNull(service.getFactory());
+        assertTrue(service.getFactory() instanceof ArrayTabulatedFunctionFactory);
+        assertSame(factory, service.getFactory());
     }
 }
