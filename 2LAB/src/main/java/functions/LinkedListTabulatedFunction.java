@@ -15,6 +15,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     private final static long serialVersionUID = -3800647710626336537L;
 
     static class Node implements Serializable {
+        @Serial
+        private final static long serialVersionUID = -4823301658934728089L;
         public Node next, prev;
         public double x, y;
     }
@@ -38,7 +40,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         count++;
     }
 
-    private Node getNode(int index){  // Найти ноду по индексу
+    private Node getNode(int index) {  // Найти ноду по индексу
         if (index < 0 || index >= count)
             throw new IllegalArgumentException();
         Node res = head;
@@ -270,10 +272,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     public Iterator<Point> iterator() {  // Объект итератора
         Iterator<Point> iter = new Iterator<Point>() {
             Node node = head;
+            int nodesProccesed = 0;
 
             @Override
             public boolean hasNext() {
-                return node != null;
+                return nodesProccesed < count;
             }
 
             @Override
@@ -282,11 +285,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
                     throw new NoSuchElementException();
                 else {
                     Point point = new Point(node.x, node.y);
-                    // Переходим на следующий элемент или на null
-                    if (node.next == head)
-                        node = null;
-                    else
-                        node = node.next;
+                    // Переходим на следующий элемент
+                    node = node.next;
+                    nodesProccesed++;
                     return point;
                 }
             }
