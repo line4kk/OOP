@@ -5,12 +5,43 @@ import functions.LinkedListTabulatedFunction;
 import functions.TabulatedFunction;
 import functions.factory.ArrayTabulatedFunctionFactory;
 import functions.factory.LinkedListTabulatedFunctionFactory;
+import functions.factory.TabulatedFunctionFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TabulatedDifferentialOperatorTest {
 
+    @Test
+    void testDefaultConstructor() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        assertNotNull(operator.getFactory());
+        assertTrue(operator.getFactory() instanceof ArrayTabulatedFunctionFactory);
+    }
+
+    @Test
+    void testConstructorWithFactory() {
+        TabulatedFunctionFactory factory = new LinkedListTabulatedFunctionFactory();
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator(factory);
+        assertSame(factory, operator.getFactory());
+    }
+
+    @Test
+    void testGetFactory() {
+        TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator(factory);
+        assertSame(factory, operator.getFactory());
+    }
+
+    @Test
+    void testSetFactory() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunctionFactory newFactory = new LinkedListTabulatedFunctionFactory();
+
+        operator.setFactory(newFactory);
+
+        assertSame(newFactory, operator.getFactory());
+    }
     @Test
     void testDeriveArray() {
         ArrayTabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();

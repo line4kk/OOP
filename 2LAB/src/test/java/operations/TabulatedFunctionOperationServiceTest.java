@@ -1,5 +1,6 @@
 package operations;
 
+import exceptions.DifferentLengthOfArraysException;
 import exceptions.InconsistentFunctionsException;
 import functions.ArrayTabulatedFunction;
 import functions.LinkedListTabulatedFunction;
@@ -103,9 +104,16 @@ class TabulatedFunctionOperationServiceTest {
         ArrayTabulatedFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+        String message = "Has Error";
+        InconsistentFunctionsException exception1 = new InconsistentFunctionsException();
+        InconsistentFunctionsException exception2 = new InconsistentFunctionsException(message);
 
-        assertThrows(InconsistentFunctionsException.class, () -> service.add(func1, func2));
-        assertThrows(InconsistentFunctionsException.class, () -> service.subtract(func1, func2));
+        assertThrows(exception1.getClass(), () -> service.add(func1, func2));
+        assertThrows(exception1.getClass(), () -> service.subtract(func1, func2));
+
+        assertThrows(exception2.getClass(), () -> service.add(func1, func2));
+        assertThrows(exception2.getClass(), () -> service.subtract(func1, func2));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test
@@ -120,7 +128,16 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
-        assertThrows(InconsistentFunctionsException.class, () -> service.add(func1, func2));
+        String message = "Has Error";
+        InconsistentFunctionsException exception1 = new InconsistentFunctionsException();
+        InconsistentFunctionsException exception2 = new InconsistentFunctionsException(message);
+
+        assertThrows(exception1.getClass(), () -> service.add(func1, func2));
+        assertThrows(exception1.getClass(), () -> service.subtract(func1, func2));
+
+        assertThrows(exception2.getClass(), () -> service.add(func1, func2));
+        assertThrows(exception2.getClass(), () -> service.subtract(func1, func2));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test

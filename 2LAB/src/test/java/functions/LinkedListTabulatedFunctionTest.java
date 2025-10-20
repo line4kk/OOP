@@ -408,7 +408,13 @@ class LinkedListTabulatedFunctionTest {
     void testCheckLengthIsTheSameList_ThrowException() {
         double[] x = {2.0, 3.0, 4.0};
         double[] y = {1.0, 1.5, 2.0, 10.0};
-        assertThrows(DifferentLengthOfArraysException.class, () -> new LinkedListTabulatedFunction(x, y));
+        String message = "Has Error";
+        DifferentLengthOfArraysException exception1 = new DifferentLengthOfArraysException();
+        DifferentLengthOfArraysException exception2 = new DifferentLengthOfArraysException(message);
+
+        assertThrows(exception1.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertThrows(exception2.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test
@@ -424,7 +430,13 @@ class LinkedListTabulatedFunctionTest {
     void testCheckSortedList1_NotSorted() {
         double[] x = {10.0, 3.0, 4.0};
         double[] y = {1.0, 1.5, 2.0};
-        assertThrows(ArrayIsNotSortedException.class, () -> new LinkedListTabulatedFunction(x, y));
+        String message = "Has Error";
+        ArrayIsNotSortedException exception1 = new ArrayIsNotSortedException();
+        ArrayIsNotSortedException exception2 = new ArrayIsNotSortedException(message);
+
+        assertThrows(exception1.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertThrows(exception2.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test
@@ -439,7 +451,13 @@ class LinkedListTabulatedFunctionTest {
     void testCheckSortedList3_SortedWithRepeat() {
         double[] x = {10.0, 10.0, 20.0};
         double[] y = {1.0, 1.5, 2.0};
-        assertThrows(ArrayIsNotSortedException.class, () -> new LinkedListTabulatedFunction(x, y));
+        String message = "Has Error";
+        ArrayIsNotSortedException exception1 = new ArrayIsNotSortedException();
+        ArrayIsNotSortedException exception2 = new ArrayIsNotSortedException(message);
+
+        assertThrows(exception1.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertThrows(exception2.getClass(), () -> new LinkedListTabulatedFunction(x, y));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test
@@ -448,8 +466,16 @@ class LinkedListTabulatedFunctionTest {
         double[] x = {0.0, 4.0, 8.0, 9.0};
         double[] y = {1.0, 2.0, 3.0, 4.0};
         LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(x, y);
-        assertThrows(InterpolationException.class, () -> func.interpolate(0.1, 1));
-        assertThrows(InterpolationException.class, () -> func.interpolate(25.0, 2));
+        String message = "Has Error";
+        InterpolationException exception1 = new InterpolationException();
+        InterpolationException exception2 = new InterpolationException(message);
+
+        assertThrows(exception1.getClass(), () -> func.interpolate(0.5, 1));
+        assertThrows(exception1.getClass(), () -> func.interpolate(10.0, 2));
+
+        assertThrows(exception2.getClass(), () -> func.interpolate(0.5, 1));
+        assertThrows(exception2.getClass(), () -> func.interpolate(10.0, 2));
+        assertEquals(message, exception2.getMessage());
     }
 
     @Test
