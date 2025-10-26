@@ -12,7 +12,7 @@ public class ReadTask implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i < tabulatedFunction.getCount() - 1; i++) {
-            System.out.printf("After read: i = %d, x = %f, y = %f", i, tabulatedFunction.getX(i), tabulatedFunction.getY(i));
+            System.out.printf("After read: i = %d, x = %f, y = %f%n", i, tabulatedFunction.getX(i), tabulatedFunction.getY(i));
         }
     }
 }
