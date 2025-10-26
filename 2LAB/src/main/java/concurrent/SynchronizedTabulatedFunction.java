@@ -78,4 +78,15 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
             }
         };
     }
+
+    public interface Operation<T> {
+        T apply(SynchronizedTabulatedFunction function);
+    }
+
+    // Операция - производитель значений типа T
+    public <T> T doSynchronously(Operation<? extends T> operation) {
+        synchronized (function) {
+            return operation.apply(this);
+        }
+    }
 }
