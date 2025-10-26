@@ -7,7 +7,7 @@ import operations.TabulatedFunctionOperationService;
 import java.io.Serializable;
 
 // Абстрактный класс для табличных функций, реализующий общую логику интерполяции и экстраполяции
-public abstract  class AbstractTabulatedFunction implements TabulatedFunction, Serializable {
+public abstract class AbstractTabulatedFunction implements TabulatedFunction, Serializable {
 
     protected int count = 0; // Приватное поле count
 
