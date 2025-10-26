@@ -3,6 +3,7 @@ package concurrent;
 import functions.ArrayTabulatedFunction;
 import functions.LinkedListTabulatedFunction;
 import functions.Point;
+import functions.TabulatedFunction;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
@@ -146,5 +147,53 @@ class SynchronizedTabulatedFunctionTest {
         assertEquals(-6.0, iterator.next().y, 1e-10);
         assertFalse(iterator.hasNext());
         assertThrows(NoSuchElementException.class, () -> iterator.next());
+    }
+
+    @Test
+        // Возвращение типа Double
+    void testDoSynchronouslyDouble() {
+
+        Double result = syncLinkedListFun.doSynchronously(function -> {
+            double sum = 0;
+            for (int i = 0; i < function.getCount(); i++) {
+                sum += function.getY(i);
+            }
+            return sum / function.getCount();
+        });
+        assertEquals(-4.0, result, 1e-10);
+    }
+
+    @Test
+    // Возвращение типа String
+    void testDoSynchronouslyString() {
+
+        String result = syncLinkedListFun.doSynchronously(function -> {
+            return "Points: " + function.getCount() + ", Left: " + function.leftBound() + ", Right: " + function.rightBound();
+        });
+        assertEquals("Points: 3, Left: 1.0, Right: 3.0", result);
+    }
+
+    @Test
+    // Возвращение типа Integer
+    public void testDoSynchronouslyReturnsInteger() {
+        Integer result = syncLinkedListFun.doSynchronously(func -> func.getCount());
+        assertEquals(3, result);
+    }
+
+    @Test
+    // Операция с Void возвращаемым типом (модификация данных)
+    public void testDoSynchronouslyVoidOperation() {
+
+        Void result = syncLinkedListFun.doSynchronously(func -> {
+            for (int i = 0; i < func.getCount(); i++) {
+                func.setY(i, func.getY(i) * 2);
+            }
+            return null;
+        });
+
+        assertNull(result);
+        assertEquals(-4.0, syncLinkedListFun.getY(0), 1e-10);
+        assertEquals(-8.0, syncLinkedListFun.getY(1), 1e-10);
+        assertEquals(-12.0, syncLinkedListFun.getY(2), 1e-10);
     }
 }
