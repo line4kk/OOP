@@ -1,5 +1,6 @@
 package operations;
 
+import concurrent.SynchronizedTabulatedFunction;
 import functions.ArrayTabulatedFunction;
 import functions.LinkedListTabulatedFunction;
 import functions.TabulatedFunction;
@@ -88,5 +89,52 @@ class TabulatedDifferentialOperatorTest {
         assertEquals(77.0, derivativeFun.getY(2), 1e-10);
         assertEquals(77.0, derivativeFun.getY(3), 1e-10);
 
+    }
+
+    @Test
+        // Синхронизация с Array
+    void testDeriveSynchronouslyWithArrayFunction() {
+        double[] xValues = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues = {0.0, 1.0, 4.0, 9.0};
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunction derivative = operator.deriveSynchronously(function);
+
+        assertEquals(4, derivative.getCount());
+        assertEquals(1.0, derivative.getY(0), 1e-10);
+        assertEquals(3.0, derivative.getY(1), 1e-10);
+        assertEquals(5.0, derivative.getY(2), 1e-10);
+    }
+
+    @Test
+    // Синхронизация с LinkedList
+    void testDeriveSynchronouslyWithLinkedListFunction() {
+        double[] xValues = {0.0, 1.0, 2.0};
+        double[] yValues = {3.0, 5.0, 7.0};
+        TabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunction derivative = operator.deriveSynchronously(function);
+
+        assertEquals(3, derivative.getCount());
+        assertEquals(2.0, derivative.getY(0), 1e-10);
+        assertEquals(2.0, derivative.getY(1), 1e-10);
+    }
+
+    @Test
+    // Синхронизовання
+    void testDeriveSynchronouslyWithAlreadySynchronized() {
+        double[] xValues = {0.0, 1.0, 2.0};
+        double[] yValues = {10.0, 50.0, 100.0};
+        TabulatedFunction baseFunction = new ArrayTabulatedFunction(xValues, yValues);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(baseFunction);
+
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunction derivative = operator.deriveSynchronously(syncFunction);
+
+        assertEquals(3, derivative.getCount());
+        assertEquals(40.0, derivative.getY(0), 1e-10);
+        assertEquals(50.0, derivative.getY(1), 1e-10);
     }
 }
