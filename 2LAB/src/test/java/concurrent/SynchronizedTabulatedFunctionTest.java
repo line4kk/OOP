@@ -6,6 +6,7 @@ import functions.Point;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -69,9 +70,15 @@ class SynchronizedTabulatedFunctionTest {
     @Test
     void iteratorSyncLinkedListFun() {
         Iterator<Point> iterator = syncLinkedListFun.iterator();
+        assertTrue(iterator.hasNext());
         assertEquals(-2.0, iterator.next().y, 1e-10);
+        assertTrue(iterator.hasNext());
         assertEquals(-4.0, iterator.next().y, 1e-10);
+        assertTrue(iterator.hasNext());
         assertEquals(-6.0, iterator.next().y, 1e-10);
+        assertFalse(iterator.hasNext());
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
+
     }
 
     ArrayTabulatedFunction arrayFun = new ArrayTabulatedFunction(new double[]{1.0, 2.0, 3.0}, new double[]{-2.0, -4.0, -6.0});
@@ -131,8 +138,13 @@ class SynchronizedTabulatedFunctionTest {
     @Test
     void iteratorSyncArrayFun() {
         Iterator<Point> iterator = syncArrayFun.iterator();
+        assertTrue(iterator.hasNext());
         assertEquals(-2.0, iterator.next().y, 1e-10);
+        assertTrue(iterator.hasNext());
         assertEquals(-4.0, iterator.next().y, 1e-10);
+        assertTrue(iterator.hasNext());
         assertEquals(-6.0, iterator.next().y, 1e-10);
+        assertFalse(iterator.hasNext());
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
     }
 }
