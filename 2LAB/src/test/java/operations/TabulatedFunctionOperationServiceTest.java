@@ -1,6 +1,5 @@
 package operations;
 
-import exceptions.DifferentLengthOfArraysException;
 import exceptions.InconsistentFunctionsException;
 import functions.ArrayTabulatedFunction;
 import functions.LinkedListTabulatedFunction;
@@ -309,7 +308,7 @@ class TabulatedFunctionOperationServiceTest {
     }
 
     @Test
-    void testDevisionWithArrayTabulatedFunctions() {
+    void testDivisionWithArrayTabulatedFunctions() {
         double[] xValues1 = {1.0, 2.0, 3.0};
         double[] yValues1 = {5.0, 10.0, 18.0};
         double[] xValues2 = {1.0, 2.0, 3.0};
@@ -320,13 +319,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
-        TabulatedFunction devisionOfFunctions = service.devision(func1, func2);  // func1 / func2
+        TabulatedFunction devisionOfFunctions = service.division(func1, func2);  // func1 / func2
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -334,14 +333,14 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService anotherService = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
 
-        devisionOfFunctions = anotherService.devision(func1, func2);
+        devisionOfFunctions = anotherService.division(func1, func2);
 
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -350,7 +349,7 @@ class TabulatedFunctionOperationServiceTest {
     }
 
     @Test
-    void testDevisionWithLinkedListTabulatedFunctions() {
+    void testDivisionWithLinkedListTabulatedFunctions() {
         double[] xValues1 = {1.0, 2.0, 3.0};
         double[] yValues1 = {5.0, 10.0, 18.0};
         double[] xValues2 = {1.0, 2.0, 3.0};
@@ -361,13 +360,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
-        TabulatedFunction devisionOfFunctions = service.devision(func1, func2);
+        TabulatedFunction devisionOfFunctions = service.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -375,13 +374,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService anotherService = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
 
-        devisionOfFunctions = anotherService.devision(func1, func2);
+        devisionOfFunctions = anotherService.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -401,13 +400,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
-        TabulatedFunction devisionOfFunctions = service.devision(func1, func2);
+        TabulatedFunction devisionOfFunctions = service.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -415,13 +414,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService anotherService = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
 
-        devisionOfFunctions = anotherService.devision(func1, func2);
+        devisionOfFunctions = anotherService.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -441,13 +440,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
-        TabulatedFunction devisionOfFunctions = service.devision(func1, func2);
+        TabulatedFunction devisionOfFunctions = service.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0
@@ -455,13 +454,13 @@ class TabulatedFunctionOperationServiceTest {
 
         TabulatedFunctionOperationService anotherService = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
 
-        devisionOfFunctions = anotherService.devision(func1, func2);
+        devisionOfFunctions = anotherService.division(func1, func2);
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(5.0, devisionOfFunctions.getY(0), 1e-10); // 5.0 / 1.0
         assertEquals(5.0, devisionOfFunctions.getY(1), 1e-10); // 10.0 / 2.0
         assertEquals(6.0, devisionOfFunctions.getY(2), 1e-10); // 18.0 / 3.0
 
-        devisionOfFunctions = service.devision(func2, func1);  // func2 / func1
+        devisionOfFunctions = service.division(func2, func1);  // func2 / func1
         assertEquals(3, devisionOfFunctions.getCount());
         assertEquals(0.2, devisionOfFunctions.getY(0), 1e-4); // 1.0 / 5.0
         assertEquals(0.2, devisionOfFunctions.getY(1), 1e-4); // 2.0 / 10.0

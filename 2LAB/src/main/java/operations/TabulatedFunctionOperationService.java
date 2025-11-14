@@ -104,7 +104,7 @@ public class TabulatedFunctionOperationService {
     }
 
     // Деление
-    public TabulatedFunction devision(TabulatedFunction a, TabulatedFunction b) {
+    public TabulatedFunction division(TabulatedFunction a, TabulatedFunction b) {
         return doOperation(a, b, (u, v) -> u / v);
     }
 
