@@ -1,8 +1,11 @@
 package functions;
 
 import java.util.Iterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnmodifiableTabulatedFunction implements TabulatedFunction{
+    private static final Logger logger = LoggerFactory.getLogger(UnmodifiableTabulatedFunction.class);
     private final TabulatedFunction function;
 
     public UnmodifiableTabulatedFunction(TabulatedFunction function) {
@@ -25,6 +28,7 @@ public class UnmodifiableTabulatedFunction implements TabulatedFunction{
 
     @Override
     public void setY(int index, double value) {
+        logger.error("Попытка изменить Y[{}] = {} в неизменяемой функции", index, value);
         throw new UnsupportedOperationException("Нельзя использовать этот метод");
     }
 

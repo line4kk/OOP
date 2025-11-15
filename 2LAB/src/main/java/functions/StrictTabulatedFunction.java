@@ -1,8 +1,11 @@
 package functions;
 
 import java.util.Iterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StrictTabulatedFunction implements TabulatedFunction {
+    private static final Logger logger = LoggerFactory.getLogger(StrictTabulatedFunction.class);
     private final TabulatedFunction function;
 
     public StrictTabulatedFunction(TabulatedFunction function) {
@@ -13,6 +16,7 @@ public class StrictTabulatedFunction implements TabulatedFunction {
     public double apply(double x) {
         int index = function.indexOfX(x);
         if (index == -1) {
+            logger.error("Попытка интерполяции для x = {} в строгой функции", x);
             throw new UnsupportedOperationException("Нельзя интерполировать");
         }
         return function.getY(index);

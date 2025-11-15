@@ -3,12 +3,15 @@ package concurrent;
 import functions.Point;
 import functions.TabulatedFunction;
 import operations.TabulatedFunctionOperationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class SynchronizedTabulatedFunction implements TabulatedFunction {
     private final TabulatedFunction function;
+    private static final Logger logger = LoggerFactory.getLogger(SynchronizedTabulatedFunction.class);
     public SynchronizedTabulatedFunction(TabulatedFunction function) {
         this.function = function;
     }
@@ -60,6 +63,7 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     @Override
     public synchronized Iterator<Point> iterator() {
+        logger.debug("Создание итератора для функции");
         Point[] points = TabulatedFunctionOperationService.asPoints(function);
         return new Iterator<Point>() {
             int ind = 0;
@@ -71,10 +75,15 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
             @Override
             public Point next() {
-                if (!hasNext())
+                if (!hasNext()) {
+                    logger.error("Попытка получить следующий элемент за пределами итератора");
                     throw new NoSuchElementException();
-                else
+                }
+
+                else {
+                    logger.trace("Итератор: получена точка {}", ind);
                     return points[ind++];
+                }
             }
         };
     }
@@ -85,6 +94,7 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     // Операция - производитель значений типа T
     public <T> T doSynchronously(Operation<? extends T> operation) {
+        logger.debug("Выполнение синхронной операции в потоке {}", Thread.currentThread().getName());
         synchronized (function) {
             return operation.apply(this);
         }
