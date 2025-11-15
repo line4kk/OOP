@@ -6,9 +6,13 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Класс для хранения данных в массиве
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable{
+
+    private static final Logger logger = LoggerFactory.getLogger(ArrayTabulatedFunction.class);
 
     @Serial
     private static final long serialVersionUID = -6372191640806238470L;
@@ -20,6 +24,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     // Конструктор класса с двумя параметрами типа double[]
     public ArrayTabulatedFunction(double[] xValues, double[] yValues){
         if (xValues.length < 2) {
+            logger.error("Попытка создать функцию с {} элементами (требуется минимум 2)", xValues.length);
             throw new IllegalArgumentException("В массиве меньше 2 элементов");
         }
 
@@ -29,12 +34,14 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         this.count = xValues.length;
         this.xValues = Arrays.copyOf(xValues, count);
         this.yValues = Arrays.copyOf(yValues, count);
+        logger.info("Создана ArrayTabulatedFunction с {} точками", count);
     }
 
     // Конструктор класса с 4 параметрами
     public ArrayTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
 
         if (count < 2) {
+            logger.error("Попытка создать функцию с {} точками (требуется минимум 2)", count);
             throw new IllegalArgumentException("В массиве меньше 2 элементов");
         }
         // Если границы перепутаны
@@ -59,6 +66,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
                 yValues[i] = source.apply(xValues[i]);
             }
         }
+        logger.info("Создана ArrayTabulatedFunction с  {} точками", count);
     }
     // Далее перегрузки методов AbstractTabulatedFunction
     @Override
@@ -69,6 +77,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public double getX(int index) {
         if (index < 0 || index >= count) {
+            logger.error("Попытка получить X по недопустимому индексу: {}", index);
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }
         return xValues[index];
@@ -77,6 +86,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public double getY(int index) {
         if (index < 0 || index >= count) {
+            logger.error("Попытка получить Y по недопустимому индексу: {}", index);
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }
         return yValues[index];
@@ -85,8 +95,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void setY(int index, double value) {
         if (index < 0 || index >= count) {
+            logger.error("Попытка установить Y по недопустимому индексу: {}", index);
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }
+        logger.debug("Установка Y[{}] = {} (было {})", index, value, yValues[index]);
         yValues[index] = value;
     }
 
@@ -124,6 +136,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public int floorIndexOfX(double x) {
         // Когда все значения больше x
         if (x < xValues[0]) {
+            logger.error("x = {} меньше левой границы {}", x, xValues[0]);
             throw new IllegalArgumentException();
         }
 
@@ -144,6 +157,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public double extrapolateLeft(double x) {
+        logger.debug("Экстраполяция слева для x = {}", x);
         if (count == 1) {
             return yValues[0];
         }
@@ -152,6 +166,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public double extrapolateRight(double x) {
+        logger.debug("Экстраполяция справа для x = {}", x);
         if (count == 1) {
             return yValues[0];
         }
@@ -160,6 +175,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     public double interpolate(double x, int floorIndex) {
         if (floorIndex < 0 || floorIndex >= count - 1) {
+            logger.error("Недопустимый floorIndex для интерполяции: {}", floorIndex);
             throw new IndexOutOfBoundsException("Индекс не в диапазоне");
         }
         double x1 = xValues[floorIndex];
@@ -168,15 +184,19 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         double y2 = yValues[floorIndex + 1];
 
         if (x < x1 || x > x2) {
+            logger.error("x = {} не в диапазоне [{}, {}]", x, x1, x2);
             throw new InterpolationException("x не попадает в диапазон от " + x1 + " до " + x2);
         }
 
         // Интерполяция между floorIndex и floorIndex + 1
+        logger.debug("Интерполяция для x = {} в интервале [{}, {}]", x, x1, x2);
         return interpolate(x, x1, x2, y1, y2);
     }
 
     @Override
     public double apply(double x) {
+
+        logger.debug("Вычисление значения функции для x = {}", x);
         if (x < leftBound()) {
             return extrapolateLeft(x);
         } else if (x > rightBound()) {
@@ -193,9 +213,12 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public void insert(double x, double y){
+        logger.debug("Вставка точки ({}, {})", x, y);
         int xIndex = indexOfX(x);
-        if (xIndex != -1)
+        if (xIndex != -1) {
+            logger.debug("Точка с x = {} уже существует, обновление Y", x);
             setY(xIndex, y);
+            }
         else{
             double[] newXValues = new double[count+1];
             double[] newYValues = new double[count+1];
@@ -225,15 +248,19 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
             this.yValues = newYValues;
             this.count++;
 
+            logger.debug("Точка вставлена в позицию {}, новый размер: {}", insertIndex, count);
+
         }
 
     }
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
+            logger.error("Попытка удаления по недопустимому индексу: {}", index);
             throw new IndexOutOfBoundsException("Индекс выходит за размер");
         }
 
+        logger.debug("Удаление точки с индексом {}: ({}, {})", index, xValues[index], yValues[index]);
         for (int i = index; i < count - 1; i++) {
             xValues[i] = xValues[i + 1];
             yValues[i] = yValues[i + 1];
@@ -255,6 +282,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
             @Override
             public Point next() {
                 if (!hasNext()) {
+                    logger.error("Попытка получить следующий элемент за пределами итератора");
                     throw new NoSuchElementException();
                 }
                 else {

@@ -3,12 +3,15 @@ package functions;
 import exceptions.ArrayIsNotSortedException;
 import exceptions.DifferentLengthOfArraysException;
 import operations.TabulatedFunctionOperationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
 // Абстрактный класс для табличных функций, реализующий общую логику интерполяции и экстраполяции
 public abstract class AbstractTabulatedFunction implements TabulatedFunction, Serializable {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTabulatedFunction.class);
     protected int count = 0; // Приватное поле count
 
     protected abstract int floorIndexOfX(double x); // поиск интеравала x
@@ -25,6 +28,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Se
     // Проверка на исключение когда длины массивов x и y разные
     static void checkLengthIsTheSame(double[] xValues, double[] yValues) {
         if (xValues.length != yValues.length) {
+            logger.error("Разная длина массивов: xValues={}, yValues={}", xValues.length, yValues.length);
             throw new DifferentLengthOfArraysException("Разная длина массивов");
         }
     }
@@ -32,6 +36,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Se
     static void checkSorted(double[] xValues) {
         for (int i = 0; i < xValues.length - 1; i++) {
             if (xValues[i] >= xValues[i + 1]) {
+                logger.error("Массив не отсортирован: xValues[{}]={} >= xValues[{}]={}", i, xValues[i], i+1, xValues[i+1]);
                 throw new ArrayIsNotSortedException("Массив не отсортирован");
             }
         }
@@ -49,6 +54,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Se
 
     @Override
     public double apply(double x) {
+        logger.debug("Применение функции к x = {}", x);
         // x меньше левой границы
         if (x < getX(0)) {
             return extrapolateLeft(x);

@@ -1,6 +1,10 @@
 package functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DeBoorAlgorithmFunction implements MathFunction {
+    private static final Logger logger = LoggerFactory.getLogger(DeBoorAlgorithmFunction.class);
     private final double[][] controlPoints;  // Контрольные точки
     private final double[] knots;  // Узлы
     private final int degree;  // Степень (p)
@@ -11,6 +15,8 @@ public class DeBoorAlgorithmFunction implements MathFunction {
         this.controlPoints = controlPoints;
         this.knots = knots;
         this.degree = degree;
+        logger.debug("Создан алгоритм де Бура: степень={}, контрольных точек={}, узлов={}", degree, controlPoints.length, knots.length);
+
     }
 
     private int findSegment(double x) {  // Находим номер отрезка k, такой, что x принад. [t[k]; t[k+1])
@@ -26,6 +32,7 @@ public class DeBoorAlgorithmFunction implements MathFunction {
         if (k == -1)
             k = n;
 
+        logger.trace("Найден сегмент для x={}: k={}", x, k);
         return k;
 
     }
@@ -40,6 +47,8 @@ public class DeBoorAlgorithmFunction implements MathFunction {
 
     @Override
     public double apply(double x) {
+        logger.debug("Вычисление B-сплайна для x = {}", x);
+
         double[] resultPoints = new double[controlPoints.length];
         int k = findSegment(x);
         for (int j = 0; j <= degree; j++)
