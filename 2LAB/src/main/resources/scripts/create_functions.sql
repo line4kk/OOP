@@ -5,5 +5,6 @@ CREATE TABLE functions(
     type VARCHAR(50) NOT NULL,
     source VARCHAR(50) NOT NULL,
 
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, name)
 );

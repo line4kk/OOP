@@ -5,7 +5,7 @@ CREATE TABLE operations(
     function2_id INT,
     result_function_id INT NOT NULL,
 
-    FOREIGN KEY (function1_id) REFERENCES functions(id),
-    FOREIGN KEY (function2_id) REFERENCES functions(id),
-    FOREIGN KEY (result_function_id) REFERENCES functions(id)
+    FOREIGN KEY (function1_id) REFERENCES functions(id) ON DELETE CASCADE,
+    FOREIGN KEY (function2_id) REFERENCES functions(id) ON DELETE CASCADE,
+    FOREIGN KEY (result_function_id) REFERENCES functions(id) ON DELETE CASCADE
 );
