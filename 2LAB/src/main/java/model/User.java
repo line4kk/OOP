@@ -7,6 +7,14 @@ public class User {
     private String role;
     private String factoryType;
 
+    public User(long id, String username, String passwordHash, String role, String factoryType) {
+        this.id = id;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.factoryType = factoryType;
+    }
+
     public User(String username, String passwordHash, String role, String factoryType) {
         this.username = username;
         this.passwordHash = passwordHash;
@@ -52,5 +60,15 @@ public class User {
 
     public void setFactoryType(String factoryType) {
         this.factoryType = factoryType;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", role='" + role + '\'' +
+                ", factoryType='" + factoryType + '\'' +
+                '}';
     }
 }

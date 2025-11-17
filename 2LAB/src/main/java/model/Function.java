@@ -61,4 +61,15 @@ public class Function {
     public void setSource(String source) {
         this.source = source;
     }
+
+    @Override
+    public String toString() {
+        return "Function{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", source='" + source + '\'' +
+                '}';
+    }
 }

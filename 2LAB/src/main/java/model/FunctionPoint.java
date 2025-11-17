@@ -50,4 +50,14 @@ public class FunctionPoint {
     public void setYValue(double yValue) {
         this.yValue = yValue;
     }
+
+    @Override
+    public String toString() {
+        return "FunctionPoint{" +
+                "id=" + id +
+                ", functionId=" + functionId +
+                ", xValue=" + xValue +
+                ", yValue=" + yValue +
+                '}';
+    }
 }

@@ -50,4 +50,14 @@ public class CompositeFunctionElement {
     public void setFunctionId(long functionId) {
         this.functionId = functionId;
     }
+
+    @Override
+    public String toString() {
+        return "CompositeFunctionElement{" +
+                "id=" + id +
+                ", compositeId=" + compositeId +
+                ", functionOrder=" + functionOrder +
+                ", functionId=" + functionId +
+                '}';
+    }
 }

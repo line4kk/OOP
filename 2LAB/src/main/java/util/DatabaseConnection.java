@@ -27,7 +27,7 @@ public class DatabaseConnection {
         this.connection = DriverManager.getConnection(url, user, password);
     }
 
-    public static synchronized DatabaseConnection getInstance() {
+    public static synchronized Connection getConnection() {
         if (instance == null)
             try {
                 instance = new DatabaseConnection();
@@ -36,10 +36,7 @@ public class DatabaseConnection {
                 logger.error("Ошибка при подключении к базе данных", e);
                 throw new IllegalStateException("Ошибка при подключении к базе данных", e);
             }
-        return instance;
+        return instance.connection;
     }
 
-    public Connection getConnection() {
-        return connection;
-    }
 }

@@ -60,4 +60,15 @@ public class OperationResultPoint {
     public void setResultY(double resultY) {
         this.resultY = resultY;
     }
+
+    @Override
+    public String toString() {
+        return "OperationResultPoint{" +
+                "id=" + id +
+                ", operation='" + operation + '\'' +
+                ", point1Id=" + point1Id +
+                ", point2Id=" + point2Id +
+                ", resultY=" + resultY +
+                '}';
+    }
 }
