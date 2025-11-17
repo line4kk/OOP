@@ -1,6 +1,6 @@
 package entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "composite_function_elements") // Исправлено имя таблицы

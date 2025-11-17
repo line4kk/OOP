@@ -1,7 +1,9 @@
 package entity;
 
-import javax.persistence.*;
-import javax.persistence.IdClass;
+import jakarta.persistence.*;
+import jakarta.persistence.IdClass;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "function_points")
@@ -20,6 +22,12 @@ public class FunctionPoints {
     @Column(name = "y_value", nullable = false)
     private Double yValue;
 
+    @OneToMany(mappedBy = "point1", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Operations> operationsAsPoint1 = new ArrayList<>();
+
+    @OneToMany(mappedBy = "point2", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Operations> operationsAsPoint2 = new ArrayList<>();
+
     public FunctionPoints() {}
 
     public FunctionPoints(Functions function, Double xValue, Double yValue) {
@@ -35,6 +43,15 @@ public class FunctionPoints {
     public void setXValue(Double xValue) { this.xValue = xValue; }
 
     public Double getYValue() { return yValue; }
-    public void setYValue(Double yValue) { this.yValue = yValue; }
+    public void setYValue(Double yValue) {
+        if (this.yValue != null && !this.yValue.equals(yValue)) {
+            this.operationsAsPoint1.clear();
+            this.operationsAsPoint2.clear();
+        }
+        this.yValue = yValue;
+    }
+
+    public List<Operations> getOperationsAsPoint1() { return operationsAsPoint1; }
+    public List<Operations> getOperationsAsPoint2() { return operationsAsPoint2; }
 
 }

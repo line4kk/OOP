@@ -1,6 +1,6 @@
 package entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "operations_result_points")
@@ -14,11 +14,17 @@ public class Operations {
     private String operation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point1_id", nullable = false)
+    @JoinColumns({
+            @JoinColumn(name = "point1_function_id", referencedColumnName = "function_id"),
+            @JoinColumn(name = "point1_x_value", referencedColumnName = "x_value")
+    })
     private FunctionPoints point1;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point2_id")
+    @JoinColumns({
+            @JoinColumn(name = "point2_function_id", referencedColumnName = "function_id"),
+            @JoinColumn(name = "point2_x_value", referencedColumnName = "x_value")
+    })
     private FunctionPoints point2;
 
     @Column(name = "result_y", nullable = false)
