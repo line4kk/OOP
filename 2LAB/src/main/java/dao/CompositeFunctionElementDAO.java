@@ -80,6 +80,7 @@ public class CompositeFunctionElementDAO implements SearchableDAO<CompositeFunct
         }
     }
 
+    @Override
     public List<CompositeFunctionElement> search(CompositeFunctionElementSearchCriteria criteria) {
         if (criteria == null) {
             criteria = new CompositeFunctionElementSearchCriteria();

@@ -135,6 +135,7 @@ public class OperationResultPointDAO implements SearchableDAO<OperationResultPoi
         }
     }
 
+    @Override
     public List<OperationResultPoint> search(OperationResultPointSearchCriteria criteria) {
         if (criteria == null) {
             criteria = new OperationResultPointSearchCriteria();

@@ -174,6 +174,7 @@ public class UserDAO implements SearchableDAO<User, UserSearchCriteria> {
         }
     }
 
+    @Override
     public List<User> search(UserSearchCriteria criteria) {
         if (criteria == null) {
             criteria = new UserSearchCriteria();

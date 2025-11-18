@@ -126,6 +126,7 @@ public class FunctionPointDAO implements SearchableDAO<FunctionPoint, FunctionPo
         }
     }
 
+    @Override
     public List<FunctionPoint> search(FunctionPointSearchCriteria criteria) {
         if (criteria == null) {
             criteria = new FunctionPointSearchCriteria();

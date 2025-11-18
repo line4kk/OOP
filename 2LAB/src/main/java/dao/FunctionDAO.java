@@ -151,6 +151,7 @@ public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriter
         }
     }
 
+    @Override
     public List<Function> search(FunctionSearchCriteria criteria) {
         logger.info("Поиск функций по критериям: {}", criteria);
 
