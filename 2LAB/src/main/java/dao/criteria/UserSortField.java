@@ -1,4 +1,5 @@
 package dao.criteria;
 
-public interface UserSortField {
+public enum UserSortField {
+    ID, USERNAME, ROLE, FACTORY_TYPE
 }

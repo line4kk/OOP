@@ -1,5 +1,5 @@
 package dao.criteria;
 
-public enum SortField {
+public enum FunctionSortField {
     ID, NAME, TYPE, USER_ID
 }

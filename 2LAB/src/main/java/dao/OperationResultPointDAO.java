@@ -1,5 +1,7 @@
 package dao;
 
+import dao.criteria.OperationResultPointSearchCriteria;
+import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.OperationResultPoint;
 import org.slf4j.Logger;
@@ -10,8 +12,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class OperationResultPointDAO implements DAO<OperationResultPoint> {
+public class OperationResultPointDAO implements SearchableDAO<OperationResultPoint, OperationResultPointSearchCriteria> {
     private static final Logger logger = LoggerFactory.getLogger(OperationResultPointDAO.class);
 
     @Override
@@ -128,6 +132,80 @@ public class OperationResultPointDAO implements DAO<OperationResultPoint> {
         } catch (SQLException e) {
             logger.error("Ошибка при удалении результата операции {} для точек ({}, {})", operation, point1Id, point2Id, e);
             throw new DAOException("Ошибка при удалении данных из базы данных operations_result_points", e);
+        }
+    }
+
+    public List<OperationResultPoint> search(OperationResultPointSearchCriteria criteria) {
+        if (criteria == null) {
+            criteria = new OperationResultPointSearchCriteria();
+        }
+
+        logger.info("Поиск результатов операций по критериям: {}", criteria);
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT id, point1_id, point2_id, operation, result_y " +
+                        "FROM operations_result_points WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (criteria.getPoint1Id() != null) {
+            sql.append(" AND point1_id = ?");
+            params.add(criteria.getPoint1Id());
+        }
+        if (criteria.getPoint2Id() != null) {
+            sql.append(" AND point2_id = ?");
+            params.add(criteria.getPoint2Id());
+        }
+        if (criteria.getOperation() != null && !criteria.getOperation().isBlank()) {
+            sql.append(" AND operation = ?");
+            params.add(criteria.getOperation());
+        }
+        if (criteria.getResultYFrom() != null) {
+            sql.append(" AND result_y >= ?");
+            params.add(criteria.getResultYFrom());
+        }
+        if (criteria.getResultYTo() != null) {
+            sql.append(" AND result_y <= ?");
+            params.add(criteria.getResultYTo());
+        }
+
+        // Сортировка
+        String orderColumn = switch (criteria.getSortBy()) {
+            case POINT1_ID    -> "point1_id";
+            case POINT2_ID    -> "point2_id";
+            case OPERATION    -> "operation";
+            case RESULT_Y     -> "result_y";
+            default           -> "id";
+        };
+        sql.append(" ORDER BY ").append(orderColumn)
+                .append(" ").append(criteria.getDirection() == SortDirection.DESC ? "DESC" : "ASC");
+
+        logger.info("SQL: {}", sql);
+        logger.info("Параметры: {}", params);
+
+        Connection conn = DatabaseConnection.getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<OperationResultPoint> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new OperationResultPoint(
+                            rs.getLong("id"),
+                            rs.getLong("point1_id"),
+                            rs.getLong("point2_id"),
+                            rs.getString("operation"),
+                            rs.getDouble("result_y")
+                    ));
+                }
+                logger.info("Найдено результатов операций: {}", result.size());
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при поиске результатов операций", e);
+            throw new DAOException("Ошибка поиска результатов операций", e);
         }
     }
 }

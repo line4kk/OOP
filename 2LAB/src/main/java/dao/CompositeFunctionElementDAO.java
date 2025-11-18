@@ -1,5 +1,7 @@
 package dao;
 
+import dao.criteria.CompositeFunctionElementSearchCriteria;
+import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.CompositeFunctionElement;
 import org.slf4j.Logger;
@@ -13,7 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeFunctionElementDAO implements DAO<CompositeFunctionElement> {
+public class CompositeFunctionElementDAO implements SearchableDAO<CompositeFunctionElement, CompositeFunctionElementSearchCriteria> {
     private static final Logger logger = LoggerFactory.getLogger(CompositeFunctionElementDAO.class);
 
     @Override
@@ -78,7 +80,73 @@ public class CompositeFunctionElementDAO implements DAO<CompositeFunctionElement
         }
     }
 
+    public List<CompositeFunctionElement> search(CompositeFunctionElementSearchCriteria criteria) {
+        if (criteria == null) {
+            criteria = new CompositeFunctionElementSearchCriteria();
+        }
 
+        logger.info("Поиск элементов композиции по критериям: {}", criteria);
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT id, composite_id, function_order, function_id " +
+                        "FROM composite_function_elements WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (criteria.getCompositeId() != null) {
+            sql.append(" AND composite_id = ?");
+            params.add(criteria.getCompositeId());
+        }
+        if (criteria.getOrderFrom() != null) {
+            sql.append(" AND function_order >= ?");
+            params.add(criteria.getOrderFrom());
+        }
+        if (criteria.getOrderTo() != null) {
+            sql.append(" AND function_order <= ?");
+            params.add(criteria.getOrderTo());
+        }
+        if (criteria.getFunctionId() != null) {
+            sql.append(" AND function_id = ?");
+            params.add(criteria.getFunctionId());
+        }
+
+        // Сортировка (по умолчанию — по порядку в композиции)
+        String orderColumn = switch (criteria.getSortBy()) {
+            case COMPOSITE_ID    -> "composite_id";
+            case FUNCTION_ID     -> "function_id";
+            case FUNCTION_ORDER  -> "function_order";
+            default              -> "id";
+        };
+        sql.append(" ORDER BY ").append(orderColumn)
+                .append(" ").append(criteria.getDirection() == SortDirection.DESC ? "DESC" : "ASC");
+
+        logger.info("SQL: {}", sql);
+        logger.info("Параметры: {}", params);
+
+        Connection conn = DatabaseConnection.getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<CompositeFunctionElement> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new CompositeFunctionElement(
+                            rs.getLong("id"),
+                            rs.getLong("composite_id"),
+                            rs.getInt("function_order"),
+                            rs.getLong("function_id")
+                    ));
+                }
+                logger.info("Найдено элементов композиции: {}", result.size());
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при поиске элементов композиции", e);
+            throw new DAOException("Ошибка поиска элементов композиции", e);
+        }
+    }
 
 
 }

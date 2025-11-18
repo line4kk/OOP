@@ -1,5 +1,7 @@
 package dao;
 
+import dao.criteria.FunctionSearchCriteria;
+import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.Function;
 import org.slf4j.Logger;
@@ -10,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionDAO implements DAO<Function> {
+public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriteria> {
 
     private static final Logger logger = LoggerFactory.getLogger(FunctionDAO.class);
 
@@ -146,6 +148,63 @@ public class FunctionDAO implements DAO<Function> {
         } catch (SQLException e) {
             logger.error("Ошибка при удалении функций пользователя userId={}", userId, e);
             throw new DAOException("Ошибка при удалении данных из базы данных functions", e);
+        }
+    }
+
+    public List<Function> search(FunctionSearchCriteria criteria) {
+        logger.info("Поиск функций по критериям: {}", criteria);
+
+        StringBuilder sql = new StringBuilder("SELECT id, user_id, name, type, source FROM functions WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (criteria.getUserId() != null) {
+            sql.append(" AND user_id = ?");
+            params.add(criteria.getUserId());
+        }
+        if (criteria.getNameContains() != null && !criteria.getNameContains().isBlank()) {
+            sql.append(" AND name ILIKE ?");
+            params.add("%" + criteria.getNameContains() + "%");
+        }
+        if (criteria.getType() != null && !criteria.getType().isBlank()) {
+            sql.append(" AND type = ?");
+            params.add(criteria.getType());
+        }
+
+        String orderColumn = switch (criteria.getSortBy()) {
+            case NAME -> "name";
+            case TYPE -> "type";
+            case USER_ID -> "user_id";
+            default -> "id";
+        };
+        sql.append(" ORDER BY ").append(orderColumn)
+                .append(" ").append(criteria.getDirection() == SortDirection.DESC ? "DESC" : "ASC");
+
+        logger.info("SQL: {}", sql);
+        logger.info("Параметры: {}", params);
+
+        Connection conn = DatabaseConnection.getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<Function> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new Function(
+                            rs.getLong("id"),
+                            rs.getLong("user_id"),
+                            rs.getString("name"),
+                            rs.getString("type"),
+                            rs.getString("source")
+                    ));
+                }
+                logger.info("Найдено {} функций", result.size());
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при поиске функций", e);
+            throw new DAOException("Ошибка поиска функций", e);
         }
     }
 }

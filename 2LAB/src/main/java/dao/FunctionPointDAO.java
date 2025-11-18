@@ -1,5 +1,7 @@
 package dao;
 
+import dao.criteria.FunctionPointSearchCriteria;
+import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.FunctionPoint;
 import org.slf4j.Logger;
@@ -10,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionPointDAO implements DAO<FunctionPoint> {
+public class FunctionPointDAO implements SearchableDAO<FunctionPoint, FunctionPointSearchCriteria> {
     private static final Logger logger = LoggerFactory.getLogger(FunctionPointDAO.class);
 
     @Override
@@ -121,6 +123,77 @@ public class FunctionPointDAO implements DAO<FunctionPoint> {
         } catch (SQLException e) {
             logger.error("Ошибка при удалении точек для function_id={}", functionId, e);
             throw new DAOException("Ошибка при удалении данных из базы данных function_points", e);
+        }
+    }
+
+    public List<FunctionPoint> search(FunctionPointSearchCriteria criteria) {
+        if (criteria == null) {
+            criteria = new FunctionPointSearchCriteria();
+        }
+
+        logger.info("Поиск точек функции по критериям: {}", criteria);
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT id, function_id, x_value, y_value FROM function_points WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (criteria.getFunctionId() != null) {
+            sql.append(" AND function_id = ?");
+            params.add(criteria.getFunctionId());
+        }
+        if (criteria.getxFrom() != null) {
+            sql.append(" AND x_value >= ?");
+            params.add(criteria.getxFrom());
+        }
+        if (criteria.getxTo() != null) {
+            sql.append(" AND x_value <= ?");
+            params.add(criteria.getxTo());
+        }
+        if (criteria.getyFrom() != null) {
+            sql.append(" AND y_value >= ?");
+            params.add(criteria.getyFrom());
+        }
+        if (criteria.getyTo() != null) {
+            sql.append(" AND y_value <= ?");
+            params.add(criteria.getyTo());
+        }
+
+        // Сортировка
+        String orderColumn = switch (criteria.getSortBy()) {
+            case FUNCTION_ID -> "function_id";
+            case X_VALUE     -> "x_value";
+            case Y_VALUE     -> "y_value";
+            default          -> "id";
+        };
+        sql.append(" ORDER BY ").append(orderColumn)
+                .append(" ").append(criteria.getDirection() == SortDirection.DESC ? "DESC" : "ASC");
+
+        logger.info("SQL: {}", sql);
+        logger.info("Параметры: {}", params);
+
+        Connection conn = DatabaseConnection.getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<FunctionPoint> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new FunctionPoint(
+                            rs.getLong("id"),
+                            rs.getLong("function_id"),
+                            rs.getDouble("x_value"),
+                            rs.getDouble("y_value")
+                    ));
+                }
+                logger.info("Найдено точек: {}", result.size());
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при поиске точек функции", e);
+            throw new DAOException("Ошибка поиска точек функции", e);
         }
     }
 }

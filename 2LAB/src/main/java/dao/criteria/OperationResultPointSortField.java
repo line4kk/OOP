@@ -1,4 +1,9 @@
 package dao.criteria;
 
-public class OperationResultPointSortField {
+public enum OperationResultPointSortField {
+    ID,
+    POINT1_ID,
+    POINT2_ID,
+    OPERATION,
+    RESULT_Y
 }
