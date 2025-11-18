@@ -23,4 +23,5 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER after_point_update
 AFTER UPDATE ON function_points
+FOR EACH ROW
 EXECUTE FUNCTION delete_operation_result();

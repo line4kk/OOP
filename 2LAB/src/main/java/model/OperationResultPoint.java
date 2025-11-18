@@ -2,23 +2,24 @@ package model;
 
 public class OperationResultPoint {
     private long id;
-    private String operation;
     private long point1Id;
     private long point2Id;
+    private String operation;
     private double resultY;
 
-    public OperationResultPoint(long id, String operation, long point1Id, long point2Id, double resultY) {
+    public OperationResultPoint(long id, long point1Id, long point2Id, String operation, double resultY) {
         this.id = id;
-        this.operation = operation;
         this.point1Id = point1Id;
         this.point2Id = point2Id;
+        this.operation = operation;
         this.resultY = resultY;
     }
 
-    public OperationResultPoint(String operation, long point1Id, long point2Id) {
-        this.operation = operation;
+    public OperationResultPoint(long point1Id, long point2Id, String operation, double resultY) {
         this.point1Id = point1Id;
         this.point2Id = point2Id;
+        this.operation = operation;
+        this.resultY = resultY;
     }
 
     public long getId() {

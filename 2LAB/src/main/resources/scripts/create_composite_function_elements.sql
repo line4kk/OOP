@@ -5,5 +5,7 @@ CREATE TABLE composite_function_elements(
     function_id INT NOT NULL,
 
     FOREIGN KEY (composite_id) REFERENCES functions(id) ON DELETE CASCADE,
-    FOREIGN KEY (function_id) REFERENCES functions(id) ON DELETE RESTRICT
+    FOREIGN KEY (function_id) REFERENCES functions(id) ON DELETE RESTRICT,
+    UNIQUE(composite_id, function_order)
+
 );
