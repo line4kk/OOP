@@ -45,13 +45,6 @@ public class MultipleSearchService {
                 .orElse(List.of());
     }
 
-    public List<Operations> findOperationsByPoint(Long pointId) {
-        logger.debug("Множественный поиск операций по точке: {}", pointId);
-        return functionPointsRepository.findById(pointId)
-                .map(operationsRepository::findByPoint1)
-                .orElse(List.of());
-    }
-
     public List<Functions> findCompositeFunctions() {
         logger.debug("Множественный поиск композитных функций");
         return functionsRepository.findAll().stream()

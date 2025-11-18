@@ -166,7 +166,7 @@ public class ProductivityTest {
         time_measurement("points_findByFunction",
                 () -> functionPointsRepository.findByFunction(testFunction));
         time_measurement("points_updateYValue",
-                () -> {testPoint.setYValue(8888.0);
+                () -> {testPoint.setYValue(5555.0);
             functionPointsRepository.save(testPoint);
         });
         time_measurement("points_delete_by_functionId",
@@ -224,14 +224,14 @@ public class ProductivityTest {
     }
 
     private void saveResults() {
-        try (FileWriter writer = new FileWriter("productivity_results.csv")) {
+        try (FileWriter writer = new FileWriter("productivity_results.txt")) {
             writer.write('\uFEFF');
             for (String[] record : results) {
                 writer.write(String.join(",", record));
                 writer.write("\n");
             }
         } catch (IOException e) {
-            System.err.println("Error writing CSV: " + e.getMessage());
+            System.err.println("Error writing txt: " + e.getMessage());
         }
     }
 }

@@ -1,0 +1,16 @@
+﻿Sort_productivity,Time(ms)
+single_user_by_username,170,91
+single_user_by_id,99,41
+single_function_by_id,89,27
+single_operation_by_id,89,84
+single_composite_element_by_id,199,29
+multiple_all_users,186,28
+multiple_functions_by_user,189,80
+multiple_functions_by_type,120,70
+multiple_points_by_function,184,95
+multiple_composite_functions,220,54
+sorted_users_by_username,154,15
+sorted_functions_by_name,150,41
+sorted_functions_by_type,286,83
+sorted_points_by_x,180,52
+sorted_points_by_y,179,31

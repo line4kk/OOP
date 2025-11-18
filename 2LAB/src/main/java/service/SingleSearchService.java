@@ -27,14 +27,14 @@ public class SingleSearchService {
         return usersRepository.findByUsername(username);
     }
 
+    public Optional<Users> findUserById(Long id) {
+        logger.debug("Одиночный поиск пользователя по ID: {}", id);
+        return usersRepository.findById(id);
+    }
+
     public Optional<Functions> findFunctionById(Long id) {
         logger.debug("Одиночный поиск функции по ID: {}", id);
         return functionsRepository.findById(id);
-    }
-
-    public Optional<FunctionPoints> findPointById(Long id) {
-        logger.debug("Одиночный поиск точки по ID: {}", id);
-        return functionPointsRepository.findById(id);
     }
 
     public Optional<Operations> findOperationById(Long id) {
