@@ -1,11 +1,18 @@
 package entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.IdClass;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "function_points")
 @IdClass(FunctionPointsId.class)
 public class FunctionPoints {
@@ -28,21 +35,12 @@ public class FunctionPoints {
     @OneToMany(mappedBy = "point2", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Operations> operationsAsPoint2 = new ArrayList<>();
 
-    public FunctionPoints() {}
-
     public FunctionPoints(Functions function, Double xValue, Double yValue) {
         this.function = function;
         this.xValue = xValue;
         this.yValue = yValue;
     }
 
-    public Functions getFunction() { return function; }
-    public void setFunction(Functions function) { this.function = function; }
-
-    public Double getXValue() { return xValue; }
-    public void setXValue(Double xValue) { this.xValue = xValue; }
-
-    public Double getYValue() { return yValue; }
     public void setYValue(Double yValue) {
         if (this.yValue != null && !this.yValue.equals(yValue)) {
             this.operationsAsPoint1.clear();
@@ -50,8 +48,5 @@ public class FunctionPoints {
         }
         this.yValue = yValue;
     }
-
-    public List<Operations> getOperationsAsPoint1() { return operationsAsPoint1; }
-    public List<Operations> getOperationsAsPoint2() { return operationsAsPoint2; }
 
 }

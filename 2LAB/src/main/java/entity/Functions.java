@@ -1,10 +1,18 @@
 package entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "functions")
 public class Functions {
 
@@ -34,36 +42,10 @@ public class Functions {
     @OneToMany(mappedBy = "function", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CompositeFunctionElements> asElementInComposites = new ArrayList<>();
 
-    public Functions() {}
-
     public Functions(Users user, String name, String type, String source) {
         this.user = user;
         this.name = name;
         this.type = type;
         this.source = source;
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Users getUser() { return user; }
-    public void setUser(Users user) { this.user = user; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public String getSource() { return source; }
-    public void setSource(String source) { this.source = source; }
-
-    public List<FunctionPoints> getPoints() { return points; }
-    public void setPoints(List<FunctionPoints> points) { this.points = points; }
-
-    public List<CompositeFunctionElements> getCompositeElements() { return compositeElements; }
-    public void setCompositeElements(List<CompositeFunctionElements> compositeElements) { this.compositeElements = compositeElements; }
-
-    public List<CompositeFunctionElements> getAsElementInComposites() { return asElementInComposites; }
-    public void setAsElementInComposites(List<CompositeFunctionElements> asElementInComposites) { this.asElementInComposites = asElementInComposites; }
 }

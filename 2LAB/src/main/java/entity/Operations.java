@@ -1,8 +1,16 @@
 package entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "operations_result_points")
 public class Operations {
 
@@ -30,8 +38,6 @@ public class Operations {
     @Column(name = "result_y", nullable = false)
     private Double resultY;
 
-    public Operations() {}
-
     public Operations(String operation, FunctionPoints point1, Double resultY) {
         this.operation = operation;
         this.point1 = point1;
@@ -44,19 +50,4 @@ public class Operations {
         this.point2 = point2;
         this.resultY = resultY;
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getOperation() { return operation; }
-    public void setOperation(String operation) { this.operation = operation; }
-
-    public FunctionPoints getPoint1() { return point1; }
-    public void setPoint1(FunctionPoints point1) { this.point1 = point1; }
-
-    public FunctionPoints getPoint2() { return point2; }
-    public void setPoint2(FunctionPoints point2) { this.point2 = point2; }
-
-    public Double getResultY() { return resultY; }
-    public void setResultY(Double resultY) { this.resultY = resultY; }
 }
