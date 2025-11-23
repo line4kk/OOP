@@ -76,7 +76,37 @@ public class UserDAO implements SearchableDAO<User, UserSearchCriteria> {
             }
         } catch (SQLException e) {
             logger.error("Ошибка при получении строки User (без пароля) пользователя {}", username, e);
-            throw new DAOException("Ошибка при считывании данных из базы данных user", e);
+            throw new DAOException("Ошибка при считывании данных из базы данных user по username", e);
+        }
+    }
+
+    public User select(long userId) {
+        logger.info("Получение строки User (без пароля) из таблицы users по userId={}", userId);
+        Connection conn = DatabaseConnection.getConnection();
+        String sql = "SELECT id, username, role, factory_type FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, userId);
+
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                if (resultSet.next()) {
+                    User user = new User(
+                            resultSet.getLong("id"),
+                            resultSet.getString("username"),
+                            null,
+                            resultSet.getString("role"),
+                            resultSet.getString("factory_type")
+                    );
+                    logger.info("Успешно получена строка: {}", user);
+                    return user;
+                }
+                else {
+                    logger.info("Пользователь с userId = {} не найден", userId);
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при получении строки User (без пароля) пользователя с id = {}", userId, e);
+            throw new DAOException("Ошибка при считывании данных из базы данных user по id", e);
         }
     }
 

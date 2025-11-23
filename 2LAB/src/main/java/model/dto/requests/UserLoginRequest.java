@@ -1,5 +1,6 @@
 package model.dto.requests;
 
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,17 @@ public class UserLoginRequest {
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public User toEntity() {
+        logger.info("Преобразование UserLoginRequest → User: username={}", this.getUsername());
+        User user = new User(
+                this.getUsername(),
+                this.getPassword(),        // потом захешируется в сервисе
+                null,
+                null
+        );
+        return user;
+    }
 
     @Override
     public String toString() {
