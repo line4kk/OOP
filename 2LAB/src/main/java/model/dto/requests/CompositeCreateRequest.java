@@ -10,6 +10,15 @@ import java.util.List;
 public class CompositeCreateRequest {
     private static final Logger logger = LoggerFactory.getLogger(CompositeCreateRequest.class);
     private List<Long> functionIdsInOrder;
+    private String name;
+
+    @Override
+    public String toString() {
+        return "CompositeCreateRequest{" +
+                "functionIdsInOrder=" + functionIdsInOrder +
+                ", name='" + name + '\'' +
+                '}';
+    }
 
     public CompositeCreateRequest() {
         logger.info("Создан CompositeCreateRequest");
@@ -19,12 +28,17 @@ public class CompositeCreateRequest {
 
     public CompositeCreateRequest(List<Long> functionIdsInOrder) {
         this.functionIdsInOrder = functionIdsInOrder;
-        logger.info("Создан {}", toString());
+        logger.info("Создан {}", this);
     }
 
     public List<Long> getFunctionIdsInOrder() { return functionIdsInOrder; }
     public void setFunctionIdsInOrder(List<Long> functionIdsInOrder) { this.functionIdsInOrder = functionIdsInOrder; }
-
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
     public List<CompositeFunctionElement> toEntities(long compositeId) {
         logger.info("Преобразование CompositeCreateRequest → список CompositeFunctionElement для compositeId={}", compositeId);
         List<CompositeFunctionElement> elements = new ArrayList<>();
@@ -40,8 +54,6 @@ public class CompositeCreateRequest {
         logger.info("Созданы {} элементов композиции", elements.size());
         return elements;
     }
-    @Override
-    public String toString() {
-        return "CompositeCreateRequest{functionIdsInOrder=" + functionIdsInOrder + "}";
-    }
+
+
 }
