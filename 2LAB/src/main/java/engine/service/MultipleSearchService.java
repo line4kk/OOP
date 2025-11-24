@@ -34,6 +34,16 @@ public class MultipleSearchService {
         return user != null ? functionsRepository.findByUser(user) : new ArrayList<>();
     }
 
+    public List<Functions> findFunctionsByName(String name) {
+        logger.debug("Поиск функций по имени: {}", name);
+        return functionsRepository.findByName(name);
+    }
+
+    public List<Functions> findAllFunctions() {
+        logger.debug("Получение всех функций");
+        return functionsRepository.findAll();
+    }
+
     public List<Functions> findFunctionsByType(String type) {
         logger.debug("Множественный поиск функций по типу: {}", type);
         return functionsRepository.findByType(type);
