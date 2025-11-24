@@ -1,23 +1,20 @@
-package productivity;
+package engine.productivity;
 
-import entity.*;
+import engine.Application;
+import engine.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import repository.*;
-import service.*;
+import org.springframework.boot.test.context.SpringBootTest;
+import engine.repository.*;
+import engine.service.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = config.TestConfig.class, loader = AnnotationConfigContextLoader.class)
+@SpringBootTest(classes = Application.class)
 public class AllSortServiceTest {
 
     @Autowired private UsersRepository usersRepository;

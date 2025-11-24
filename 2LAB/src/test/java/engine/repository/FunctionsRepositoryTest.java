@@ -1,20 +1,17 @@
-package repository;
+package engine.repository;
 
-import config.TestConfig;
-import entity.Functions;
-import entity.Users;
+import engine.Application;
+import engine.entity.Functions;
+import engine.entity.Users;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
 @Transactional
+@SpringBootTest(classes = Application.class)
 class FunctionsRepositoryTest {
 
     @Autowired private FunctionsRepository funcRepo;

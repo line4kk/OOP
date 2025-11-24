@@ -1,7 +1,7 @@
-package repository;
+package engine.repository;
 
-import entity.Operations;
-import entity.FunctionPoints;
+import engine.entity.Operations;
+import engine.entity.FunctionPoints;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

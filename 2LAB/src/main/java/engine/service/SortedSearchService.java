@@ -1,15 +1,17 @@
-package service;
+package engine.service;
 
-import entity.*;
+import engine.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import repository.*;
+import engine.repository.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,42 +26,42 @@ public class SortedSearchService {
 
     public List<Users> findUsersSortedByUsername() {
         logger.debug("Поиск пользователей с сортировкой по username");
-        List<Users> users = usersRepository.findAll();
-        users.sort(Comparator.comparing(Users::getUsername));
+        List<Users> users = new ArrayList<>(usersRepository.findAll());
+        users.sort(Comparator.comparing(user -> user.getUsername()));
         return users;
     }
 
     public List<Functions> findFunctionsSortedByName() {
         logger.debug("Поиск функций с сортировкой по имени");
-        List<Functions> functions = functionsRepository.findAll();
-        functions.sort(Comparator.comparing(Functions::getName));
+        List<Functions> functions = new ArrayList<>(functionsRepository.findAll());
+        functions.sort(Comparator.comparing(function -> function.getName()));
         return functions;
     }
 
     public List<Functions> findFunctionsSortedByType() {
         logger.debug("Поиск функций с сортировкой по типу");
-        List<Functions> functions = functionsRepository.findAll();
-        functions.sort(Comparator.comparing(Functions::getType));
+        List<Functions> functions = new ArrayList<>(functionsRepository.findAll());
+        functions.sort(Comparator.comparing(function -> function.getType()));
         return functions;
     }
 
     public List<FunctionPoints> findPointsSortedByX(Long functionId) {
         logger.debug("Поиск точек с сортировкой по X: {}", functionId);
-        return findPointsByFunction(functionId).stream()
-                .sorted(Comparator.comparingDouble(FunctionPoints::getXValue))
-                .toList();
+        List<FunctionPoints> points = findPointsByFunction(functionId);
+        points.sort(Comparator.comparingDouble(point -> point.getXValue()));
+        return points;
     }
 
     public List<FunctionPoints> findPointsSortedByY(Long functionId) {
         logger.debug("Поиск точек с сортировкой по Y: {}", functionId);
-        return findPointsByFunction(functionId).stream()
-                .sorted(Comparator.comparingDouble(FunctionPoints::getYValue))
-                .toList();
+        List<FunctionPoints> points = findPointsByFunction(functionId);
+        points.sort(Comparator.comparingDouble(point -> point.getYValue()));
+        return points;
     }
 
     private List<FunctionPoints> findPointsByFunction(Long functionId) {
         return functionsRepository.findById(functionId)
-                .map(functionPointsRepository::findByFunction)
-                .orElse(List.of());
+                .map(function -> functionPointsRepository.findByFunction(function))
+                .orElse(Collections.emptyList());
     }
 }

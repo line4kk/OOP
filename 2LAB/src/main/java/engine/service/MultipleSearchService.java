@@ -1,14 +1,15 @@
-package service;
+package engine.service;
 
-import entity.*;
+import engine.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import repository.*;
+import engine.repository.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,7 +31,7 @@ public class MultipleSearchService {
     public List<Functions> findFunctionsByUser(String username) {
         logger.debug("Множественный поиск функций пользователя: {}", username);
         Users user = usersRepository.findByUsername(username);
-        return user != null ? functionsRepository.findByUser(user) : List.of();
+        return user != null ? functionsRepository.findByUser(user) : new ArrayList<>();
     }
 
     public List<Functions> findFunctionsByType(String type) {
@@ -42,14 +43,13 @@ public class MultipleSearchService {
         logger.debug("Множественный поиск точек функции: {}", functionId);
         return functionsRepository.findById(functionId)
                 .map(functionPointsRepository::findByFunction)
-                .orElse(List.of());
+                .orElse(new ArrayList<>());
     }
 
     public List<Functions> findCompositeFunctions() {
         logger.debug("Множественный поиск композитных функций");
         return functionsRepository.findAll().stream()
                 .filter(f -> "composite".equals(f.getSource()))
-                .toList();
+                .collect(java.util.stream.Collectors.toList());
     }
-
 }
