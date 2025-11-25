@@ -2,6 +2,7 @@ package dao;
 
 import dao.criteria.FunctionPointSearchCriteria;
 import dao.criteria.SortDirection;
+import exceptions.AlreadyExistsException;
 import exceptions.DAOException;
 import model.FunctionPoint;
 import org.slf4j.Logger;
@@ -28,6 +29,54 @@ public class FunctionPointDAO implements SearchableDAO<FunctionPoint, FunctionPo
         } catch (SQLException e) {
             logger.error("Ошибка при вставке данных в таблицу function_points", e);
             throw new DAOException("Ошибка при вставке данных в базу данных function_points", e);
+        }
+    }
+
+    public void insertList(List<FunctionPoint> points) {
+        logger.info("Вставка строк (транзакция) в таблицу function_points: {}", points);
+        Connection conn = DatabaseConnection.getConnection();
+        String sql = "INSERT INTO function_points (function_id, x_value, y_value) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            for (FunctionPoint point : points) {
+                pstmt.setLong(1, point.getFunctionId());
+                pstmt.setDouble(2, point.getXValue());
+                pstmt.setDouble(3, point.getYValue());
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {  // ДОБАВЛЯЮ id ТОЧЕК В ИСХОДНЫЙ СПИСОК points
+                int index = 0;
+                while (rs.next()) {
+                    long generatedId = rs.getLong(1);
+                    points.get(index).setId(generatedId);
+                    index++;
+                }
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                // Нарушение UNIQUE constraint
+                logger.error("Попытка вставки дубликата (function_id, x_value)", e);
+                throw new AlreadyExistsException("Добавление существующей точки");
+            } else if ("23502".equals(e.getSQLState())) {
+                // Нарушение NOT NULL
+                logger.error("Попытка вставки null в NOT NULL поле", e);
+                throw new IllegalArgumentException("Bad Request");
+            }
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                logger.error("Ошибка при откате транзакции", ex);
+            }
+            logger.error("Ошибка при вставке данных (транзакция) в таблицу function_points", e);
+            throw new DAOException("Ошибка при вставке данных (транзакция) в базу данных function_points", e);
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error("Ошибка при восстановлении автокоммита", e);
+            }
         }
     }
 
