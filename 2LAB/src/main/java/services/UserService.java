@@ -11,6 +11,8 @@ import model.enums.FactoryType;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.NoSuchElementException;
+
 
 public class UserService extends AbstractService<UserDAO> {
 
@@ -20,12 +22,22 @@ public class UserService extends AbstractService<UserDAO> {
 
     public UserResponse getUserInfo(String username) {
         logger.debug("Получение информации о пользователе с username = {}", username);
-        return UserResponse.from(dao.select(username));
+        User user = dao.select(username);
+        if (user != null) {
+            return UserResponse.from(user);
+        }
+        logger.debug("Пользователь {} не найден", username);
+        throw new NoSuchElementException("Информация о пользователе не найдена");
     }
 
     public UserResponse getUserInfo(long userId) {
-        logger.debug("Получение информации о пользователе с id = {}", userId);
-        return UserResponse.from(dao.select(userId));
+        logger.debug("Получение информации о пользователе с userId = {}", userId);
+        User user = dao.select(userId);
+        if (user != null) {
+            return UserResponse.from(user);
+        }
+        logger.debug("Пользователь userId = {} не найден", userId);
+        throw new NoSuchElementException("Информация о пользователе не найдена");
     }
 
     public UserResponse setFactoryType(long userId, String newFactoryType) {
