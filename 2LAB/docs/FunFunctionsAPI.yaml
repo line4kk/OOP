@@ -3,10 +3,11 @@ x-stoplight:
   id: hqyokaz0z1t4f
 info:
   title: FunFunctionsAPI
-  version: '1.0'
+  version: '2.0'
   summary: API для работы с табулированными функциями
   contact:
     name: ''
+  description: ''
 servers:
   - url: 'http://localhost:3000'
 paths:
@@ -177,6 +178,55 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FunctionCreateRequest'
+  /functions/analytical_functions:
+    get:
+      summary: Get all user analytic functions
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunctionsResponse'
+        '403':
+          description: Forbidden
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: get-functions-analytic_functions
+      x-stoplight:
+        id: 0hsdj99jwb722
+      security:
+        - basicAuth: []
+    post:
+      summary: Create a composite analytical function
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunctionResponse'
+        '400':
+          description: Ошибка. Некорректные данные.
+        '403':
+          description: Forbidden
+        '409':
+          description: Композиция с таким именем уже существует
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: post-analytical_functions
+      x-stoplight:
+        id: ygbwou8tjvz0k
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompositeCreateRequest'
+      security:
+        - basicAuth: []
+    parameters: []
   '/functions/{function_id}':
     get:
       summary: Get function info
@@ -199,12 +249,65 @@ paths:
         id: aomwwew77a0lh
       security:
         - basicAuth: []
+      parameters: []
     parameters:
       - schema:
           type: integer
         name: function_id
         in: path
         required: true
+    patch:
+      summary: Update function
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunctionResponse'
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Функция не найдена
+        '409':
+          description: Функция с таким именем уже существует
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: patch-functions-function_id
+      x-stoplight:
+        id: s1fasxxo69ue4
+      security:
+        - basicAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionCreateRequest'
+    delete:
+      summary: Delete function
+      tags: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Функция не найдена
+        '405':
+          description: 'Невозможно удалить функцию, так как она используется в композиции'
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: delete-functions-function_id
+      x-stoplight:
+        id: d9ps2nhhfez8h
+      security:
+        - basicAuth: []
+      requestBody:
+        content: {}
   '/functions/{function_id}/points':
     get:
       summary: Get function points
@@ -280,6 +383,82 @@ paths:
                 $ref: '#/components/schemas/PointRequest'
                 x-stoplight:
                   id: mvanif6s7iim5
+    delete:
+      summary: Delete all function points
+      tags: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Функция не найдена
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: delete-functions-function_id-points
+      x-stoplight:
+        id: axw5y8spennr5
+      security:
+        - basicAuth: []
+  '/functions/{function_id}/points/{point_id}':
+    parameters:
+      - schema:
+          type: integer
+        name: function_id
+        in: path
+        required: true
+      - schema:
+          type: integer
+        name: point_id
+        in: path
+        required: true
+    patch:
+      summary: Update point
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointResponse'
+        '400':
+          description: 'Ошибка. Проверьте, что у каждой точки есть значения x и y'
+        '403':
+          description: Forbidden
+        '404':
+          description: Точка не найдена
+        '409':
+          description: Добавление существующей точки
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: patch-functions-function_id-points
+      x-stoplight:
+        id: swjx2v49a3cz2
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointRequest'
+    delete:
+      summary: Delete point
+      tags: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Точка не найдена
+        5XX:
+          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
+      operationId: delete-functions-function_id-point
+      x-stoplight:
+        id: lls1u5c2zi3ea
+      security:
+        - basicAuth: []
   '/functions/{function_id}/sampling':
     parameters:
       - schema:
@@ -317,68 +496,8 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                analytical_function_id:
-                  type: integer
-                  x-stoplight:
-                    id: 08mzjn2o5e4em
-                  format: int64
-                  example: 66746832
-                x_from:
-                  type: number
-                  x-stoplight:
-                    id: 3lwm5h2uikaaa
-                  format: double
-                  example: 10
-                x_to:
-                  type: number
-                  x-stoplight:
-                    id: 4p5n24uxveix7
-                  format: double
-                  example: 15
-                count:
-                  type: integer
-                  x-stoplight:
-                    id: fdskr26cjg8c5
-                  example: 5
-            examples:
-              Example 1:
-                value:
-                  analytical_function_id: 66746832
-                  x_from: 10
-                  x_to: 15
-                  count: 5
-  /analytical_functions:
-    post:
-      summary: Create a composite analytical function
-      tags: []
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FunctionResponse'
-        '400':
-          description: Ошибка. Некорректные данные.
-        '403':
-          description: Forbidden
-        '409':
-          description: Композиция с таким именем уже существует
-        5XX:
-          description: Ошибка со стороны сервера. Обратитесь к разработчикам.
-      operationId: post-analytical_functions
-      x-stoplight:
-        id: ygbwou8tjvz0k
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompositeCreateRequest'
-      security:
-        - basicAuth: []
-  /operations/results:
+              $ref: '#/components/schemas/FunctionSamplingRequest'
+  /operation:
     post:
       summary: Get result of operation
       tags: []
@@ -388,7 +507,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResultResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointResponse'
+                  x-stoplight:
+                    id: t6ncx617b7enf
         '400':
           description: Некорректные входные данные
         '403':
@@ -407,6 +530,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OperationRequest'
+      security:
+        - basicAuth: []
+    parameters: []
 components:
   schemas:
     UserLoginRequest:
@@ -509,6 +635,55 @@ components:
         - name: MyFunction
           type: linked_list_tabulated
           source: base
+    FunctionSamplingRequest:
+      title: FunctionSamplingRequest
+      x-stoplight:
+        id: uigdm5hfxiziz
+      type: object
+      required:
+        - function_id
+        - analytical_function_id
+        - x_from
+        - x_to
+        - count
+      properties:
+        function_id:
+          type: integer
+          x-stoplight:
+            id: vpftwlmjbhryc
+          format: int64
+          example: 52356
+        analytical_function_id:
+          type: integer
+          x-stoplight:
+            id: cubg5684ophy0
+          format: int64
+          example: 858176996
+        x_from:
+          type: number
+          x-stoplight:
+            id: u383m0os6owdf
+          format: double
+          example: 3
+        x_to:
+          type: number
+          x-stoplight:
+            id: w1d6pp7ps2xj3
+          format: double
+          example: 10
+        count:
+          type: integer
+          x-stoplight:
+            id: 8rv6goriuwumu
+          minimum: 2
+          example: 20
+      examples:
+        - name: FunctionCreatedBySampling
+          analytical_function_id: 858176996
+          x_from: 3
+          x_to: 10
+          count: 20
+      description: Модель для создания функции с помощью второго конструктора
     PointRequest:
       title: PointRequest
       x-stoplight:
@@ -539,29 +714,25 @@ components:
       x-stoplight:
         id: pf86tw54k5mag
       type: object
-      examples:
-        - point1_id: 1
-          point2_id: 2
-          operation: add
       description: Данные для получения результата операции
       required:
-        - point1_id
-        - point2_id
+        - function1_id
+        - function2_id
         - operation
       properties:
-        point1_id:
+        function1_id:
           type: integer
           x-stoplight:
             id: vx2zgz7zt109g
           format: int64
-          example: 1
-        point2_id:
+          example: 7657
+        function2_id:
           type:
             - integer
             - 'null'
           x-stoplight:
             id: 19ra67zhd8x2a
-          example: 2
+          example: 2643
         operation:
           x-stoplight:
             id: t9lye4nzefgd6
@@ -571,14 +742,26 @@ components:
             - multiplication
             - division
             - derive
+      examples:
+        - function1_id: 1
+          function2_id: 2
+          operation: add
     CompositeCreateRequest:
       title: CompositeCreateRequest
       x-stoplight:
         id: 3md96ym0excge
       type: object
       description: Данные для создания композиции функции
+      examples:
+        - function_ids_in_order:
+            - 4254
+            - 4255
+        - function_ids_in_order:
+            - 4254
+            - 4255
       required:
         - function_ids_in_order
+        - name
       properties:
         function_ids_in_order:
           type: array
@@ -596,13 +779,6 @@ components:
           x-stoplight:
             id: hkpb82w0vbvib
           example: MyComposition
-      examples:
-        - function_ids_in_order:
-            - 4254
-            - 4255
-        - function_ids_in_order:
-            - 4254
-            - 4255
     UserResponse:
       title: UserResponse
       x-stoplight:
@@ -734,25 +910,6 @@ components:
           format: double
           example: 641.4
       description: Данные о точке
-    OperationResultResponse:
-      title: OperationResultResponse
-      x-stoplight:
-        id: 4umpbfy96rv9r
-      type: object
-      examples:
-        - result_y: 5815.1
-      description: 'Вычисленное значение операции, если оно вычислено'
-      required:
-        - result_y
-      properties:
-        result_y:
-          type:
-            - number
-            - 'null'
-          x-stoplight:
-            id: hfupg1jjrl9w8
-          example: 5815.1
-          format: double
     CompositeElementResponse:
       title: CompositeElementResponse
       x-stoplight:
