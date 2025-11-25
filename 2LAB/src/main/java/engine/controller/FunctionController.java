@@ -1,18 +1,25 @@
 package engine.controller;
 
 import engine.dto.*;
+import engine.entity.CompositeFunctionElements;
 import engine.entity.Functions;
 import engine.entity.FunctionPoints;
+import engine.entity.Users;
+import engine.repository.FunctionsRepository;
+import engine.repository.FunctionPointsRepository;
 import engine.service.SingleSearchService;
 import engine.service.MultipleSearchService;
 import engine.service.SortedSearchService;
+import functions.*;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +31,8 @@ public class FunctionController {
     @Autowired private SingleSearchService singleSearchService;
     @Autowired private MultipleSearchService multipleSearchService;
     @Autowired private SortedSearchService sortedSearchService;
+    @Autowired private FunctionsRepository functionsRepository;
+    @Autowired private FunctionPointsRepository functionPointsRepository;
 
     @GetMapping("/functions")
     public ResponseEntity<?> getAllUserFunctions() {
@@ -63,7 +72,16 @@ public class FunctionController {
                 return ResponseEntity.status(409).body("Функция с таким именем уже существует");
             }
 
-            FunctionResponse response = new FunctionResponse(1L, request.getName(), request.getType(), request.getSource());
+            List<Users> users = multipleSearchService.findAllUsers();
+            if (users.isEmpty()) {
+                return ResponseEntity.status(400).body("Нет пользователей в системе");
+            }
+
+            Users currentUser = users.get(0);
+            Functions newFunction = new Functions(currentUser, request.getName(), request.getType(), request.getSource());
+            Functions savedFunction = functionsRepository.save(newFunction);
+
+            FunctionResponse response = mapToFunctionResponse(savedFunction);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при создании функции", e);
@@ -150,43 +168,16 @@ public class FunctionController {
             }
 
             List<PointResponse> response = pointsRequest.stream()
-                    .map(point -> new PointResponse(1L, point.getX(), point.getY()))
+                    .map(point -> {
+                        FunctionPoints newPoint = new FunctionPoints(function, point.getX(), point.getY());
+                        FunctionPoints savedPoint = functionPointsRepository.save(newPoint);
+                        return new PointResponse(savedPoint.getFunction().getId(), savedPoint.getXValue(), savedPoint.getYValue());
+                    })
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при добавлении точек", e);
-            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
-        }
-    }
-
-    @PostMapping("/functions/{function_id}/sampling")
-    public ResponseEntity<?> addFunctionPointsBySampling(
-            @PathVariable("function_id") Long functionId,
-            @RequestBody SamplingRequest request) {
-        try {
-            logger.info("POST /functions/{}/sampling - сэмплирование: от {} до {}, {} точек",
-                    functionId, request.getXFrom(), request.getXTo(), request.getCount());
-
-            if (functionId == null || functionId <= 0) {
-                return ResponseEntity.status(400).body("Некорректный ID функции");
-            }
-
-            if (request.getXFrom() == null || request.getXTo() == null) {
-                return ResponseEntity.status(400).body("Некорректные данные: x_from и x_to обязательны");
-            }
-            if (request.getXFrom() >= request.getXTo()) {
-                return ResponseEntity.status(400).body("x_from должен быть меньше x_to");
-            }
-            if (request.getCount() == null || request.getCount() <= 0) {
-                return ResponseEntity.status(400).body("Количество точек должно быть положительным числом");
-            }
-
-            PointResponse point1 = new PointResponse(1L, request.getXFrom(), 0.0);
-            PointResponse point2 = new PointResponse(2L, request.getXTo(), 1.0);
-            return ResponseEntity.ok(List.of(point1, point2));
-        } catch (Exception e) {
-            logger.error("Ошибка при сэмплировании", e);
             return ResponseEntity.status(500).body("Ошибка со стороны сервера");
         }
     }
@@ -214,6 +205,7 @@ public class FunctionController {
                         source.equals("composite")
         );
     }
+
 
     @Data
     public static class SamplingRequest {

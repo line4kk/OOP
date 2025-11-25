@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import engine.repository.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -61,5 +62,19 @@ public class MultipleSearchService {
         return functionsRepository.findAll().stream()
                 .filter(f -> "composite".equals(f.getSource()))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<CompositeFunctionElements> findCompositeFunctionElementsByCompositeId(Long compositeFunctionId) {
+        logger.debug("Поиск элементов композитной функции: {}", compositeFunctionId);
+        return functionsRepository.findById(compositeFunctionId)
+                .map(compositeFunctionElementsRepository::findByComposite)
+                .orElse(new ArrayList<>());
+    }
+
+    public List<CompositeFunctionElements> findCompositeFunctionElementsOrdered(Long compositeFunctionId) {
+        logger.debug("Поиск упорядоченных элементов композитной функции: {}", compositeFunctionId);
+        List<CompositeFunctionElements> elements = findCompositeFunctionElementsByCompositeId(compositeFunctionId);
+        elements.sort(Comparator.comparing(CompositeFunctionElements::getFunctionOrder));
+        return elements;
     }
 }

@@ -2,6 +2,9 @@ package engine.controller;
 
 import engine.dto.*;
 import lombok.Data;
+import engine.repository.UsersRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import engine.entity.Users;
 import engine.service.SingleSearchService;
 import engine.service.MultipleSearchService;
@@ -21,6 +24,8 @@ public class UserController {
 
     @Autowired private SingleSearchService singleSearchService;
     @Autowired private MultipleSearchService multipleSearchService;
+    @Autowired private UsersRepository usersRepository;
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @GetMapping("/users")
     public ResponseEntity<?> getCurrentUser() {
@@ -46,8 +51,16 @@ public class UserController {
                     (!request.getFactoryType().equals("linked_list") && !request.getFactoryType().equals("array"))) {
                 return ResponseEntity.status(400).body("Некорректный тип фабрики");
             }
+            List<Users> users = multipleSearchService.findAllUsers();
+            if (users.isEmpty()) {
+                return ResponseEntity.status(404).body("Пользователь не найден");
+            }
 
-            UserResponse response = new UserResponse(1L, "currentUser", "user", request.getFactoryType());
+            Users user = users.get(0);
+            user.setFactoryType(request.getFactoryType());
+            Users updatedUser = usersRepository.save(user);
+
+            UserResponse response = mapToUserResponse(updatedUser);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при обновлении типа фабрики", e);
@@ -68,7 +81,7 @@ public class UserController {
             }
 
             Users user = singleSearchService.findUserByUsername(request.getUsername());
-            if (user != null) {
+            if (user != null && passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
                 UserResponse response = mapToUserResponse(user);
                 return ResponseEntity.ok(response);
             }
@@ -84,7 +97,6 @@ public class UserController {
         try {
             logger.info("POST /users/register - регистрация пользователя: {}", request.getUsername());
 
-            // Валидация имени пользователя
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
                 return ResponseEntity.status(400).body("Имя пользователя не может быть пустым");
             }
@@ -116,7 +128,11 @@ public class UserController {
                 return ResponseEntity.status(409).body("Имя пользователя уже занято");
             }
 
-            UserResponse response = new UserResponse(1L, request.getUsername(), request.getRole(), request.getFactoryType());
+            String hashedPassword = passwordEncoder.encode(request.getPassword());
+            Users newUser = new Users(request.getUsername(), hashedPassword, request.getRole(), request.getFactoryType());
+            Users savedUser = usersRepository.save(newUser);
+
+            UserResponse response = mapToUserResponse(savedUser);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при регистрации", e);
