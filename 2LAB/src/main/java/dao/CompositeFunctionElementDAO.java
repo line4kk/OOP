@@ -4,6 +4,7 @@ import dao.criteria.CompositeFunctionElementSearchCriteria;
 import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.CompositeFunctionElement;
+import model.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.DatabaseConnection;
@@ -77,6 +78,20 @@ public class CompositeFunctionElementDAO implements SearchableDAO<CompositeFunct
         catch (SQLException e) {
             logger.error("Ошибка при получении элементов композиции {}", compositeFunctionId, e);
             throw new DAOException("Ошибка при считывании данных из базы данных composite_function_elements", e);
+        }
+    }
+
+    public boolean isUsedInComposite(long functionId) {
+        String sql = "SELECT 1 FROM composite_function_elements WHERE function_id = ? LIMIT 1";
+        Connection conn = DatabaseConnection.getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, functionId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при проверке использования функции id={} в композиции", functionId, e);
+            throw new DAOException("Ошибка проверки использования функции", e);
         }
     }
 

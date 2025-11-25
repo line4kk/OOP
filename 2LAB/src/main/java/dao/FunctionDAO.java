@@ -85,6 +85,39 @@ public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriter
         }
     }
 
+    public List<Function> selectByUserId(long userId, String type) {
+        logger.info("Получение всех функций типа {} пользователя userId={}", type, userId);
+
+        Connection conn = DatabaseConnection.getConnection();
+        String sql = "SELECT * FROM functions WHERE user_id = ? AND type = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, userId);
+            pstmt.setString(2, type);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<Function> list = new ArrayList<>();
+
+                while (rs.next()) {
+                    list.add(new Function(
+                            rs.getLong("id"),
+                            rs.getLong("user_id"),
+                            rs.getString("name"),
+                            rs.getString("type"),
+                            rs.getString("source")
+                    ));
+                }
+
+                logger.info("Найдено {} функций с типом {} у пользователя {}", list.size(), type, userId);
+                return list;
+            }
+
+        } catch (SQLException e) {
+            logger.error("Ошибка при получении функций типа {} по userId={}", type, userId, e);
+            throw new DAOException("Ошибка при считывании данных из базы данных functions", e);
+        }
+    }
+
     public Function selectById(long id) {
         logger.info("Получение функции id={}", id);
 
@@ -148,6 +181,76 @@ public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriter
         } catch (SQLException e) {
             logger.error("Ошибка при удалении функций пользователя userId={}", userId, e);
             throw new DAOException("Ошибка при удалении данных из базы данных functions", e);
+        }
+    }
+
+    public Function insertWithElements(Function compositeFunction, List<Long> orderedFunctionIds) {
+        logger.info("Транзакционная вставка композиционной функции: {}", compositeFunction);
+
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            String sql = """
+                INSERT INTO functions (user_id, name, type, source) 
+                VALUES (?, ?, ?, ?) 
+                RETURNING id
+                """;
+
+            long compositeId;
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setLong(1, compositeFunction.getUserId());
+                pstmt.setString(2, compositeFunction.getName());
+                pstmt.setString(3, compositeFunction.getType());
+                pstmt.setString(4, compositeFunction.getSource());
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new DAOException("Не удалось получить id после вставки функции", null);
+                    }
+                    compositeId = rs.getLong(1);
+                    compositeFunction.setId(compositeId);
+                }
+            }
+
+            CompositeFunctionElementDAO elementDAO = new CompositeFunctionElementDAO();
+            String insertElementSql = """
+                INSERT INTO composite_function_elements (composite_id, function_order, function_id) 
+                VALUES (?, ?, ?)
+                """;
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertElementSql)) {
+                int order = 1;
+                for (Long functionId : orderedFunctionIds) {
+                    pstmt.setLong(1, compositeId);
+                    pstmt.setInt(2, order++);
+                    pstmt.setLong(3, functionId);
+                    pstmt.addBatch();
+                }
+                int[] results = pstmt.executeBatch();
+                logger.info("Успешно вставлено {} элементов композиции для функции id={}", results.length, compositeId);
+            }
+
+            conn.commit();
+            logger.info("Композиционная функция успешно создана в транзакции: id={}", compositeId);
+            return compositeFunction;
+
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+                logger.warn("Откат транзакции при создании композиционной функции", e);
+            } catch (SQLException ex) {
+                logger.error("Ошибка при откате транзакции", ex);
+            }
+            logger.error("Ошибка при транзакционной вставке композиционной функции", e);
+            throw new DAOException("Ошибка при создании композиционной функции", e);
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error("Ошибка при восстановлении autoCommit", e);
+            }
         }
     }
 
