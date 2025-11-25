@@ -1,11 +1,14 @@
 package functions.factory;
 
+import functions.MathFunction;
 import functions.StrictTabulatedFunction;
 import functions.TabulatedFunction;
 import functions.UnmodifiableTabulatedFunction;
 
 public interface TabulatedFunctionFactory {
     TabulatedFunction create(double[] xValues, double[] yValues);
+
+    TabulatedFunction create(MathFunction source, double xFrom, double xTo, int count);
 
     default TabulatedFunction createStrict(double[] xValues, double[] yValues) {
         TabulatedFunction function = create(xValues, yValues);
