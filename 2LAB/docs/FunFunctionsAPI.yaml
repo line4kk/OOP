@@ -112,7 +112,7 @@ paths:
                     role: user
                     factory_type: linked_list
         '400':
-          description: Bad Request
+          description: Ошибка. Некорректные данные
         '409':
           description: Имя пользователя уже занято
         5XX:
@@ -245,7 +245,7 @@ paths:
         in: path
         required: true
     post:
-      summary: Add function point
+      summary: Add function points
       tags: []
       responses:
         '200':
@@ -253,13 +253,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PointResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PointResponse'
+                  x-stoplight:
+                    id: 20rwsha0vhgwi
         '400':
           description: 'Ошибка. Проверьте, что у каждой точки есть значения x и y'
         '403':
           description: Forbidden
         '409':
-          description: Такая точка уже существует
+          description: Добавление существующей точки
         5XX:
           description: Ошибка со стороны сервера. Обратитесь к разработчикам.
       operationId: post-functions-function_id-points
@@ -271,7 +275,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PointRequest'
+              type: array
+              items:
+                $ref: '#/components/schemas/PointRequest'
+                x-stoplight:
+                  id: mvanif6s7iim5
   '/functions/{function_id}/sampling':
     parameters:
       - schema:
@@ -451,8 +459,10 @@ components:
           type: string
           x-stoplight:
             id: abg4cjatfv24y
-          example: '123456'
+          example: '12345678'
           format: password
+          minLength: 8
+          maxLength: 64
         role:
           x-stoplight:
             id: to98g2mvewiig
