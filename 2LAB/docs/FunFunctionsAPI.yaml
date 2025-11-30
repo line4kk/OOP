@@ -3,7 +3,7 @@ x-stoplight:
   id: hqyokaz0z1t4f
 info:
   title: FunFunctionsAPI
-  version: '2.0'
+  version: '2.1'
   summary: API для работы с табулированными функциями
   contact:
     name: ''
@@ -35,7 +35,7 @@ paths:
         - basicAuth: []
   /users/settings/factory_types:
     parameters: []
-    patch:
+    put:
       summary: Edit factory_type
       tags: []
       responses:
@@ -256,7 +256,7 @@ paths:
         name: function_id
         in: path
         required: true
-    patch:
+    put:
       summary: Update function
       tags: []
       responses:
@@ -412,7 +412,7 @@ paths:
         name: point_id
         in: path
         required: true
-    patch:
+    put:
       summary: Update point
       tags: []
       responses:

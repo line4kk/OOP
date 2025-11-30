@@ -5,7 +5,7 @@ import model.dto.requests.FunctionCreateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractService<T> {
+public abstract class AbstractService<T extends DAO<?>> {
     protected final T dao;
     protected final Logger logger;
 

@@ -6,10 +6,8 @@ import dao.FunctionPointDAO;
 import exceptions.AlreadyExistsException;
 import exceptions.MethodNotAllowedException;
 import model.Function;
-import model.FunctionPoint;
 import model.dto.requests.*;
 import model.dto.responses.FunctionResponse;
-import model.dto.responses.PointResponse;
 import model.enums.FunctionType;
 import model.enums.SourceType;
 
@@ -48,50 +46,6 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
 
         dao.insert(function);
         return FunctionResponse.from(function);
-    }
-
-    public List<FunctionResponse> getUserAnalyticFunctions(long userId) {
-        logger.info("Запрос на получение всех аналитических функций пользователя userId={}", userId);
-
-        List<Function> analyticFunctions = dao.selectByUserId(userId, "analytical");
-
-        List<FunctionResponse> response = analyticFunctions.stream()
-                .map(FunctionResponse::from)
-                .toList();
-
-        logger.info("У пользователя {} найдено {} аналитических функций", userId, response.size());
-        return response;
-    }
-
-    public FunctionResponse createCompositeFunction(long userId, CompositeCreateRequest request) {
-        logger.info("Создание композиционной аналитической функции пользователем {}: {}", userId, request);
-
-        if (request.getName() == null || request.getName().isBlank()) {
-            throw new IllegalArgumentException("Ошибка. Некорректные данные.");
-        }
-        if (request.getFunctionIdsInOrder() == null || request.getFunctionIdsInOrder().isEmpty()) {
-            throw new IllegalArgumentException("Ошибка. Некорректные данные.");
-        }
-
-        for (Long funcId : request.getFunctionIdsInOrder()) {
-            Function f = dao.selectById(funcId);
-            if (f == null) {
-                throw new IllegalArgumentException("Ошибка. Некорректные данные.");
-            }
-        }
-
-        boolean nameExists = dao.selectByUserId(userId).stream()
-                .anyMatch(f -> f.getName().equals(request.getName()));
-        if (nameExists) {
-            throw new AlreadyExistsException("Композиция с таким именем уже существует");
-        }
-
-        Function compositeFunction = new Function(userId, request.getName(), "analytical", "composite");
-
-        Function created = dao.insertWithElements(compositeFunction, request.getFunctionIdsInOrder());
-
-        logger.info("Композиционная функция успешно создана: id={}, имя='{}'", created.getId(), created.getName());
-        return FunctionResponse.from(created);
     }
 
     public FunctionResponse getFunction(long functionId) {
@@ -163,84 +117,5 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
         dao.deleteById(functionId);
 
         logger.info("Функция id={} успешно удалена пользователем {}", functionId, userId);
-    }
-
-    public List<PointResponse> getFunctionPoints(long functionId) {
-        if (dao.selectById(functionId) == null) {
-            throw new NoSuchElementException("Функция не найдена");
-        }
-        List<FunctionPoint> functionPoints = pointDAO.selectByFunctionId(functionId);
-
-        return PointResponse.fromList(functionPoints);
-    }
-
-    public List<PointResponse> addFunctionPoints(long functionId, List<PointRequest> pointRequests) {
-        List<FunctionPoint> points = new ArrayList<>();
-        for (PointRequest pr : pointRequests) {
-            points.add(pr.toEntity(functionId));
-        }
-        pointDAO.insertList(points);
-        // Ошибки обрабатываются прям ↑↑↑ там. (прошу прощения, я устал)
-        return PointResponse.fromList(points);
-    }
-
-    public void deleteAllFunctionPoints(long userId, long functionId) {
-        logger.info("Запрос на удаление всех точек функции id={} от пользователя userId={}", functionId, userId);
-
-        Function function = dao.selectById(functionId);
-        if (function == null) {
-            logger.info("Попытка удалить точки несуществующей функции id={}", functionId);
-            throw new NoSuchElementException("Функция не найдена");
-        }
-
-        pointDAO.deleteByFunctionId(functionId);
-
-        logger.info("Успешно удалены все точки функции id={} (пользователь {})", functionId, userId);
-    }
-
-    public PointResponse updateFunctionPointY(long userId, long functionId, long pointId, PointRequest pointRequest) {
-        logger.info("Обновление Y-значения точки id={} функции id={} пользователем {}", pointId, functionId, userId);
-
-        if (pointRequest.getY() == null) {
-            logger.warn("Попытка обновить точку без указания Y: {}", pointRequest);
-            throw new IllegalArgumentException("Ошибка. Проверьте, что у каждой точки есть значения x и y");
-        }
-
-        Function function = dao.selectById(functionId);
-        if (function == null) {
-            logger.info("Функция id={} не найдена при обновлении точки", functionId);
-            throw new NoSuchElementException("Функция не найдена");
-        }
-
-        FunctionPoint point = pointDAO.selectById(pointId);
-        if (point == null) {
-            logger.info("Точка с id={} не найдена", pointId);
-            throw new NoSuchElementException("Точка не найдена");
-        }
-
-        pointDAO.updateYValue(functionId, point.getXValue(), pointRequest.getY());
-        point.setYValue(pointRequest.getY());
-
-        logger.info("Y-значение точки id={} успешно обновлено: y = {}", pointId, pointRequest.getY());
-        return PointResponse.from(point);
-    }
-
-    public void deleteFunctionPoint(long userId, long functionId, long pointId) {
-        logger.info("Удаление точки id={} из функции id={} пользователем {}", pointId, functionId, userId);
-
-        Function function = dao.selectById(functionId);
-        if (function == null) {
-            throw new NoSuchElementException("Функция не найдена");
-        }
-
-        FunctionPoint point = pointDAO.selectById(pointId);
-        if (point == null) {
-            logger.info("Попытка удалить несуществующую точку id={}", pointId);
-            throw new NoSuchElementException("Точка не найдена");
-        }
-
-        pointDAO.deleteById(pointId);
-
-        logger.info("Точка id={} успешно удалена из функции id={}", pointId, functionId);
     }
 }
