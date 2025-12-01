@@ -1,27 +1,42 @@
 package engine.controller;
 
-import engine.dto.*;
-import engine.entity.Functions;
+import engine.dto.FunctionCreateRequest;
+import engine.dto.FunctionResponse;
+import engine.dto.FunctionsResponse;
+import engine.dto.PointRequest;
+import engine.dto.PointResponse;
 import engine.entity.FunctionPoints;
+import engine.entity.Functions;
 import engine.entity.Users;
 import engine.service.MultipleSearchService;
 import engine.service.SingleSearchService;
 import engine.util.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
 public class FunctionController {
 
     private static final Logger logger = LoggerFactory.getLogger(FunctionController.class);
+    private static final Set<String> VALID_FUNCTION_TYPES = Set.of("linked_list_tabulated", "array_tabulated", "analytical");
+    private static final Set<String> VALID_FUNCTION_SOURCES = Set.of("base", "operation", "composite");
 
     @Autowired private SingleSearchService singleSearchService;
     @Autowired private MultipleSearchService multipleSearchService;
@@ -32,17 +47,15 @@ public class FunctionController {
         try {
             logger.info("GET /functions - получение всех функций пользователя");
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            List<Functions> functions = multipleSearchService.findFunctionsByUser(current_user.getUsername());
-            FunctionsResponse response = new FunctionsResponse();
-            response.setFunctions(functions.stream()
-                    .map(this::mapToFunctionResponse)
-                    .collect(Collectors.toList()));
-
+            List<Functions> functions = multipleSearchService.findFunctionsByUser(currentUser.getUsername());
+            FunctionsResponse response = new FunctionsResponse(
+                    functions.stream().map(this::mapToFunctionResponse).collect(Collectors.toList())
+            );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при получении функций", e);
@@ -55,21 +68,19 @@ public class FunctionController {
         try {
             logger.info("GET /functions/analytical_functions - получение аналитических функций пользователя");
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            List<Functions> all_functions = multipleSearchService.findFunctionsByUser(current_user.getUsername());
-            List<Functions> analytic_functions = all_functions.stream()
+            List<Functions> analyticFunctions = multipleSearchService.findFunctionsByUser(currentUser.getUsername())
+                    .stream()
                     .filter(f -> "analytical".equals(f.getType()))
                     .collect(Collectors.toList());
 
-            FunctionsResponse response = new FunctionsResponse();
-            response.setFunctions(analytic_functions.stream()
-                    .map(this::mapToFunctionResponse)
-                    .collect(Collectors.toList()));
-
+            FunctionsResponse response = new FunctionsResponse(
+                    analyticFunctions.stream().map(this::mapToFunctionResponse).collect(Collectors.toList())
+            );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при получении аналитических функций", e);
@@ -82,29 +93,28 @@ public class FunctionController {
         try {
             logger.info("POST /functions - создание функции: {}", request.getName());
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            if (request.getName() == null || request.getName().trim().isEmpty()) {
-                return ResponseEntity.status(400).body("Имя функции не может быть пустым");
+            if (request.getName() == null || request.getName().trim().isEmpty() ||
+                    request.getType() == null || request.getSource() == null ||
+                    !VALID_FUNCTION_TYPES.contains(request.getType()) ||
+                    !VALID_FUNCTION_SOURCES.contains(request.getSource())) {
+                return ResponseEntity.status(400).body("Bad Request");
             }
 
-            List<Functions> existing_functions = multipleSearchService.findFunctionsByName(request.getName());
-            boolean name_exists = existing_functions.stream()
-                    .anyMatch(f -> f.getUser().getId().equals(current_user.getId()));
-
-            if (name_exists) {
+            boolean nameExists = multipleSearchService.findFunctionsByName(request.getName()).stream()
+                    .anyMatch(f -> f.getUser().getId().equals(currentUser.getId()));
+            if (nameExists) {
                 return ResponseEntity.status(409).body("Функция с таким именем уже существует");
             }
 
-            Functions new_function = new Functions(current_user, request.getName(),
-                    request.getType(), request.getSource());
-            Functions saved_function = singleSearchService.saveFunction(new_function);
-
-            FunctionResponse response = mapToFunctionResponse(saved_function);
-            return ResponseEntity.ok(response);
+            Functions savedFunction = singleSearchService.saveFunction(
+                    new Functions(currentUser, request.getName(), request.getType(), request.getSource())
+            );
+            return ResponseEntity.ok(mapToFunctionResponse(savedFunction));
         } catch (Exception e) {
             logger.error("Ошибка при создании функции", e);
             return ResponseEntity.status(500).body("Ошибка со стороны сервера");
@@ -112,21 +122,21 @@ public class FunctionController {
     }
 
     @GetMapping("/functions/{function_id}")
-    public ResponseEntity<?> getFunctionInfo(@PathVariable("function_id") Long function_id) {
+    public ResponseEntity<?> getFunctionById(@PathVariable("function_id") Long functionId) {
         try {
-            logger.info("GET /functions/{} - получение информации о функции", function_id);
+            logger.info("GET /functions/{} - получение информации о функции", functionId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Functions function = singleSearchService.findFunctionById(function_id).orElse(null);
-            if (function == null) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -138,42 +148,42 @@ public class FunctionController {
     }
 
     @PutMapping("/functions/{function_id}")
-    public ResponseEntity<?> updateFunction(
-            @PathVariable("function_id") Long function_id,
-            @RequestBody FunctionCreateRequest request) {
+    public ResponseEntity<?> updateFunction(@PathVariable("function_id") Long functionId,
+                                            @RequestBody FunctionCreateRequest request) {
         try {
-            logger.info("PUT /functions/{} - обновление функции", function_id);
+            logger.info("PUT /functions/{} - обновление функции", functionId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Functions function = singleSearchService.findFunctionById(function_id).orElse(null);
-            if (function == null) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            if (request.getName() != null && !request.getName().trim().isEmpty()) {
-                List<Functions> existing_functions = multipleSearchService.findFunctionsByName(request.getName());
-                boolean name_exists = existing_functions.stream()
-                        .anyMatch(f -> f.getUser().getId().equals(current_user.getId()) &&
-                                !f.getId().equals(function_id));
-
-                if (name_exists) {
-                    return ResponseEntity.status(409).body("Функция с таким именем уже существует");
-                }
-                function.setName(request.getName());
+            if (request.getName() == null || request.getType() == null || request.getSource() == null ||
+                    !VALID_FUNCTION_TYPES.contains(request.getType()) ||
+                    !VALID_FUNCTION_SOURCES.contains(request.getSource())) {
+                return ResponseEntity.status(400).body("Bad Request");
             }
 
-            Functions updated_function = singleSearchService.saveFunction(function);
+            boolean nameExists = multipleSearchService.findFunctionsByName(request.getName()).stream()
+                    .anyMatch(f -> f.getUser().getId().equals(currentUser.getId()) && !f.getId().equals(functionId));
+            if (nameExists) {
+                return ResponseEntity.status(409).body("Функция с таким именем уже существует");
+            }
 
-            FunctionResponse response = mapToFunctionResponse(updated_function);
-            return ResponseEntity.ok(response);
+            function.setName(request.getName());
+            function.setType(request.getType());
+            function.setSource(request.getSource());
+
+            return ResponseEntity.ok(mapToFunctionResponse(singleSearchService.saveFunction(function)));
         } catch (Exception e) {
             logger.error("Ошибка при обновлении функции", e);
             return ResponseEntity.status(500).body("Ошибка со стороны сервера");
@@ -181,26 +191,28 @@ public class FunctionController {
     }
 
     @DeleteMapping("/functions/{function_id}")
-    public ResponseEntity<?> deleteFunction(@PathVariable("function_id") Long function_id) {
+    public ResponseEntity<?> deleteFunction(@PathVariable("function_id") Long functionId) {
         try {
-            logger.info("DELETE /functions/{} - удаление функции", function_id);
+            logger.info("DELETE /functions/{} - удаление функции", functionId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Functions function = singleSearchService.findFunctionById(function_id).orElse(null);
-            if (function == null) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
+            if (singleSearchService.isFunctionUsedInComposition(function)) {
+                return ResponseEntity.status(405).body("Невозможно удалить функцию, так как она используется в композиции");
+            }
 
-            singleSearchService.deleteFunction(function_id);
-
+            singleSearchService.deleteFunction(functionId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Ошибка при удалении функции", e);
@@ -209,26 +221,26 @@ public class FunctionController {
     }
 
     @GetMapping("/functions/{function_id}/points")
-    public ResponseEntity<?> getFunctionPoints(@PathVariable("function_id") Long function_id) {
+    public ResponseEntity<?> getFunctionPoints(@PathVariable("function_id") Long functionId) {
         try {
-            logger.info("GET /functions/{}/points - получение точек функции", function_id);
+            logger.info("GET /functions/{}/points - получение точек функции", functionId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Functions function = singleSearchService.findFunctionById(function_id).orElse(null);
-            if (function == null) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            List<FunctionPoints> points = multipleSearchService.findPointsByFunction(function_id);
-            List<PointResponse> response = points.stream()
+            List<PointResponse> response = multipleSearchService.findPointsByFunction(functionId).stream()
+                    .sorted(Comparator.comparing(FunctionPoints::getId))
                     .map(this::mapToPointResponse)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(response);
@@ -239,46 +251,49 @@ public class FunctionController {
     }
 
     @PostMapping("/functions/{function_id}/points")
-    public ResponseEntity<?> addFunctionPoints(
-            @PathVariable("function_id") Long function_id,
-            @RequestBody List<PointRequest> points_request) {
+    public ResponseEntity<?> addFunctionPoints(@PathVariable("function_id") Long functionId,
+                                               @RequestBody List<PointRequest> pointRequests) {
         try {
-            logger.info("POST /functions/{}/points - добавление {} точек", function_id, points_request.size());
+            logger.info("POST /functions/{}/points - добавление точек", functionId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Optional<Functions> function_opt = singleSearchService.findFunctionById(function_id);
-            if (function_opt.isEmpty()) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-            Functions function = function_opt.get();
-            if (function == null) {
-                return ResponseEntity.status(404).body("Функция не найдена");
-            }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            if (points_request == null || points_request.isEmpty()) {
+            if (pointRequests == null || pointRequests.isEmpty()) {
                 return ResponseEntity.status(400).body("Список точек не может быть пустым");
             }
 
-            List<PointResponse> response = points_request.stream()
-                    .map(point -> {
-                        FunctionPoints new_point = new FunctionPoints(function, point.getX(), point.getY());
+            Set<Double> newXValues = new HashSet<>();
+            for (PointRequest point : pointRequests) {
+                if (point.getX() == null || point.getY() == null) {
+                    return ResponseEntity.status(400).body("Ошибка. Проверьте, что у каждой точки есть значения x и y");
+                }
+                if (!newXValues.add(point.getX())) {
+                    return ResponseEntity.status(409).body("Добавление существующей точки");
+                }
+                if (singleSearchService.findFunctionPointByX(functionId, point.getX()).isPresent()) {
+                    return ResponseEntity.status(409).body("Добавление существующей точки");
+                }
+            }
 
-                        FunctionPoints saved_point = singleSearchService.saveFunctionPoint(new_point);
-                        return new PointResponse(
-                                generatePointId(saved_point),
-                                saved_point.getX_value(),
-                                saved_point.getY_value()
-                        );
-                    })
-                    .collect(Collectors.toList());
+            List<PointResponse> response = new ArrayList<>();
+            for (PointRequest point : pointRequests) {
+                FunctionPoints savedPoint = singleSearchService.saveFunctionPoint(
+                        new FunctionPoints(function, point.getX(), point.getY())
+                );
+                response.add(mapToPointResponse(savedPoint));
+            }
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -287,30 +302,105 @@ public class FunctionController {
         }
     }
 
-    @DeleteMapping("/functions/{function_id}/points")
-    public ResponseEntity<?> deleteAllFunctionPoints(@PathVariable("function_id") Long function_id) {
+    @PutMapping("/functions/{function_id}/points/{point_id}")
+    public ResponseEntity<?> updateFunctionPoint(@PathVariable("function_id") Long functionId,
+                                                 @PathVariable("point_id") Long pointId,
+                                                 @RequestBody PointRequest pointRequest) {
         try {
-            logger.info("DELETE /functions/{}/points - удаление всех точек функции", function_id);
+            logger.info("PUT /functions/{}/points/{} - обновление точки", functionId, pointId);
 
-            Users current_user = securityUtils.getCurrentUser();
-            if (current_user == null) {
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            Optional<Functions> function_opt = singleSearchService.findFunctionById(function_id);
-            if (function_opt.isEmpty()) {
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
-            Functions function = function_opt.get();
-            if (function == null) {
-                return ResponseEntity.status(404).body("Функция не найдена");
-            }
-
-            if (!function.getUser().getId().equals(current_user.getId())) {
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            List<FunctionPoints> points = multipleSearchService.findPointsByFunction(function_id);
+            Optional<FunctionPoints> pointOpt = singleSearchService.findFunctionPointByFunction(pointId, functionId);
+            if (pointOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Точка не найдена");
+            }
+
+            if (pointRequest.getX() == null || pointRequest.getY() == null) {
+                return ResponseEntity.status(400).body("Ошибка. Проверьте, что у каждой точки есть значения x и y");
+            }
+
+            Optional<FunctionPoints> duplicate = singleSearchService.findFunctionPointByX(functionId, pointRequest.getX());
+            if (duplicate.isPresent() && !duplicate.get().getId().equals(pointId)) {
+                return ResponseEntity.status(409).body("Добавление существующей точки");
+            }
+
+            FunctionPoints point = pointOpt.get();
+            point.setX_value(pointRequest.getX());
+            point.setYValue(pointRequest.getY());
+
+            return ResponseEntity.ok(mapToPointResponse(singleSearchService.saveFunctionPoint(point)));
+        } catch (Exception e) {
+            logger.error("Ошибка при обновлении точки", e);
+            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
+        }
+    }
+
+    @DeleteMapping("/functions/{function_id}/points/{point_id}")
+    public ResponseEntity<?> deleteFunctionPoint(@PathVariable("function_id") Long functionId,
+                                                 @PathVariable("point_id") Long pointId) {
+        try {
+            logger.info("DELETE /functions/{}/points/{} - удаление точки", functionId, pointId);
+
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция не найдена");
+            }
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            Optional<FunctionPoints> pointOpt = singleSearchService.findFunctionPointByFunction(pointId, functionId);
+            if (pointOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Точка не найдена");
+            }
+
+            singleSearchService.deleteFunctionPoint(pointOpt.get());
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Ошибка при удалении точки функции", e);
+            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
+        }
+    }
+
+    @DeleteMapping("/functions/{function_id}/points")
+    public ResponseEntity<?> deleteAllFunctionPoints(@PathVariable("function_id") Long functionId) {
+        try {
+            logger.info("DELETE /functions/{}/points - удаление всех точек функции", functionId);
+
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            Optional<Functions> functionOpt = singleSearchService.findFunctionById(functionId);
+            if (functionOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция не найдена");
+            }
+            Functions function = functionOpt.get();
+            if (!function.getUser().getId().equals(currentUser.getId())) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            List<FunctionPoints> points = multipleSearchService.findPointsByFunction(functionId);
             for (FunctionPoints point : points) {
                 singleSearchService.deleteFunctionPoint(point);
             }
@@ -322,22 +412,11 @@ public class FunctionController {
         }
     }
 
-    private Long generatePointId(FunctionPoints point) {
-        if (point.getFunction() == null || point.getX_value() == null) {
-            return 0L;
-        }
-        long functionId = point.getFunction().getId();
-        double xValue = point.getX_value();
-        long xBits = Double.doubleToLongBits(xValue);
-        long id = (functionId << 32) ^ (xBits >>> 32) ^ (xBits & 0xFFFFFFFFL);
-        return id & Long.MAX_VALUE;
-    }
-
     private FunctionResponse mapToFunctionResponse(Functions function) {
-        return new FunctionResponse(function.getId(), function.getName(),
-                function.getType(), function.getSource());
+        return new FunctionResponse(function.getId(), function.getName(), function.getType(), function.getSource());
     }
 
     private PointResponse mapToPointResponse(FunctionPoints point) {
-        return new PointResponse(generatePointId(point), point.getX_value(), point.getY_value());    }
+        return new PointResponse(point.getId(), point.getX_value(), point.getY_value());
+    }
 }

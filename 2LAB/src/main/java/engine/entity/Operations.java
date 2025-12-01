@@ -18,17 +18,11 @@ public class Operations {
     private String operation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "point1_function_id", referencedColumnName = "function_id"),
-            @JoinColumn(name = "point1_x_value", referencedColumnName = "x_value")
-    })
+    @JoinColumn(name = "point1_id")
     private FunctionPoints point1;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "point2_function_id", referencedColumnName = "function_id"),
-            @JoinColumn(name = "point2_x_value", referencedColumnName = "x_value")
-    })
+    @JoinColumn(name = "point2_id")
     private FunctionPoints point2;
 
     @Column(name = "result_y", nullable = false)

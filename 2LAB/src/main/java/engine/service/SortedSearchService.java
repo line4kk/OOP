@@ -63,6 +63,6 @@ public class SortedSearchService {
         if (functionId == null || !functionsRepository.existsById(functionId)) {
             return Collections.emptyList();
         }
-        return functionPointsRepository.findByFunctionId(functionId);
+        return functionPointsRepository.findByFunction_Id(functionId);
     }
 }

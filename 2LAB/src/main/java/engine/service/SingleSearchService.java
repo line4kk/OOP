@@ -80,6 +80,21 @@ public class SingleSearchService {
         return functionPointsRepository.save(point);
     }
 
+    public Optional<FunctionPoints> findFunctionPoint(Long pointId) {
+        logger.debug("Поиск точки функции по ID: {}", pointId);
+        return functionPointsRepository.findById(pointId);
+    }
+
+    public Optional<FunctionPoints> findFunctionPointByFunction(Long pointId, Long functionId) {
+        logger.debug("Поиск точки {} для функции {}", pointId, functionId);
+        return functionPointsRepository.findByIdAndFunction_Id(pointId, functionId);
+    }
+
+    public Optional<FunctionPoints> findFunctionPointByX(Long functionId, Double xValue) {
+        logger.debug("Поиск точки функции {} по x={}", functionId, xValue);
+        return functionPointsRepository.findByFunctionIdAndX(functionId, xValue);
+    }
+
     @Transactional
     public void deleteFunctionPoint(FunctionPoints point) {
         logger.debug("Удаление точки функции ID: {}, x: {}", point.getFunction().getId(), point.getX_value());
@@ -90,5 +105,9 @@ public class SingleSearchService {
     public CompositeFunctionElements saveCompositeFunctionElement(CompositeFunctionElements element) {
         logger.debug("Сохранение элемента композитной функции");
         return compositeFunctionElementsRepository.save(element);
+    }
+
+    public boolean isFunctionUsedInComposition(Functions function) {
+        return !compositeFunctionElementsRepository.findByFunction(function).isEmpty();
     }
 }

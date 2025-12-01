@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class FunctionSamplingRequest {
 
+    @JsonProperty("function_id")
+    private Long function_id;
+
     @JsonProperty("analytical_function_id")
     private Long analytical_function_id;
 

@@ -10,16 +10,19 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "function_points")
-@IdClass(FunctionPointsId.class)
+@Table(name = "function_points", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_function_point_x", columnNames = {"function_id", "x_value"})
+})
 public class FunctionPoints {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "function_id", nullable = false)
     private Functions function;
 
-    @Id
     @Column(name = "x_value", nullable = false)
     private Double x_value;
 
