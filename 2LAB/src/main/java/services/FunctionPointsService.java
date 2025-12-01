@@ -2,8 +2,17 @@ package services;
 
 import dao.FunctionDAO;
 import dao.FunctionPointDAO;
+import dao.UserDAO;
+import registry.AnalyticalFunctionRegistry;
+import functions.MathFunction;
+import functions.TabulatedFunction;
+import functions.factory.ArrayTabulatedFunctionFactory;
+import functions.factory.LinkedListTabulatedFunctionFactory;
+import functions.factory.TabulatedFunctionFactory;
 import model.Function;
 import model.FunctionPoint;
+import model.User;
+import model.dto.requests.FunctionSamplingRequest;
 import model.dto.requests.PointRequest;
 import model.dto.responses.PointResponse;
 
@@ -13,6 +22,9 @@ import java.util.NoSuchElementException;
 
 public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
     private final FunctionDAO functionsDAO = new FunctionDAO();
+    private final UserDAO userDAO = new UserDAO();
+    private final AnalyticalFunctionsService analyticalFunctionsService = new AnalyticalFunctionsService();
+
     public FunctionPointsService() {
         super(new FunctionPointDAO());
     }
@@ -34,6 +46,77 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
         dao.insertList(points);
         // Ошибки обрабатываются прям ↑↑↑ там. (прошу прощения, я устал)
         return PointResponse.fromList(points);
+    }
+
+    public List<PointResponse> addFunctionPointsBySampling(FunctionSamplingRequest request) {
+        logger.info("Создание точек для функции {} через табулирование {}", request.getFunctionId(), request);
+
+        validateSamplingRequest(request);
+
+        Function function = functionsDAO.selectById(request.getFunctionId());
+        if (function == null) {
+            throw new NoSuchElementException("Функция не найдена");
+        }
+
+        List<String> analyticalFunctions = analyticalFunctionsService.toAnalyticalFunctionNames(
+                request.getAnalyticalFunctionId()
+        );
+        MathFunction composedFunction = composeAnalyticalFunction(analyticalFunctions);
+
+        TabulatedFunctionFactory factory = resolveFactory(function.getUserId());
+        TabulatedFunction tabulatedFunction = factory.create(
+                composedFunction,
+                request.getXFrom(),
+                request.getXTo(),
+                request.getCount()
+        );
+
+        List<FunctionPoint> points = new ArrayList<>();
+        for (int i = 0; i < tabulatedFunction.getCount(); i++) {
+            points.add(new FunctionPoint(
+                    request.getFunctionId(),
+                    tabulatedFunction.getX(i),
+                    tabulatedFunction.getY(i)
+            ));
+        }
+
+        dao.insertList(points);
+        return PointResponse.fromList(points);
+    }
+
+    private void validateSamplingRequest(FunctionSamplingRequest request) {
+        if (request == null || request.getFunctionId() == 0 || request.getAnalyticalFunctionId() == 0
+                || request.getXFrom() == null || request.getXTo() == null || request.getCount() == null) {
+            throw new IllegalArgumentException("Ошибка. Некорректные данные.");
+        }
+        if (request.getCount() <= 1) {
+            throw new IllegalArgumentException("Количество точек должно быть больше 1");
+        }
+    }
+
+    private MathFunction composeAnalyticalFunction(List<String> functionNames) {
+        if (functionNames == null || functionNames.isEmpty()) {
+            throw new IllegalArgumentException("Не указаны аналитические функции для табулирования");
+        }
+
+        MathFunction result = AnalyticalFunctionRegistry.getFunction(functionNames.get(0));
+        for (int i = 1; i < functionNames.size(); i++) {
+            result = result.andThen(AnalyticalFunctionRegistry.getFunction(functionNames.get(i)));
+        }
+        return result;
+    }
+
+    private TabulatedFunctionFactory resolveFactory(long userId) {
+        User user = userDAO.select(userId);
+        if (user == null) {
+            throw new NoSuchElementException("Пользователь не найден");
+        }
+
+        return switch (user.getFactoryType()) {
+            case null, "array" -> new ArrayTabulatedFunctionFactory();
+            case "linked_list" -> new LinkedListTabulatedFunctionFactory();
+            default -> throw new IllegalArgumentException("Некорректный тип фабрики: " + user.getFactoryType());
+        };
     }
 
     public void deleteAllFunctionPoints(long userId, long functionId) {
