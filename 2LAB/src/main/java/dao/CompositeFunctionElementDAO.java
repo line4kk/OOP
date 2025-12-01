@@ -55,7 +55,7 @@ public class CompositeFunctionElementDAO implements SearchableDAO<CompositeFunct
     public List<CompositeFunctionElement> selectAll(long compositeFunctionId) {
         logger.info("Получение всех элементов композиции {}", compositeFunctionId);
         Connection conn = DatabaseConnection.getConnection();
-        String sql = "SELECT * FROM composite_function_elements WHERE composite_id = ?";
+        String sql = "SELECT * FROM composite_function_elements WHERE composite_id = ? ORDER BY function_order";
         List<CompositeFunctionElement> elements = new ArrayList<>();
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

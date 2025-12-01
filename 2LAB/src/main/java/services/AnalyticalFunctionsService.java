@@ -1,14 +1,19 @@
 package services;
 
+import dao.CompositeFunctionElementDAO;
 import dao.FunctionDAO;
 import exceptions.AlreadyExistsException;
+import model.CompositeFunctionElement;
 import model.Function;
 import model.dto.requests.CompositeCreateRequest;
 import model.dto.responses.FunctionResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnalyticalFunctionsService extends AbstractService<FunctionDAO> {
+    private final CompositeFunctionElementDAO compositeFunctionElementDAO = new CompositeFunctionElementDAO();
+
     public AnalyticalFunctionsService() {
         super(new FunctionDAO());
     }
@@ -55,6 +60,31 @@ public class AnalyticalFunctionsService extends AbstractService<FunctionDAO> {
 
         logger.info("Композиционная функция успешно создана: id={}, имя='{}'", created.getId(), created.getName());
         return FunctionResponse.from(created);
+    }
+
+    // Получаем id аналитической функции и представляем ее в виде имен классов функций, которые используются в ней
+    public List<String> toAnalyticalFunctionNames(long id) {
+        Function function = dao.selectById(id);
+        if (!function.getType().equals("analytical")) {
+            logger.error("Передана не аналитическая функция: {}", function);
+            throw new IllegalArgumentException("Передана не аналитическая функция");
+        }
+
+        List<String> array = new ArrayList<>();
+        if (function.getSource().equals("base")) {
+            array.add(function.getName());
+        }
+        else if (function.getSource().equals("composite")) {
+            List<CompositeFunctionElement> compositeElements = compositeFunctionElementDAO.selectAll(id);
+            for (CompositeFunctionElement element : compositeElements) {
+                array.addAll(toAnalyticalFunctionNames(element.getFunctionId()));
+            }
+        }
+        else {
+            logger.error("Некорректный источник - {} - функции {}", function.getSource(), function);
+            throw new IllegalArgumentException("Некорректные данные.");
+        }
+        return array;
     }
 
 }
