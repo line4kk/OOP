@@ -48,20 +48,21 @@ public class SortedSearchService {
     public List<FunctionPoints> findPointsSortedByX(Long functionId) {
         logger.debug("Поиск точек с сортировкой по X: {}", functionId);
         List<FunctionPoints> points = findPointsByFunction(functionId);
-        points.sort(Comparator.comparingDouble(point -> point.getXValue()));
+        points.sort(Comparator.comparingDouble(point -> point.getX_value()));
         return points;
     }
 
     public List<FunctionPoints> findPointsSortedByY(Long functionId) {
         logger.debug("Поиск точек с сортировкой по Y: {}", functionId);
         List<FunctionPoints> points = findPointsByFunction(functionId);
-        points.sort(Comparator.comparingDouble(point -> point.getYValue()));
+        points.sort(Comparator.comparingDouble(point -> point.getY_value()));
         return points;
     }
 
     private List<FunctionPoints> findPointsByFunction(Long functionId) {
-        return functionsRepository.findById(functionId)
-                .map(function -> functionPointsRepository.findByFunction(function))
-                .orElse(Collections.emptyList());
+        if (functionId == null || !functionsRepository.existsById(functionId)) {
+            return Collections.emptyList();
+        }
+        return functionPointsRepository.findByFunctionId(functionId);
     }
 }

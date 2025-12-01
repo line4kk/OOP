@@ -52,9 +52,7 @@ public class MultipleSearchService {
 
     public List<FunctionPoints> findPointsByFunction(Long functionId) {
         logger.debug("Множественный поиск точек функции: {}", functionId);
-        return functionsRepository.findById(functionId)
-                .map(functionPointsRepository::findByFunction)
-                .orElse(new ArrayList<>());
+        return functionPointsRepository.findByFunctionId(functionId);
     }
 
     public List<Functions> findCompositeFunctions() {

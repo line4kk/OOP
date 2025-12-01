@@ -27,7 +27,7 @@ class FunctionPointsRepositoryTest {
         FunctionPoints point = new FunctionPoints(func, 1.0, 10.0);
         FunctionPoints saved = pointsRepo.save(point);
         assertNotNull(saved.getFunction());
-        assertEquals(1.0, saved.getXValue());
+        assertEquals(1.0, saved.getX_value());
     }
 
     @Test void testFindByFunction() {
@@ -35,7 +35,7 @@ class FunctionPointsRepositoryTest {
         Functions func = funcRepo.save(new Functions(user, "func", "linked_list_tabulated", "base"));
         pointsRepo.save(new FunctionPoints(func, 1.0, 10.0));
         pointsRepo.save(new FunctionPoints(func, 2.0, 20.0));
-        assertEquals(2, pointsRepo.findByFunction(func).size());
+        assertEquals(2, pointsRepo.findByFunctionId(func.getId()).size());
     }
 
     @Test void testDelete() {
@@ -44,8 +44,8 @@ class FunctionPointsRepositoryTest {
         FunctionPoints point = pointsRepo.save(new FunctionPoints(func, 3.0, 30.0));
 
         pointsRepo.delete(point);
-        List<FunctionPoints> pointsAfterDelete = pointsRepo.findByFunction(func);
-        assertTrue(pointsAfterDelete.stream().noneMatch(p -> p.getXValue().equals(3.0)));
+        List<FunctionPoints> pointsAfterDelete = pointsRepo.findByFunctionId(func.getId());
+        assertTrue(pointsAfterDelete.stream().noneMatch(p -> p.getX_value().equals(3.0)));
     }
 
     @Test void testMultiplePoints() {
@@ -54,7 +54,7 @@ class FunctionPointsRepositoryTest {
         pointsRepo.save(new FunctionPoints(func, 1.0, 10.0));
         pointsRepo.save(new FunctionPoints(func, 2.0, 20.0));
         pointsRepo.save(new FunctionPoints(func, 3.0, 30.0));
-        assertEquals(3, pointsRepo.findByFunction(func).size());
+        assertEquals(3, pointsRepo.findByFunctionId(func.getId()).size());
     }
 
     @Test void testSameXDifferentFunctions() {
@@ -65,7 +65,7 @@ class FunctionPointsRepositoryTest {
         pointsRepo.save(new FunctionPoints(func1, 1.0, 10.0));
         pointsRepo.save(new FunctionPoints(func2, 1.0, 20.0));
 
-        assertEquals(1, pointsRepo.findByFunction(func1).size());
-        assertEquals(1, pointsRepo.findByFunction(func2).size());
+        assertEquals(1, pointsRepo.findByFunctionId(func1.getId()).size());
+        assertEquals(1, pointsRepo.findByFunctionId(func2.getId()).size());
     }
 }

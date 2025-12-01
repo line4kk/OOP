@@ -11,6 +11,5 @@ import lombok.*;
 @EqualsAndHashCode
 public class FunctionPointsId implements Serializable {
     private Long function;
-    private Double xValue;
-
+    private Double x_value;
 }

@@ -1,18 +1,16 @@
 package engine.controller;
 
 import engine.dto.OperationRequest;
-import engine.dto.OperationResultResponse;
+import engine.dto.PointResponse;
 import engine.entity.FunctionPoints;
 import engine.entity.Functions;
 import engine.entity.Users;
-import engine.repository.FunctionPointsRepository;
-import engine.repository.FunctionsRepository;
 import engine.service.MultipleSearchService;
 import engine.service.SingleSearchService;
+import engine.util.SecurityUtils;
 import operations.TabulatedDifferentialOperator;
 import operations.TabulatedFunctionOperationService;
 import functions.TabulatedFunction;
-import functions.Point;
 import functions.factory.ArrayTabulatedFunctionFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 public class OperationsController {
@@ -31,72 +31,95 @@ public class OperationsController {
 
     @Autowired private MultipleSearchService multipleSearchService;
     @Autowired private SingleSearchService singleSearchService;
-    @Autowired private FunctionsRepository functionsRepository;
-    @Autowired private FunctionPointsRepository functionPointsRepository;
+    @Autowired private SecurityUtils securityUtils;
 
-    @PostMapping("/operations/results")
+    @PostMapping("/operation")
     @Transactional
     public ResponseEntity<?> getOperationResult(@RequestBody OperationRequest request) {
         try {
-            logger.info("POST /operations/results - операция: {} между функциями точек {} и {}",
-                    request.getOperation(), request.getPoint1Id(), request.getPoint2Id());
+            logger.info("POST /operation - операция: {} между функциями {} и {}",
+                    request.getOperation(), request.getFunction1_id(), request.getFunction2_id());
+
+            Users current_user = securityUtils.getCurrentUser();
+            if (current_user == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
 
             if (request.getOperation() == null || !isValidOperation(request.getOperation())) {
                 return ResponseEntity.status(404).body("Неизвестная операция");
             }
 
-            if (request.getPoint1Id() == null || request.getPoint1Id() <= 0) {
+            if (request.getFunction1_id() == null || request.getFunction1_id() <= 0) {
                 return ResponseEntity.status(400).body("Некорректные входные данные: function1_id");
             }
 
-            Functions sourceFunction1 = singleSearchService.findFunctionById(request.getPoint1Id())
-                    .orElseThrow(() -> new IllegalArgumentException("Функция с ID " + request.getPoint1Id() + " не найдена"));
-
-            List<FunctionPoints> function1Points = multipleSearchService.findPointsByFunction(request.getPoint1Id());
-            if (function1Points.isEmpty()) {
-                return ResponseEntity.status(404).body("Функция с ID " + request.getPoint1Id() + " не имеет точек");
+            Optional<Functions> function1_opt = singleSearchService.findFunctionById(request.getFunction1_id());
+            if (function1_opt.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция с ID " + request.getFunction1_id() + " не найдена");
             }
 
-            TabulatedFunction function1 = createTabulatedFunction(function1Points);
+            Functions function1 = function1_opt.get();
+            if (!function1.getUser().getId().equals(current_user.getId())) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
 
-            Functions resultFunction = null;
+            List<FunctionPoints> function1_points = multipleSearchService.findPointsByFunction(request.getFunction1_id());
+            if (function1_points.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция с ID " + request.getFunction1_id() + " не имеет точек");
+            }
+
+            TabulatedFunction tabulated_function1 = createTabulatedFunction(function1_points);
+
+            List<PointResponse> response = null;
 
             switch (request.getOperation()) {
                 case "derive":
-                    resultFunction = createDerivativeFunction(sourceFunction1, function1);
+                    Functions derivative_function = createDerivativeFunction(function1, tabulated_function1);
+                    List<FunctionPoints> derivative_points = multipleSearchService.findPointsByFunction(derivative_function.getId());
+                    response = derivative_points.stream()
+                            .map(point -> new PointResponse(generatePointId(point), point.getX_value(), point.getY_value()))
+                            .collect(Collectors.toList());
                     break;
 
                 case "add":
                 case "subtract":
                 case "multiplication":
                 case "division":
-                    if (request.getPoint2Id() == null || request.getPoint2Id() <= 0) {
+                    if (request.getFunction2_id() == null || request.getFunction2_id() <= 0) {
                         return ResponseEntity.status(400).body("Некорректные входные данные: function2_id требуется для операции " + request.getOperation());
                     }
 
-                    Functions sourceFunction2 = singleSearchService.findFunctionById(request.getPoint2Id())
-                            .orElseThrow(() -> new IllegalArgumentException("Функция с ID " + request.getPoint2Id() + " не найдена"));
-
-                    List<FunctionPoints> function2Points = multipleSearchService.findPointsByFunction(request.getPoint2Id());
-                    if (function2Points.isEmpty()) {
-                        return ResponseEntity.status(404).body("Функция с ID " + request.getPoint2Id() + " не имеет точек");
+                    Optional<Functions> function2_opt = singleSearchService.findFunctionById(request.getFunction2_id());
+                    if (function2_opt.isEmpty()) {
+                        return ResponseEntity.status(404).body("Функция с ID " + request.getFunction2_id() + " не найдена");
                     }
 
-                    TabulatedFunction function2 = createTabulatedFunction(function2Points);
+                    Functions function2 = function2_opt.get();
+                    if (!function2.getUser().getId().equals(current_user.getId())) {
+                        return ResponseEntity.status(403).body("Forbidden");
+                    }
 
-                    resultFunction = createBinaryOperationFunction(sourceFunction1, sourceFunction2, request.getOperation(), function1, function2);
+                    List<FunctionPoints> function2_points = multipleSearchService.findPointsByFunction(request.getFunction2_id());
+                    if (function2_points.isEmpty()) {
+                        return ResponseEntity.status(404).body("Функция с ID " + request.getFunction2_id() + " не имеет точек");
+                    }
+
+                    TabulatedFunction tabulated_function2 = createTabulatedFunction(function2_points);
+                    Functions result_function = createBinaryOperationFunction(function1, function2, request.getOperation(), tabulated_function1, tabulated_function2);
+                    List<FunctionPoints> result_points = multipleSearchService.findPointsByFunction(result_function.getId());
+                    response = result_points.stream()
+                            .map(point -> new PointResponse(generatePointId(point), point.getX_value(), point.getY_value()))
+                            .collect(Collectors.toList());
                     break;
 
                 default:
                     return ResponseEntity.status(404).body("Неизвестная операция");
             }
 
-            if (resultFunction == null) {
-                return ResponseEntity.status(500).body("Ошибка при выполнении операции: не удалось создать результирующую функцию");
+            if (response == null) {
+                return ResponseEntity.status(500).body("Ошибка при выполнении операции: не удалось создать результат");
             }
 
-            OperationResultResponse response = new OperationResultResponse();
-            response.setResultY((double) resultFunction.getId()); // Используем resultY для передачи ID функции
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
@@ -114,86 +137,94 @@ public class OperationsController {
         }
     }
 
-    private Functions createDerivativeFunction(Functions sourceFunction, TabulatedFunction function) {
-        TabulatedDifferentialOperator differentialOperator = new TabulatedDifferentialOperator();
-        TabulatedFunction derivativeFunction = differentialOperator.derive(function);
+    private Functions createDerivativeFunction(Functions source_function, TabulatedFunction function) {
+        TabulatedDifferentialOperator differential_operator = new TabulatedDifferentialOperator();
+        TabulatedFunction derivative_function = differential_operator.derive(function);
 
-        Functions newFunction = new Functions();
-        newFunction.setUser(sourceFunction.getUser());
-        newFunction.setName(sourceFunction.getName() + "_derivative");
-        newFunction.setType("derivative");
-        newFunction.setSource("operation");
+        Functions new_function = new Functions();
+        new_function.setUser(source_function.getUser());
+        new_function.setName(source_function.getName() + "_derivative");
+        new_function.setType("analytical");
+        new_function.setSource("operation");
 
-        Functions savedFunction = functionsRepository.save(newFunction);
+        Functions saved_function = singleSearchService.saveFunction(new_function);
+        saveFunctionPoints(saved_function, derivative_function);
 
-        saveFunctionPoints(savedFunction, derivativeFunction);
-
-        return savedFunction;
+        return saved_function;
     }
 
     private Functions createBinaryOperationFunction(Functions func1, Functions func2, String operation,
-                                                    TabulatedFunction tabFunc1, TabulatedFunction tabFunc2) {
-        TabulatedFunctionOperationService operationService = new TabulatedFunctionOperationService();
-        TabulatedFunction resultFunction = null;
+                                                    TabulatedFunction tab_func1, TabulatedFunction tab_func2) {
+        TabulatedFunctionOperationService operation_service = new TabulatedFunctionOperationService();
+        TabulatedFunction result_function = null;
 
         switch (operation) {
             case "add":
-                resultFunction = operationService.add(tabFunc1, tabFunc2);
+                result_function = operation_service.add(tab_func1, tab_func2);
                 break;
             case "subtract":
-                resultFunction = operationService.subtract(tabFunc1, tabFunc2);
+                result_function = operation_service.subtract(tab_func1, tab_func2);
                 break;
             case "multiplication":
-                resultFunction = operationService.multiplication(tabFunc1, tabFunc2);
+                result_function = operation_service.multiplication(tab_func1, tab_func2);
                 break;
             case "division":
-                resultFunction = operationService.division(tabFunc1, tabFunc2);
+                result_function = operation_service.division(tab_func1, tab_func2);
                 break;
         }
 
-        if (resultFunction == null) {
+        if (result_function == null) {
             throw new IllegalStateException("Не удалось выполнить операцию: " + operation);
         }
 
-        Functions newFunction = new Functions();
-        newFunction.setUser(func1.getUser());
-        newFunction.setName(func1.getName() + "_" + operation + "_" + func2.getName());
-        newFunction.setType("operation_result");
-        newFunction.setSource("operation");
+        Functions new_function = new Functions();
+        new_function.setUser(func1.getUser());
+        new_function.setName(func1.getName() + "_" + operation + "_" + func2.getName());
+        new_function.setType("analytical");
+        new_function.setSource("operation");
 
-        Functions savedFunction = functionsRepository.save(newFunction);
+        Functions saved_function = singleSearchService.saveFunction(new_function);
+        saveFunctionPoints(saved_function, result_function);
 
-        saveFunctionPoints(savedFunction, resultFunction);
-
-        return savedFunction;
+        return saved_function;
     }
 
-    private void saveFunctionPoints(Functions function, TabulatedFunction tabulatedFunction) {
-        for (int i = 0; i < tabulatedFunction.getCount(); i++) {
-            double x = tabulatedFunction.getX(i);
-            double y = tabulatedFunction.getY(i);
+    private void saveFunctionPoints(Functions function, TabulatedFunction tabulated_function) {
+        for (int i = 0; i < tabulated_function.getCount(); i++) {
+            double x = tabulated_function.getX(i);
+            double y = tabulated_function.getY(i);
 
-            FunctionPoints functionPoint = new FunctionPoints(function, x, y);
-
-            functionPointsRepository.save(functionPoint);
+            FunctionPoints function_point = new FunctionPoints(function, x, y);
+            singleSearchService.saveFunctionPoint(function_point);
         }
     }
 
     private TabulatedFunction createTabulatedFunction(List<FunctionPoints> points) {
-        List<FunctionPoints> sortedPoints = points.stream()
-                .sorted(Comparator.comparingDouble(FunctionPoints::getXValue))
-                .toList();
+        List<FunctionPoints> sorted_points = points.stream()
+                .sorted(Comparator.comparingDouble(FunctionPoints::getX_value))
+                .collect(Collectors.toList());
 
-        double[] xValues = new double[sortedPoints.size()];
-        double[] yValues = new double[sortedPoints.size()];
+        double[] x_values = new double[sorted_points.size()];
+        double[] y_values = new double[sorted_points.size()];
 
-        for (int i = 0; i < sortedPoints.size(); i++) {
-            FunctionPoints point = sortedPoints.get(i);
-            xValues[i] = point.getXValue();
-            yValues[i] = point.getYValue();
+        for (int i = 0; i < sorted_points.size(); i++) {
+            FunctionPoints point = sorted_points.get(i);
+            x_values[i] = point.getX_value();
+            y_values[i] = point.getY_value();
         }
 
-        return new ArrayTabulatedFunctionFactory().create(xValues, yValues);
+        return new ArrayTabulatedFunctionFactory().create(x_values, y_values);
+    }
+
+    private Long generatePointId(FunctionPoints point) {
+        if (point.getFunction() == null || point.getX_value() == null) {
+            return 0L;
+        }
+        long functionId = point.getFunction().getId();
+        double xValue = point.getX_value();
+        long xBits = Double.doubleToLongBits(xValue);
+        long id = (functionId << 32) ^ (xBits >>> 32) ^ (xBits & 0xFFFFFFFFL);
+        return id & Long.MAX_VALUE;
     }
 
     private boolean isValidOperation(String operation) {

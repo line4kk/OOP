@@ -1,0 +1,1091 @@
+
+{
+  "info": {
+    "name": "FunFunctionsAPI - Complete Performance Tests",
+    "description": "Полные тесты производительности API для лабораторной работы №6",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "qwerty",
+      "type": "string"
+    },
+    {
+      "key": "test_username",
+      "value": "testuser_perf_",
+      "type": "string"
+    },
+    {
+      "key": "test_password",
+      "value": "testpass123",
+      "type": "string"
+    },
+    {
+      "key": "auth_header",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "function_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "function_id_2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "composite_function_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "point_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup - Register Admin User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"role\": \"admin\",\n  \"factory_type\": \"array\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/register",
+          "host": ["{{base_url}}"],
+          "path": ["users", "register"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Admin registration successful\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"user_id\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"admin_registration_time\", responseTime);",
+              "console.log(\"Admin user created in \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{test_username}}{{Date.now()}}\",\n  \"password\": \"{{test_password}}\",\n  \"role\": \"user\",\n  \"factory_type\": \"array\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/register",
+          "host": ["{{base_url}}"],
+          "path": ["users", "register"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"user_id\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"registration_time\", responseTime);",
+              "console.log(\"User Registration took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Authentication",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/auth",
+          "host": ["{{base_url}}"],
+          "path": ["users", "auth"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var base64Auth = btoa(pm.collectionVariables.get(\"admin_username\") + \":\" + pm.collectionVariables.get(\"admin_password\"));",
+              "pm.collectionVariables.set(\"auth_header\", \"Basic \" + base64Auth);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"auth_time\", responseTime);",
+              "console.log(\"User Authentication took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Current User",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": ["{{base_url}}"],
+          "path": ["users"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_user_time\", responseTime);",
+              "console.log(\"Get Current User took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Factory Type",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"factory_type\": \"linked_list\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/settings/factory_types",
+          "host": ["{{base_url}}"],
+          "path": ["users", "settings", "factory_types"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"update_factory_time\", responseTime);",
+              "console.log(\"Update Factory Type took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Function 1 - Tabulated",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"TestFunction_Perf_1_{{Date.now()}}\",\n  \"type\": \"array_tabulated\",\n  \"source\": \"base\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"function_id\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"create_function_1_time\", responseTime);",
+              "console.log(\"Create Function 1 took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Function 2 - Analytical",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"TestFunction_Perf_2_{{Date.now()}}\",\n  \"type\": \"analytical\",\n  \"source\": \"base\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"function_id_2\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"create_function_2_time\", responseTime);",
+              "console.log(\"Create Function 2 took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get All Functions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_all_functions_time\", responseTime);",
+              "console.log(\"Get All Functions took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Analytic Functions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/analytical_functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "analytical_functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_analytic_functions_time\", responseTime);",
+              "console.log(\"Get Analytic Functions took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Function Info",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_function_info_time\", responseTime);",
+              "console.log(\"Get Function Info took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Function",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"UpdatedFunction_Perf_{{Date.now()}}\",\n  \"type\": \"array_tabulated\",\n  \"source\": \"base\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"update_function_time\", responseTime);",
+              "console.log(\"Update Function took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Add Function Points",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"x\": 1.0,\n    \"y\": 2.0\n  },\n  {\n    \"x\": 2.0,\n    \"y\": 4.0\n  },\n  {\n    \"x\": 3.0,\n    \"y\": 6.0\n  },\n  {\n    \"x\": -5.5,\n    \"y\": -11.0\n  },\n  {\n    \"x\": 100.25,\n    \"y\": 200.5\n  }\n]"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var points = pm.response.json();",
+              "if (points.length > 0) {",
+              "    pm.collectionVariables.set(\"point_id\", points[0].id);",
+              "}",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"add_points_time\", responseTime);",
+              "console.log(\"Add Function Points took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Function Points",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_points_time\", responseTime);",
+              "console.log(\"Get Function Points took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Add Points Again",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"x\": 10.0,\n    \"y\": 20.0\n  },\n  {\n    \"x\": 20.0,\n    \"y\": 40.0\n  }\n]"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var points = pm.response.json();",
+              "if (points.length > 0) {",
+              "    pm.collectionVariables.set(\"point_id\", points[0].id);",
+              "}",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"add_points_again_time\", responseTime);",
+              "console.log(\"Add Points Again took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete All Points",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"delete_all_points_time\", responseTime);",
+              "console.log(\"Delete All Points took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Composite Function",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function_ids_in_order\": [{{function_id}}, {{function_id_2}}],\n  \"name\": \"CompositeFunction_Perf_{{Date.now()}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/analytical_functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "analytical_functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"composite_function_id\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"create_composite_time\", responseTime);",
+              "console.log(\"Create Composite Function took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Composite Function Composition",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/analytical_functions/{{composite_function_id}}/composition",
+          "host": ["{{base_url}}"],
+          "path": ["analytical_functions", "{{composite_function_id}}", "composition"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"get_composite_composition_time\", responseTime);",
+              "console.log(\"Get Composite Composition took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Function Sampling",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"analytical_function_id\": {{function_id_2}},\n  \"x_from\": 0,\n  \"x_to\": 10,\n  \"count\": 20\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id_2}}/sampling",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id_2}}", "sampling"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"sampling_time\", responseTime);",
+              "console.log(\"Function Sampling took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perform Operation - Add",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"add\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/operation",
+          "host": ["{{base_url}}"],
+          "path": ["operation"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"operation_add_time\", responseTime);",
+              "console.log(\"Perform Operation Add took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perform Operation - Subtract",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"subtract\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/operation",
+          "host": ["{{base_url}}"],
+          "path": ["operation"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"operation_subtract_time\", responseTime);",
+              "console.log(\"Perform Operation Subtract took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perform Operation - Multiplication",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"multiplication\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/operation",
+          "host": ["{{base_url}}"],
+          "path": ["operation"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"operation_multiplication_time\", responseTime);",
+              "console.log(\"Perform Operation Multiplication took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perform Operation - Division",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"division\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/operation",
+          "host": ["{{base_url}}"],
+          "path": ["operation"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"operation_division_time\", responseTime);",
+              "console.log(\"Perform Operation Division took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perform Operation - Derive",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": null,\n  \"operation\": \"derive\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/operation",
+          "host": ["{{base_url}}"],
+          "path": ["operation"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"operation_derive_time\", responseTime);",
+              "console.log(\"Perform Operation Derive took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Get All Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/users",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "users"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"admin_get_users_time\", responseTime);",
+              "console.log(\"Admin Get All Users took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Function",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id_2}}",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id_2}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"delete_function_time\", responseTime);",
+              "console.log(\"Delete Function took \" + responseTime + \"ms\");",
+              "generatePerformanceReport();"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Initialize timestamp for unique usernames",
+          "if (!pm.collectionVariables.get(\"timestamp\")) {",
+          "    pm.collectionVariables.set(\"timestamp\", Date.now());",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "function generatePerformanceReport() {",
+          "    let results = [];",
+          "    results.push([\"Operation\", \"Time(ms)\", \"Status\"]);",
+          "    ",
+          "    let operations = [",
+          "        { name: \"Admin_Registration\", timeVar: \"admin_registration_time\" },",
+          "        { name: \"User_Registration\", timeVar: \"registration_time\" },",
+          "        { name: \"User_Authentication\", timeVar: \"auth_time\" },",
+          "        { name: \"Get_Current_User\", timeVar: \"get_user_time\" },",
+          "        { name: \"Update_Factory_Type\", timeVar: \"update_factory_time\" },",
+          "        { name: \"Create_Function_1\", timeVar: \"create_function_1_time\" },",
+          "        { name: \"Create_Function_2\", timeVar: \"create_function_2_time\" },",
+          "        { name: \"Get_All_Functions\", timeVar: \"get_all_functions_time\" },",
+          "        { name: \"Get_Analytic_Functions\", timeVar: \"get_analytic_functions_time\" },",
+          "        { name: \"Get_Function_Info\", timeVar: \"get_function_info_time\" },",
+          "        { name: \"Update_Function\", timeVar: \"update_function_time\" },",
+          "        { name: \"Add_Function_Points\", timeVar: \"add_points_time\" },",
+          "        { name: \"Get_Function_Points\", timeVar: \"get_points_time\" },",
+          "        { name: \"Add_Points_Again\", timeVar: \"add_points_again_time\" },",
+          "        { name: \"Delete_All_Points\", timeVar: \"delete_all_points_time\" },",
+          "        { name: \"Create_Composite_Function\", timeVar: \"create_composite_time\" },",
+          "        { name: \"Get_Composite_Composition\", timeVar: \"get_composite_composition_time\" },",
+          "        { name: \"Function_Sampling\", timeVar: \"sampling_time\" },",
+          "        { name: \"Perform_Operation_Add\", timeVar: \"operation_add_time\" },",
+          "        { name: \"Perform_Operation_Subtract\", timeVar: \"operation_subtract_time\" },",
+          "        { name: \"Perform_Operation_Multiplication\", timeVar: \"operation_multiplication_time\" },",
+          "        { name: \"Perform_Operation_Division\", timeVar: \"operation_division_time\" },",
+          "        { name: \"Perform_Operation_Derive\", timeVar: \"operation_derive_time\" },",
+          "        { name: \"Admin_Get_All_Users\", timeVar: \"admin_get_users_time\" },",
+          "        { name: \"Delete_Function\", timeVar: \"delete_function_time\" }",
+          "    ];",
+          "    ",
+          "    operations.forEach(op => {",
+          "        let time = pm.collectionVariables.get(op.timeVar);",
+          "        if (time) {",
+          "            results.push([op.name, parseFloat(time).toFixed(2), \"SUCCESS\"]);",
+          "        } else {",
+          "            results.push([op.name, \"0.00\", \"NOT_EXECUTED\"]);",
+          "        }",
+          "    });",
+          "    ",
+          "    let csvContent = \"\";",
+          "    results.forEach(row => {",
+          "        csvContent += row.join(\",\") + \"\\n\";",
+          "    });",
+          "    ",
+          "    pm.collectionVariables.set(\"performance_csv\", csvContent);",
+          "    ",
+          "    console.log(\"=== COMPLETE PERFORMANCE REPORT ===\");",
+          "    console.log(csvContent);",
+          "    ",
+          "    // Calculate statistics",
+          "    let times = results.slice(1).filter(row => row[2] === \"SUCCESS\").map(row => parseFloat(row[1]));",
+          "    if (times.length > 0) {",
+          "        let totalTime = times.reduce((a, b) => a + b, 0);",
+          "        let avgTime = totalTime / times.length;",
+          "        let maxTime = Math.max(...times);",
+          "        let minTime = Math.min(...times);",
+          "        ",
+          "        console.log(\"=== PERFORMANCE STATISTICS ===\");",
+          "        console.log(\"Total Operations: \" + times.length);",
+          "        console.log(\"Total Time: \" + totalTime.toFixed(2) + \"ms\");",
+          "        console.log(\"Average Time: \" + avgTime.toFixed(2) + \"ms\");",
+          "        console.log(\"Fastest Operation: \" + minTime.toFixed(2) + \"ms\");",
+          "        console.log(\"Slowest Operation: \" + maxTime.toFixed(2) + \"ms\");",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ]
+}

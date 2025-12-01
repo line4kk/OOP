@@ -1,12 +1,15 @@
 package engine.dto;
 
-import lombok.*;
+import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class OperationRequest {
-    private Long point1Id;
-    private Long point2Id;
+    @JsonProperty("function1_id")
+    private Long function1_id;
+
+    @JsonProperty("function2_id")
+    private Long function2_id;
+
     private String operation;
 }

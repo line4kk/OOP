@@ -21,10 +21,10 @@ public class FunctionPoints {
 
     @Id
     @Column(name = "x_value", nullable = false)
-    private Double xValue;
+    private Double x_value;
 
     @Column(name = "y_value", nullable = false)
-    private Double yValue;
+    private Double y_value;
 
     @OneToMany(mappedBy = "point1", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Operations> operationsAsPoint1 = new ArrayList<>();
@@ -34,16 +34,16 @@ public class FunctionPoints {
 
     public FunctionPoints(Functions function, Double xValue, Double yValue) {
         this.function = function;
-        this.xValue = xValue;
-        this.yValue = yValue;
+        this.x_value = xValue;
+        this.y_value = yValue;
     }
 
     public void setYValue(Double yValue) {
-        if (this.yValue != null && !this.yValue.equals(yValue)) {
+        if (this.y_value != null && !this.y_value.equals(yValue)) {
             this.operationsAsPoint1.clear();
             this.operationsAsPoint2.clear();
         }
-        this.yValue = yValue;
+        this.y_value = yValue;
     }
 
 }

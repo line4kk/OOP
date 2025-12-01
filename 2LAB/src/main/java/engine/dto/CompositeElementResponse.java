@@ -1,6 +1,7 @@
 package engine.dto;
 
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @AllArgsConstructor
@@ -8,5 +9,7 @@ import lombok.*;
 public class CompositeElementResponse {
     private Long id;
     private Integer order;
-    private Long functionId;
+
+    @JsonProperty("function_id")
+    private Long function_id;
 }

@@ -161,15 +161,16 @@ public class ProductivityTest {
         time_measurement("points_insert",
                 () -> functionPointsRepository.save(new FunctionPoints(testFunction, 9999.0, 9999.0)));
         time_measurement("points_findByFunction",
-                () -> functionPointsRepository.findByFunction(testFunction));
+                () -> functionPointsRepository.findByFunctionId(testFunction.getId()));
         time_measurement("points_updateYValue",
                 () -> {testPoint.setYValue(5555.0);
             functionPointsRepository.save(testPoint);
         });
         time_measurement("points_delete_by_functionId",
-                () -> {List<FunctionPoints> points = functionPointsRepository.findByFunction(testFunction);
-            functionPointsRepository.deleteAll(points);
-        });
+                () -> {
+                    List<FunctionPoints> points = functionPointsRepository.findByFunctionId(testFunction.getId());
+                    functionPointsRepository.deleteAll(points);
+                });
 
         // Тест для 10000 операций
         time_measurement("operations_insert",

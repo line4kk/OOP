@@ -6,10 +6,9 @@ import engine.entity.Functions;
 import engine.entity.FunctionPoints;
 import engine.entity.Users;
 import engine.repository.CompositeFunctionElementsRepository;
-import engine.repository.FunctionsRepository;
-import engine.repository.FunctionPointsRepository;
 import engine.service.MultipleSearchService;
 import engine.service.SingleSearchService;
+import engine.util.SecurityUtils;
 import functions.*;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,25 +20,28 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.util.Optional;
 
 @RestController
 public class AnalyticalFunctionController {
 
     @Autowired private MultipleSearchService multipleSearchService;
     @Autowired private SingleSearchService singleSearchService;
-    @Autowired private FunctionsRepository functionsRepository;
+    @Autowired private SecurityUtils securityUtils;
     @Autowired private CompositeFunctionElementsRepository compositeFunctionElementsRepository;
-    @Autowired private FunctionPointsRepository functionPointsRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyticalFunctionController.class);
 
-    @PostMapping("/analytical_functions")
+    @PostMapping("/functions/analytical_functions")
     @Transactional
     public ResponseEntity<?> createCompositeFunction(@RequestBody CompositeCreateRequest request) {
         try {
-            logger.info("POST /analytical_functions - создание композитной функции: {}", request.getName());
+            logger.info("POST /functions/analytical_functions - создание композитной функции: {}", request.getName());
+
+            Users current_user = securityUtils.getCurrentUser();
+            if (current_user == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
 
             if (request.getFunctionIdsInOrder() == null || request.getFunctionIdsInOrder().size() < 2) {
                 return ResponseEntity.status(400).body("Ошибка. Некорректные данные: требуется минимум 2 функции");
@@ -48,53 +50,44 @@ public class AnalyticalFunctionController {
             if (request.getName() == null || request.getName().trim().isEmpty()) {
                 return ResponseEntity.status(400).body("Имя функции не может быть пустым");
             }
-            if (request.getName().length() > 50) {
-                return ResponseEntity.status(400).body("Имя функции не может превышать 50 символов");
-            }
 
-            for (Long functionId : request.getFunctionIdsInOrder()) {
-                if (functionId == null || functionId <= 0) {
+            for (Long function_id : request.getFunctionIdsInOrder()) {
+                if (function_id == null || function_id <= 0) {
                     return ResponseEntity.status(400).body("Некорректный ID функции в списке");
                 }
             }
 
-            List<Functions> existingFunctions = multipleSearchService.findFunctionsByName(request.getName());
-            if (!existingFunctions.isEmpty()) {
+            List<Functions> existing_functions = multipleSearchService.findFunctionsByName(request.getName());
+            boolean name_exists = existing_functions.stream()
+                    .anyMatch(f -> f.getUser().getId().equals(current_user.getId()));
+            if (name_exists) {
                 return ResponseEntity.status(409).body("Композиция с таким именем уже существует");
             }
 
-            List<Users> users = multipleSearchService.findAllUsers();
-            if (users.isEmpty()) {
-                return ResponseEntity.status(400).body("Нет пользователей в системе");
-            }
-            Users currentUser = users.get(0);
-
-            Functions newFunction = new Functions(currentUser, request.getName(), "analytical", "composite");
-            Functions savedFunction = functionsRepository.save(newFunction);
-
-            logger.debug("Создана композитная функция: ID={}, имя='{}'",
-                    savedFunction.getId(), savedFunction.getName());
+            Functions new_function = new Functions(current_user, request.getName(), "analytical", "composite");
+            Functions saved_function = singleSearchService.saveFunction(new_function);
 
             for (int i = 0; i < request.getFunctionIdsInOrder().size(); i++) {
                 Long componentId = request.getFunctionIdsInOrder().get(i);
-                Functions componentFunction = singleSearchService.findFunctionById(componentId)
-                        .orElseThrow(() -> new IllegalArgumentException("Функция с ID " + componentId + " не найдена"));
+                Optional<Functions> componentFunctionOpt = singleSearchService.findFunctionById(componentId);
+                if (componentFunctionOpt.isEmpty()) {
+                    return ResponseEntity.status(400).body("Функция с ID " + componentId + " не найдена");
+                }
 
-                CompositeFunctionElements element = new CompositeFunctionElements(savedFunction, i, componentFunction);
+                Functions componentFunction = componentFunctionOpt.get();
+                if (!componentFunction.getUser().getId().equals(current_user.getId())) {
+                    return ResponseEntity.status(403).body("Forbidden");
+                }
+
+                CompositeFunctionElements element = new CompositeFunctionElements(saved_function, i, componentFunction);
                 compositeFunctionElementsRepository.save(element);
-
-                logger.debug("Добавлен элемент композиции: порядок={}, функция='{}' (ID: {})",
-                        i, componentFunction.getName(), componentFunction.getId());
             }
 
-            logger.info("Успешно создана композитная функция '{}' с {} компонентами",
-                    savedFunction.getName(), request.getFunctionIdsInOrder().size());
-
             FunctionResponse response = new FunctionResponse(
-                    savedFunction.getId(),
-                    savedFunction.getName(),
-                    savedFunction.getType(),
-                    savedFunction.getSource()
+                    saved_function.getId(),
+                    saved_function.getName(),
+                    saved_function.getType(),
+                    saved_function.getSource()
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -106,29 +99,38 @@ public class AnalyticalFunctionController {
     @PostMapping("/functions/{function_id}/sampling")
     @Transactional
     public ResponseEntity<?> addFunctionPointsBySampling(
-            @PathVariable("function_id") Long functionId,
-            @RequestBody SamplingRequest request) {
+            @PathVariable("function_id") Long function_id,
+            @RequestBody FunctionSamplingRequest request) {
         try {
-            logger.info("POST /functions/{}/sampling - сэмплирование аналитической функции: от {} до {}, {} точек",
-                    functionId, request.getXFrom(), request.getXTo(), request.getCount());
+            logger.info("POST /functions/{}/sampling - сэмплирование аналитической функции", function_id);
 
-            if (functionId == null || functionId <= 0) {
+            Users current_user = securityUtils.getCurrentUser();
+            if (current_user == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            if (function_id == null || function_id <= 0) {
                 return ResponseEntity.status(400).body("Некорректный ID функции");
             }
 
-            if (request.getXFrom() == null || request.getXTo() == null) {
+            Optional<Functions> function_opt = singleSearchService.findFunctionById(function_id);
+            if (function_opt.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция не найдена");
+            }
+
+            Functions function = function_opt.get();
+            if (!function.getUser().getId().equals(current_user.getId())) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            if (request.getX_from() == null || request.getX_to() == null) {
                 return ResponseEntity.status(400).body("Некорректные данные: x_from и x_to обязательны");
             }
-            if (request.getXFrom() >= request.getXTo()) {
+            if (request.getX_from() >= request.getX_to()) {
                 return ResponseEntity.status(400).body("x_from должен быть меньше x_to");
             }
             if (request.getCount() == null || request.getCount() <= 0) {
                 return ResponseEntity.status(400).body("Количество точек должно быть положительным числом");
-            }
-
-            Functions function = singleSearchService.findFunctionById(functionId).orElse(null);
-            if (function == null) {
-                return ResponseEntity.status(404).body("Функция не найдена");
             }
 
             if (!"analytical".equals(function.getType())) {
@@ -136,28 +138,16 @@ public class AnalyticalFunctionController {
             }
 
             List<PointResponse> response = new ArrayList<>();
-            double step = (request.getXTo() - request.getXFrom()) / (request.getCount() - 1);
+            double step = (request.getX_to() - request.getX_from()) / (request.getCount() - 1);
 
             for (int i = 0; i < request.getCount(); i++) {
-                double x = request.getXFrom() + (i * step);
+                double x = request.getX_from() + (i * step);
                 double y = calculateAnalyticalFunctionValue(function, x);
 
-                boolean pointExists = function.getPoints().stream()
-                        .anyMatch(existingPoint -> Math.abs(existingPoint.getXValue() - x) < 1e-10);
+                FunctionPoints new_point = new FunctionPoints(function, x, y);
+                FunctionPoints saved_point = singleSearchService.saveFunctionPoint(new_point);
+                response.add(new PointResponse(generatePointId(saved_point), saved_point.getX_value(), saved_point.getY_value()));            }
 
-                if (!pointExists) {
-                    FunctionPoints newPoint = new FunctionPoints(function, x, y);
-                    FunctionPoints savedPoint = functionPointsRepository.save(newPoint);
-                    response.add(new PointResponse(
-                            savedPoint.getFunction().getId(),
-                            savedPoint.getXValue(),
-                            savedPoint.getYValue()
-                    ));
-                }
-            }
-
-            logger.info("Сэмплирование завершено. Добавлено {} точек для функции '{}'",
-                    response.size(), function.getName());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при сэмплировании аналитической функции", e);
@@ -165,63 +155,35 @@ public class AnalyticalFunctionController {
         }
     }
 
-    @PostMapping("/analytical_functions/{function_id}/compute")
-    public ResponseEntity<?> computeAnalyticalFunction(
-            @PathVariable("function_id") Long functionId,
-            @RequestBody ComputeRequest request) {
-        try {
-            logger.info("POST /analytical_functions/{}/compute - вычисление значения для x={}",
-                    functionId, request.getX());
-
-            if (functionId == null || functionId <= 0) {
-                return ResponseEntity.status(400).body("Некорректный ID функции");
-            }
-
-            if (request.getX() == null) {
-                return ResponseEntity.status(400).body("Значение x обязательно");
-            }
-
-            Functions function = singleSearchService.findFunctionById(functionId).orElse(null);
-            if (function == null) {
-                return ResponseEntity.status(404).body("Функция не найдена");
-            }
-
-            if (!"analytical".equals(function.getType())) {
-                return ResponseEntity.status(400).body("Вычисление доступно только для аналитических функций");
-            }
-
-            double result = calculateAnalyticalFunctionValue(function, request.getX());
-
-            ComputeResponse response = new ComputeResponse();
-            response.setResult(result);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            logger.error("Ошибка при вычислении аналитической функции", e);
-            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
-        }
-    }
-
     @GetMapping("/analytical_functions/{function_id}/composition")
-    public ResponseEntity<?> getFunctionComposition(@PathVariable("function_id") Long functionId) {
+    public ResponseEntity<?> getFunctionComposition(@PathVariable("function_id") Long function_id) {
         try {
-            logger.info("GET /analytical_functions/{}/composition - получение состава функции", functionId);
+            logger.info("GET /analytical_functions/{}/composition - получение состава функции", function_id);
 
-            if (functionId == null || functionId <= 0) {
+            Users current_user = securityUtils.getCurrentUser();
+            if (current_user == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            if (function_id == null || function_id <= 0) {
                 return ResponseEntity.status(400).body("Некорректный ID функции");
             }
 
-            Functions function = singleSearchService.findFunctionById(functionId).orElse(null);
-            if (function == null) {
+            Optional<Functions> function_opt = singleSearchService.findFunctionById(function_id);
+            if (function_opt.isEmpty()) {
                 return ResponseEntity.status(404).body("Функция не найдена");
+            }
+
+            Functions function = function_opt.get();
+            if (!function.getUser().getId().equals(current_user.getId())) {
+                return ResponseEntity.status(403).body("Forbidden");
             }
 
             if (!"composite".equals(function.getSource())) {
                 return ResponseEntity.status(400).body("Функция не является композитной");
             }
 
-            List<CompositeFunctionElements> composition = compositeFunctionElementsRepository
-                    .findByComposite(function);
+            List<CompositeFunctionElements> composition = multipleSearchService.findCompositeFunctionElementsByCompositeId(function_id);
             composition.sort((a, b) -> a.getFunctionOrder().compareTo(b.getFunctionOrder()));
 
             List<CompositeElementResponse> response = composition.stream()
@@ -239,41 +201,31 @@ public class AnalyticalFunctionController {
         }
     }
 
-    private Double calculateAnalyticalFunctionValue(Functions analyticalFunction, double x) {
+    private Double calculateAnalyticalFunctionValue(Functions analytical_function, double x) {
         try {
-            if ("composite".equals(analyticalFunction.getSource())) {
-                return calculateCompositeFunction(analyticalFunction, x);
+            if ("composite".equals(analytical_function.getSource())) {
+                return calculateCompositeFunction(analytical_function, x);
             }
-            return calculateBasicFunction(analyticalFunction.getName(), x);
+            return calculateBasicFunction(analytical_function.getName(), x);
         } catch (Exception e) {
-            logger.error("Ошибка вычисления функции '{}' для x={}", analyticalFunction.getName(), x, e);
+            logger.error("Ошибка вычисления функции '{}' для x={}", analytical_function.getName(), x, e);
             return Double.NaN;
         }
     }
 
-    private Double calculateCompositeFunction(Functions compositeFunction, double x) {
+    private Double calculateCompositeFunction(Functions composite_function, double x) {
         try {
-            logger.debug("Вычисление композитной функции '{}' (ID: {}) для x={}",
-                    compositeFunction.getName(), compositeFunction.getId(), x);
-
-            List<CompositeFunctionElements> composition = compositeFunctionElementsRepository
-                    .findByComposite(compositeFunction);
+            List<CompositeFunctionElements> composition = multipleSearchService.findCompositeFunctionElementsByCompositeId(composite_function.getId());
             composition.sort((a, b) -> a.getFunctionOrder().compareTo(b.getFunctionOrder()));
 
-            if (composition == null || composition.isEmpty()) {
-                logger.error("Композитная функция '{}' не имеет элементов состава", compositeFunction.getName());
+            if (composition.isEmpty()) {
                 return Double.NaN;
             }
 
             double result = x;
             for (CompositeFunctionElements element : composition) {
-                Functions componentFunction = element.getFunction();
-                if (componentFunction == null) {
-                    logger.error("Элемент композитной функции имеет null function");
-                    return Double.NaN;
-                }
-
-                result = calculateAnalyticalFunctionValue(componentFunction, result);
+                Functions component_function = element.getFunction();
+                result = calculateAnalyticalFunctionValue(component_function, result);
                 if (Double.isNaN(result)) {
                     break;
                 }
@@ -281,15 +233,15 @@ public class AnalyticalFunctionController {
 
             return result;
         } catch (Exception e) {
-            logger.error("Ошибка вычисления композитной функции '{}'", compositeFunction.getName(), e);
+            logger.error("Ошибка вычисления композитной функции '{}'", composite_function.getName(), e);
             return Double.NaN;
         }
     }
 
-    private Double calculateBasicFunction(String functionName, double x) {
-        if (functionName == null) return Double.NaN;
+    private Double calculateBasicFunction(String function_name, double x) {
+        if (function_name == null) return Double.NaN;
 
-        switch (functionName.toLowerCase()) {
+        switch (function_name.toLowerCase()) {
             case "sin": case "синус": return Math.sin(x);
             case "cos": case "косинус": return Math.cos(x);
             case "tan": case "tangent": case "тангенс": return Math.tan(x);
@@ -303,26 +255,17 @@ public class AnalyticalFunctionController {
             case "zero": case "ноль": return new ZeroFunction().apply(x);
             case "unit": case "единичная": return new UnitFunction().apply(x);
             default:
-                logger.warn("Неизвестная функция '{}', используется тождественная", functionName);
                 return new IdentityFunction().apply(x);
         }
     }
-
-    @Data
-    public static class ComputeRequest {
-        private Double x;
-    }
-
-    @Data
-    public static class ComputeResponse {
-        private Double result;
-    }
-
-    @Data
-    public static class SamplingRequest {
-        private Long analyticalFunctionId;
-        private Double xFrom;
-        private Double xTo;
-        private Integer count;
+    private Long generatePointId(FunctionPoints point) {
+        if (point.getFunction() == null || point.getX_value() == null) {
+            return 0L;
+        }
+        long functionId = point.getFunction().getId();
+        double xValue = point.getX_value();
+        long xBits = Double.doubleToLongBits(xValue);
+        long id = (functionId << 32) ^ (xBits >>> 32) ^ (xBits & 0xFFFFFFFFL);
+        return id & Long.MAX_VALUE;
     }
 }

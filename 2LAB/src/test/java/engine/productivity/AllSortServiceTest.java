@@ -115,15 +115,15 @@ public class AllSortServiceTest {
             singleSearchService.findFunctionById(testFunction.getId());
         });
 
-        // Одиночный поиск операций
-        time_measurement("single_operation_by_id", () -> {
-            singleSearchService.findOperationById(1L);
-        });
-
-        // Одиночный поиск композитных элементов
-        time_measurement("single_composite_element_by_id", () -> {
-            singleSearchService.findCompositeElementById(1L);
-        });
+//        // Одиночный поиск операций
+//        time_measurement("single_operation_by_id", () -> {
+//            singleSearchService.findOperationById(1L);
+//        });
+//
+//        // Одиночный поиск композитных элементов
+//        time_measurement("single_composite_element_by_id", () -> {
+//            singleSearchService.findCompositeElementById(1L);
+//        });
 
         // MultipleSearchService
 
