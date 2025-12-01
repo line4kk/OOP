@@ -37,6 +37,9 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
     }
 
     public List<PointResponse> addFunctionPoints(long functionId, List<PointRequest> pointRequests) {
+        if (functionsDAO.selectById(functionId) == null) {
+            throw new NoSuchElementException("Функция не найдена");
+        }
         List<FunctionPoint> points = new ArrayList<>();
         for (PointRequest pr : pointRequests) {
             points.add(pr.toEntity(functionId));

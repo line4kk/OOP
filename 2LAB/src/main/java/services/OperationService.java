@@ -4,6 +4,7 @@ import dao.FunctionDAO;
 import dao.FunctionPointDAO;
 import dao.OperationResultPointDAO;
 import dao.UserDAO;
+import exceptions.DivisionByZeroException;
 import functions.TabulatedFunction;
 import functions.Point;
 import functions.factory.ArrayTabulatedFunctionFactory;
@@ -119,7 +120,7 @@ public class OperationService extends AbstractService<FunctionDAO> {
             case "multiplication" -> firstY * secondY;
             case "division" -> {
                 if (secondY == 0.0) {
-                    throw new ArithmeticException("Деление на ноль");
+                    throw new DivisionByZeroException("Деление на ноль");
                 }
                 yield firstY / secondY;
             }
