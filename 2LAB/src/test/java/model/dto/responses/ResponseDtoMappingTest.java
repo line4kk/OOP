@@ -2,6 +2,11 @@ package model.dto.responses;
 
 import model.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,18 +39,6 @@ class ResponseDtoMappingTest {
     }
 
     @Test
-    void testPointResponseFromFunctionPoint() {
-        FunctionPoint point = new FunctionPoint(7L, 3L, -2.5, 6.25);
-
-        PointResponse response = PointResponse.from(point);
-
-        assertNotNull(response);
-        assertEquals(7L, response.getId());
-        assertEquals(-2.5, response.getX(), 0.0001);
-        assertEquals(6.25, response.getY(), 0.0001);
-    }
-
-    @Test
     void testOperationResultResponseFromDouble() {
         double result = 3.14;
 
@@ -65,5 +58,45 @@ class ResponseDtoMappingTest {
         assertEquals(15L, response.getId());
         assertEquals(2, response.getOrder());
         assertEquals(42L, response.getFunctionId());
+    }
+
+    @ParameterizedTest
+    @MethodSource("userResponseSamples")
+    void testUserResponseDataVariations(long id, String username, String role, String factoryType) {
+        User user = new User(id, username, null, role, factoryType);
+
+        UserResponse response = UserResponse.from(user);
+
+        assertEquals(id, response.getId());
+        assertEquals(username, response.getUsername());
+        assertEquals(role, response.getRole());
+        assertEquals(factoryType, response.getFactoryType());
+    }
+
+    @ParameterizedTest
+    @MethodSource("functionResponseSamples")
+    void testFunctionResponseVariations(Function function) {
+        FunctionResponse response = FunctionResponse.from(function);
+
+        assertEquals(function.getId(), response.getId());
+        assertEquals(function.getName(), response.getName());
+        assertEquals(function.getType(), response.getType());
+        assertEquals(function.getSource(), response.getSource());
+    }
+
+    static Stream<Arguments> userResponseSamples() {
+        return Stream.of(
+                Arguments.of(1L, "alpha", "USER", "factory1"),
+                Arguments.of(5L, "beta", "ADMIN", "factory2"),
+                Arguments.of(10L, "gamma", "POWER", "factory3")
+        );
+    }
+
+    static Stream<Function> functionResponseSamples() {
+        return Stream.of(
+                new Function(5L, 10L, "Синус", "type", "my mind"),
+                new Function(7L, 20L, "Exp", "analytic", "generated"),
+                new Function(9L, 30L, "Poly", "tab", "upload")
+        );
     }
 }

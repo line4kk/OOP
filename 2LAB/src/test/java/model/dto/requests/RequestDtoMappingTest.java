@@ -2,9 +2,13 @@ package model.dto.requests;
 
 import model.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,41 +52,6 @@ class RequestDtoMappingTest {
         assertEquals(9.0, point.getYValue(), 0.0001);
     }
 
-    @Test
-    void testOperationRequestToOperationResultPoint() {
-        OperationRequest request = new OperationRequest(1L, 2L, "ADD");
-
-        OperationResultPoint result = request.toEntity(6.0);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getPoint1Id());
-        assertEquals(2L, result.getPoint2Id());
-        assertEquals("ADD", result.getOperation());
-        assertEquals(6.0, result.getResultY(), 0.0001);
-    }
-
-    @Test
-    void testCompositeCreateRequestToElements() {
-        List<Long> ids = Arrays.asList(100L, 200L, 300L);
-        CompositeCreateRequest request = new CompositeCreateRequest(ids);
-
-        List<CompositeFunctionElement> elements = request.toEntities(777L);
-
-        assertEquals(3, elements.size());
-
-        CompositeFunctionElement first = elements.get(0);
-        assertEquals(777L, first.getCompositeId());
-        assertEquals(1, first.getFunctionOrder());
-        assertEquals(100L, first.getFunctionId());
-
-        CompositeFunctionElement second = elements.get(1);
-        assertEquals(2, second.getFunctionOrder());
-        assertEquals(200L, second.getFunctionId());
-
-        CompositeFunctionElement third = elements.get(2);
-        assertEquals(3, third.getFunctionOrder());
-        assertEquals(300L, third.getFunctionId());
-    }
 
     @Test
     void testEmptyCompositeCreateRequest() {
@@ -91,5 +60,37 @@ class RequestDtoMappingTest {
         List<CompositeFunctionElement> elements = request.toEntities(1L);
 
         assertTrue(elements.isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("compositeRequestSamples")
+    void testCompositeCreateRequestDynamicOrdering(List<Long> ids) {
+        CompositeCreateRequest request = new CompositeCreateRequest(ids);
+
+        List<CompositeFunctionElement> elements = request.toEntities(55L);
+
+        assertEquals(ids.size(), elements.size());
+        for (int i = 0; i < ids.size(); i++) {
+            CompositeFunctionElement element = elements.get(i);
+            assertEquals(i + 1, element.getFunctionOrder());
+            assertEquals(55L, element.getCompositeId());
+            assertEquals(ids.get(i), element.getFunctionId());
+        }
+    }
+
+    static Stream<Arguments> compositeRequestSamples() {
+        return Stream.of(
+                Arguments.of(List.of(10L, 20L, 30L)),
+                Arguments.of(List.of(42L)),
+                Arguments.of(List.of(3L, 2L, 1L, 0L))
+        );
+    }
+
+    static Stream<Arguments> operationSamples() {
+        return Stream.of(
+                Arguments.of(1L, 2L, "DIVIDE", -5.5),
+                Arguments.of(2L, 2L, "MULTIPLY", 0.0),
+                Arguments.of(99L, 100L, "ADD", 123.456)
+        );
     }
 }

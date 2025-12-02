@@ -5,7 +5,6 @@ import org.junit.jupiter.api.*;
 import util.DatabaseConnection;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,15 +17,14 @@ class UserDAOTest {
 
     @BeforeAll
     void setup() {
+        DaoTestSupport.initializeDatabase();
         userDAO = new UserDAO();
         conn = DatabaseConnection.getConnection();
     }
 
     @BeforeEach
     void cleanTable() throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM users")) {
-            stmt.executeUpdate();
-        }
+        DaoTestSupport.clearAllTables(conn);
     }
 
     @Test

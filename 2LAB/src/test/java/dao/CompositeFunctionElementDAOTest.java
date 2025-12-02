@@ -8,7 +8,6 @@ import org.junit.jupiter.api.*;
 import util.DatabaseConnection;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -29,6 +28,7 @@ class CompositeFunctionElementDAOTest {
 
     @BeforeAll
     void globalSetup() {
+        DaoTestSupport.initializeDatabase();
         dao = new CompositeFunctionElementDAO();
         functionDAO = new FunctionDAO();
         userDAO = new UserDAO();
@@ -37,16 +37,7 @@ class CompositeFunctionElementDAOTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        // Полная очистка всех таблиц (порядок важен из-за FK)
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM composite_function_elements; " +
-                        "DELETE FROM function_points; " +
-                        "DELETE FROM operations_result_points; " +
-                        "DELETE FROM functions; " +
-                        "DELETE FROM users;"
-        )) {
-            stmt.executeUpdate();
-        }
+        DaoTestSupport.clearAllTables(conn);
 
         userDAO.insert(new User("compUser", "hash123", "user", "test"));
         User user = userDAO.select("compUser");

@@ -22,6 +22,7 @@ class FunctionPointDAOTest {
 
     @BeforeAll
     void setup() {
+        DaoTestSupport.initializeDatabase();
         pointDAO = new FunctionPointDAO();
         functionDAO = new FunctionDAO();
         userDAO = new UserDAO();
@@ -30,9 +31,7 @@ class FunctionPointDAOTest {
 
     @BeforeEach
     void cleanTables() throws SQLException {
-        conn.prepareStatement("DELETE FROM function_points").executeUpdate();
-        conn.prepareStatement("DELETE FROM functions").executeUpdate();
-        conn.prepareStatement("DELETE FROM users").executeUpdate();
+        DaoTestSupport.clearAllTables(conn);
     }
 
     private long createFunction() {

@@ -27,6 +27,7 @@ class OperationResultPointDAOTest {
 
     @BeforeAll
     void globalSetup() {
+        DaoTestSupport.initializeDatabase();
         dao = new OperationResultPointDAO();
         functionDAO = new FunctionDAO();
         functionPointDAO = new FunctionPointDAO();
@@ -35,13 +36,7 @@ class OperationResultPointDAOTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM operations_result_points; " +
-                        "DELETE FROM function_points; " +
-                        "DELETE FROM functions; " +
-                        "DELETE FROM users;")) {
-            stmt.executeUpdate();
-        }
+        DaoTestSupport.clearAllTables(conn);
 
         UserDAO userDAO = new UserDAO();
         userDAO.insert(new User("testuser", "hash", "user", "test"));

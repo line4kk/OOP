@@ -20,6 +20,7 @@ class FunctionDAOTest {
 
     @BeforeAll
     void setup() {
+        DaoTestSupport.initializeDatabase();
         functionDAO = new FunctionDAO();
         userDAO = new UserDAO();
         conn = DatabaseConnection.getConnection();
@@ -27,12 +28,7 @@ class FunctionDAOTest {
 
     @BeforeEach
     void cleanTables() throws SQLException {
-        try (PreparedStatement pstmt = conn.prepareStatement("DELETE FROM functions")) {
-            pstmt.executeUpdate();
-        }
-        try (PreparedStatement pstmt = conn.prepareStatement("DELETE FROM users")) {
-            pstmt.executeUpdate();
-        }
+        DaoTestSupport.clearAllTables(conn);
     }
 
     private long createTestUser() {
@@ -58,6 +54,7 @@ class FunctionDAOTest {
         Function byId = functionDAO.selectById(fetched.getId());
         assertNotNull(byId);
         assertEquals(fetched.getId(), byId.getId());
+        assertEquals("source", fetched.getSource());
     }
 
     @Test
