@@ -31,7 +31,7 @@ public class ApiPerformanceTest {
 
         results.add(new String[]{"API_Operation", "Time(ms)", "Status"});
 
-        final Long[] functionIds = {null, null};
+        final Long[] functionIds = {null, null, null}; // Для 3 функций
         final String[] basicAuthHeader = {null};
 
         try {
@@ -107,7 +107,7 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 4. Обновление типа фабрики (исправлено: factory_type вместо factoryType)
+            // 4. Обновление типа фабрики
             timeMeasurement("Update_Factory_Type", () -> {
                 String requestJson = "{" +
                         "\"factory_type\": \"linked_list\"" +
@@ -120,16 +120,16 @@ public class ApiPerformanceTest {
 
                 ResponseEntity<String> response = publicRestTemplate.exchange(
                         baseUrl + "/users/settings/factory_types",
-                        HttpMethod.PATCH, request, String.class);
+                        HttpMethod.PUT, request, String.class);
 
                 return getStatusFromResponse(response);
             });
 
-            // 5. Создание функции 1
+            // 5. Создание функции 1 (linked_list_tabulated)
             functionIds[0] = timeMeasurementWithId("Create_Function_1", () -> {
                 String requestJson = "{" +
                         "\"name\": \"TabulatedFunc_1_" + System.currentTimeMillis() + "\"," +
-                        "\"type\": \"array_tabulated\"," +
+                        "\"type\": \"linked_list_tabulated\"," +
                         "\"source\": \"base\"" +
                         "}";
 
@@ -147,10 +147,32 @@ public class ApiPerformanceTest {
                 return null;
             });
 
-            // 6. Создание функции 2
+            // 6. Создание функции 2 (linked_list_tabulated)
             functionIds[1] = timeMeasurementWithId("Create_Function_2", () -> {
                 String requestJson = "{" +
-                        "\"name\": \"AnalyticFunc_2_" + System.currentTimeMillis() + "\"," +
+                        "\"name\": \"TabulatedFunc_2_" + System.currentTimeMillis() + "\"," +
+                        "\"type\": \"linked_list_tabulated\"," +
+                        "\"source\": \"base\"" +
+                        "}";
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Authorization", basicAuthHeader[0]);
+                HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
+
+                ResponseEntity<String> response = publicRestTemplate.postForEntity(
+                        baseUrl + "/functions", request, String.class);
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return extractIdFromResponse(response.getBody());
+                }
+                return null;
+            });
+
+            // 7. Создание функции 3 (analytical)
+            functionIds[2] = timeMeasurementWithId("Create_Function_3", () -> {
+                String requestJson = "{" +
+                        "\"name\": \"AnalyticFunc_3_" + System.currentTimeMillis() + "\"," +
                         "\"type\": \"analytical\"," +
                         "\"source\": \"base\"" +
                         "}";
@@ -169,7 +191,7 @@ public class ApiPerformanceTest {
                 return null;
             });
 
-            if (functionIds[0] == null || functionIds[1] == null) {
+            if (functionIds[0] == null || functionIds[1] == null || functionIds[2] == null) {
                 System.out.println("Function creation failed");
                 saveResults();
                 return;
@@ -177,8 +199,9 @@ public class ApiPerformanceTest {
 
             final Long funcId1 = functionIds[0];
             final Long funcId2 = functionIds[1];
+            final Long funcId3 = functionIds[2];
 
-            // 7. Получение всех функций
+            // 8. Получение всех функций
             timeMeasurement("Get_All_Functions", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
@@ -190,7 +213,7 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 8. Получение аналитических функций
+            // 9. Получение аналитических функций
             timeMeasurement("Get_Analytic_Functions", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
@@ -203,7 +226,7 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 9. Получение информации о функции
+            // 10. Получение информации о функции
             timeMeasurement("Get_Function_Info", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
@@ -216,11 +239,11 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 10. Обновление функции - исправлено на PUT
+            // 11. Обновление функции
             timeMeasurement("Update_Function", () -> {
                 String requestJson = "{" +
                         "\"name\": \"UpdatedFunction_Perf\"," +
-                        "\"type\": \"array_tabulated\"," +
+                        "\"type\": \"linked_list_tabulated\"," +
                         "\"source\": \"base\"" +
                         "}";
 
@@ -229,7 +252,6 @@ public class ApiPerformanceTest {
                 headers.set("Authorization", basicAuthHeader[0]);
                 HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
 
-                // Используем PUT вместо POST
                 ResponseEntity<String> response = publicRestTemplate.exchange(
                         baseUrl + "/functions/" + funcId1,
                         HttpMethod.PUT, request, String.class);
@@ -237,12 +259,14 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 11. Добавление точек функции
+            // 12. Добавление точек функции 1
             timeMeasurement("Add_Function_Points", () -> {
                 String requestJson = "[" +
                         "{\"x\": 1.0, \"y\": 2.0}," +
                         "{\"x\": 2.0, \"y\": 4.0}," +
-                        "{\"x\": 3.0, \"y\": 6.0}" +
+                        "{\"x\": 3.0, \"y\": 6.0}," +
+                        "{\"x\": -5.5, \"y\": -11.0}," +
+                        "{\"x\": 100.25, \"y\": 200.5}" +
                         "]";
 
                 HttpHeaders headers = new HttpHeaders();
@@ -257,7 +281,27 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 12. Получение точек функции
+            // 13. Добавление точек функции 2
+            timeMeasurement("Add_Points_Function2", () -> {
+                String requestJson = "[" +
+                        "{\"x\": 0.5, \"y\": 1.0}," +
+                        "{\"x\": 1.5, \"y\": 3.0}," +
+                        "{\"x\": 2.5, \"y\": 5.0}" +
+                        "]";
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Authorization", basicAuthHeader[0]);
+                HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
+
+                ResponseEntity<String> response = publicRestTemplate.postForEntity(
+                        baseUrl + "/functions/" + funcId2 + "/points",
+                        request, String.class);
+
+                return getStatusFromResponse(response);
+            });
+
+            // 14. Получение точек функции
             timeMeasurement("Get_Function_Points", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
@@ -270,15 +314,50 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 13-14. Пропускаем обновление и удаление точки (нужен ID точки)
-            results.add(new String[]{"Update_Point", "0.00", "SKIPPED"});
-            results.add(new String[]{"Delete_Point", "0.00", "SKIPPED"});
+            // 15. Обновление точки (сначала получим ID точки)
+            String pointId = extractPointIdFromResponse(funcId1, basicAuthHeader[0], publicRestTemplate);
 
-            // 15. Добавление точек снова
+            if (pointId != null) {
+                timeMeasurement("Update_Point", () -> {
+                    String requestJson = "{" +
+                            "\"x\": 15.0," +
+                            "\"y\": 30.0" +
+                            "}";
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.set("Authorization", basicAuthHeader[0]);
+                    HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
+
+                    ResponseEntity<String> response = publicRestTemplate.exchange(
+                            baseUrl + "/functions/" + funcId1 + "/points/" + pointId,
+                            HttpMethod.PUT, request, String.class);
+
+                    return getStatusFromResponse(response);
+                });
+
+                // 16. Удаление точки
+                timeMeasurement("Delete_Point", () -> {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("Authorization", basicAuthHeader[0]);
+                    HttpEntity<String> request = new HttpEntity<>(headers);
+
+                    ResponseEntity<String> response = publicRestTemplate.exchange(
+                            baseUrl + "/functions/" + funcId1 + "/points/" + pointId,
+                            HttpMethod.DELETE, request, String.class);
+
+                    return getStatusFromResponse(response);
+                });
+            } else {
+                results.add(new String[]{"Update_Point", "0.00", "SKIPPED"});
+                results.add(new String[]{"Delete_Point", "0.00", "SKIPPED"});
+            }
+
+            // 17. Добавление точек снова
             timeMeasurement("Add_Points_Again", () -> {
                 String requestJson = "[" +
-                        "{\"x\": 1.0, \"y\": 2.0}," +
-                        "{\"x\": 2.0, \"y\": 4.0}" +
+                        "{\"x\": 10.0, \"y\": 20.0}," +
+                        "{\"x\": 20.0, \"y\": 40.0}" +
                         "]";
 
                 HttpHeaders headers = new HttpHeaders();
@@ -293,7 +372,7 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 16. Удаление всех точек
+            // 18. Удаление всех точек
             timeMeasurement("Delete_All_Points", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
@@ -306,10 +385,10 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 17. Создание композитной функции - исправлено на function_ids_in_order
+            // 19. Создание композитной функции
             timeMeasurement("Create_Composite_Function", () -> {
                 String requestJson = "{" +
-                        "\"function_ids_in_order\": [" + funcId1 + "," + funcId2 + "]," +
+                        "\"function_ids_in_order\": [" + funcId3 + "," + funcId2 + "]," +
                         "\"name\": \"CompositeFunction_Perf_" + System.currentTimeMillis() + "\"" +
                         "}";
 
@@ -324,14 +403,14 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 18. Сэмплирование функции
+            // 20. Сэмплирование функции
             timeMeasurement("Function_Sampling", () -> {
                 String requestJson = "{" +
-                        "\"function_id\": " + funcId2 + "," +
-                        "\"analytical_function_id\": " + funcId2 + "," +
-                        "\"x_from\": 0.0," +
-                        "\"x_to\": 10.0," +
-                        "\"count\": 5" +
+                        "\"function_id\": " + funcId1 + "," +
+                        "\"analytical_function_id\": " + funcId3 + "," +
+                        "\"x_from\": 0," +
+                        "\"x_to\": 10," +
+                        "\"count\": 20" +
                         "}";
 
                 HttpHeaders headers = new HttpHeaders();
@@ -340,31 +419,12 @@ public class ApiPerformanceTest {
                 HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
 
                 ResponseEntity<String> response = publicRestTemplate.postForEntity(
-                        baseUrl + "/functions/" + funcId2 + "/sampling", request, String.class);
+                        baseUrl + "/functions/" + funcId1 + "/sampling", request, String.class);
 
                 return getStatusFromResponse(response);
             });
 
-            // 19. Операция сложения
-            timeMeasurement("Perform_Operation_Add", () -> {
-                String requestJson = "{" +
-                        "\"function1_id\": " + funcId1 + "," +
-                        "\"function2_id\": " + funcId2 + "," +
-                        "\"operation\": \"add\"" +
-                        "}";
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("Authorization", basicAuthHeader[0]);
-                HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
-
-                ResponseEntity<String> response = publicRestTemplate.postForEntity(
-                        baseUrl + "/operation", request, String.class);
-
-                return getStatusFromResponse(response);
-            });
-
-            // 20. Операция дифференцирования
+            // 21. Операция производной
             timeMeasurement("Perform_Operation_Derive", () -> {
                 String requestJson = "{" +
                         "\"function1_id\": " + funcId1 + "," +
@@ -383,14 +443,14 @@ public class ApiPerformanceTest {
                 return getStatusFromResponse(response);
             });
 
-            // 21. Удаление функции
+            // 22. Удаление функции (только Function 1, не из композиции)
             timeMeasurement("Delete_Function", () -> {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", basicAuthHeader[0]);
                 HttpEntity<String> request = new HttpEntity<>(headers);
 
                 ResponseEntity<String> response = publicRestTemplate.exchange(
-                        baseUrl + "/functions/" + funcId2,
+                        baseUrl + "/functions/" + funcId1,
                         HttpMethod.DELETE, request, String.class);
 
                 return getStatusFromResponse(response);
@@ -404,6 +464,31 @@ public class ApiPerformanceTest {
             e.printStackTrace();
             saveResults();
         }
+    }
+
+    private String extractPointIdFromResponse(Long funcId, String authHeader, TestRestTemplate restTemplate) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/functions/" + funcId + "/points",
+                    HttpMethod.GET, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String body = response.getBody();
+                if (body.startsWith("[") && body.contains("\"id\":")) {
+                    int idStart = body.indexOf("\"id\":") + 5;
+                    int idEnd = body.indexOf(",", idStart);
+                    if (idEnd == -1) idEnd = body.indexOf("}", idStart);
+                    return body.substring(idStart, idEnd).trim();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to extract point ID: " + e.getMessage());
+        }
+        return null;
     }
 
     private String getStatusFromResponse(ResponseEntity<String> response) {
@@ -435,16 +520,20 @@ public class ApiPerformanceTest {
     private Long extractIdFromResponse(String responseBody) {
         if (responseBody != null) {
             try {
-                int idIndex = responseBody.indexOf("\"id\":");
-                if (idIndex != -1) {
-                    int start = idIndex + 5;
-                    int end = responseBody.indexOf(",", start);
-                    if (end == -1) end = responseBody.indexOf("}", start);
-                    String idStr = responseBody.substring(start, end).trim();
-                    return Long.parseLong(idStr);
+                // Парсим JSON более надежно
+                if (responseBody.contains("\"id\"")) {
+                    String[] parts = responseBody.split("\"id\":");
+                    if (parts.length > 1) {
+                        String idPart = parts[1];
+                        String idStr = idPart.split(",")[0].trim();
+                        // Убираем возможные кавычки и скобки
+                        idStr = idStr.replace("\"", "").replace("}", "").trim();
+                        return Long.parseLong(idStr);
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Failed to parse ID from response: " + responseBody);
+                e.printStackTrace();
             }
         }
         return null;
@@ -495,10 +584,49 @@ public class ApiPerformanceTest {
                 writer.write("\n");
             }
             System.out.println("Results saved to api_performance_results.csv");
+
+            // Выводим статистику в консоль
+            printStatistics();
+
         } catch (IOException e) {
             System.err.println("Error writing CSV: " + e.getMessage());
         }
+    }
 
+    private void printStatistics() {
+        System.out.println("\n=== PERFORMANCE STATISTICS ===");
+        double totalTime = 0;
+        int successCount = 0;
+        List<Double> times = new ArrayList<>();
+
+        for (int i = 1; i < results.size(); i++) {
+            String[] record = results.get(i);
+            if (!"SKIPPED".equals(record[2])) {
+                try {
+                    double time = Double.parseDouble(record[1]);
+                    totalTime += time;
+                    times.add(time);
+                    if ("SUCCESS".equals(record[2])) {
+                        successCount++;
+                    }
+                } catch (NumberFormatException e) {
+                    // Пропускаем некорректные записи
+                }
+            }
+        }
+
+        if (times.size() > 0) {
+            double avgTime = totalTime / times.size();
+            double maxTime = times.stream().max(Double::compare).orElse(0.0);
+            double minTime = times.stream().min(Double::compare).orElse(0.0);
+
+            System.out.println("Total Operations: " + (results.size() - 1));
+            System.out.println("Successful Operations: " + successCount);
+            System.out.println("Total Time: " + String.format("%.2f", totalTime) + "ms");
+            System.out.println("Average Time: " + String.format("%.2f", avgTime) + "ms");
+            System.out.println("Fastest Operation: " + String.format("%.2f", minTime) + "ms");
+            System.out.println("Slowest Operation: " + String.format("%.2f", maxTime) + "ms");
+        }
     }
 
     @FunctionalInterface

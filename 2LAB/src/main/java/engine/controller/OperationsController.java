@@ -58,7 +58,7 @@ public class OperationsController {
                 return ResponseEntity.status(404).body("Функция с ID " + request.getFunction1_id() + " не найдена");
             }
             Functions function1 = function1Opt.get();
-            if (!function1.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function1.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
             if (!isTabulated(function1)) {
@@ -92,7 +92,7 @@ public class OperationsController {
                         return ResponseEntity.status(404).body("Функция с ID " + request.getFunction2_id() + " не найдена");
                     }
                     Functions function2 = function2Opt.get();
-                    if (!function2.getUser().getId().equals(currentUser.getId())) {
+                    if (!securityUtils.canAccessUserData(function2.getUser())) {
                         return ResponseEntity.status(403).body("Forbidden");
                     }
                     if (!isTabulated(function2)) {

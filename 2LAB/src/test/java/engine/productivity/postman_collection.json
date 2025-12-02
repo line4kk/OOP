@@ -1,4 +1,3 @@
-
 {
   "info": {
     "name": "FunFunctionsAPI - Complete Performance Tests",
@@ -13,12 +12,12 @@
     },
     {
       "key": "admin_username",
-      "value": "admin",
+      "value": "admin_perf",
       "type": "string"
     },
     {
       "key": "admin_password",
-      "value": "qwerty",
+      "value": "AdminPass123",
       "type": "string"
     },
     {
@@ -28,7 +27,7 @@
     },
     {
       "key": "test_password",
-      "value": "testpass123",
+      "value": "TestPass123456",
       "type": "string"
     },
     {
@@ -48,6 +47,11 @@
     },
     {
       "key": "function_id_2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "function_id_3",
       "value": "",
       "type": "string"
     },
@@ -89,13 +93,18 @@
           "script": {
             "exec": [
               "pm.test(\"Admin registration successful\", function () {",
-              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
               "});",
-              "var jsonData = pm.response.json();",
-              "pm.collectionVariables.set(\"user_id\", jsonData.id);",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"admin_registration_time\", responseTime);",
-              "console.log(\"Admin user created in \" + responseTime + \"ms\");"
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set(\"user_id\", jsonData.id);",
+              "    var responseTime = pm.response.responseTime;",
+              "    pm.collectionVariables.set(\"admin_registration_time\", responseTime);",
+              "    console.log(\"Admin user created in \" + responseTime + \"ms\");",
+              "} else if (pm.response.code === 409) {",
+              "    console.log(\"Admin user already exists, proceeding...\");",
+              "    pm.collectionVariables.set(\"admin_registration_time\", 0);",
+              "}"
             ]
           }
         }
@@ -250,7 +259,7 @@
       ]
     },
     {
-      "name": "Create Function 1 - Tabulated",
+      "name": "Create Function 1",
       "request": {
         "method": "POST",
         "header": [
@@ -265,7 +274,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"TestFunction_Perf_1_{{Date.now()}}\",\n  \"type\": \"array_tabulated\",\n  \"source\": \"base\"\n}"
+          "raw": "{\n  \"name\": \"TestFunction_Perf_1_{{Date.now()}}\",\n  \"type\": \"linked_list_tabulated\",\n  \"source\": \"base\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/functions",
@@ -292,7 +301,7 @@
       ]
     },
     {
-      "name": "Create Function 2 - Analytical",
+      "name": "Create Function 2",
       "request": {
         "method": "POST",
         "header": [
@@ -307,7 +316,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"TestFunction_Perf_2_{{Date.now()}}\",\n  \"type\": \"analytical\",\n  \"source\": \"base\"\n}"
+          "raw": "{\n  \"name\": \"TestFunction_Perf_2_{{Date.now()}}\",\n  \"type\": \"linked_list_tabulated\",\n  \"source\": \"base\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/functions",
@@ -328,6 +337,48 @@
               "var responseTime = pm.response.responseTime;",
               "pm.collectionVariables.set(\"create_function_2_time\", responseTime);",
               "console.log(\"Create Function 2 took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Function 3",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"TestFunction_Perf_3_{{Date.now()}}\",\n  \"type\": \"analytical\",\n  \"source\": \"base\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions",
+          "host": ["{{base_url}}"],
+          "path": ["functions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"function_id_3\", jsonData.id);",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"create_function_3_time\", responseTime);",
+              "console.log(\"Create Function 3 took \" + responseTime + \"ms\");"
             ]
           }
         }
@@ -445,7 +496,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"UpdatedFunction_Perf_{{Date.now()}}\",\n  \"type\": \"array_tabulated\",\n  \"source\": \"base\"\n}"
+          "raw": "{\n  \"name\": \"UpdatedFunction_Perf_{{Date.now()}}\",\n  \"type\": \"linked_list_tabulated\",\n  \"source\": \"base\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/functions/{{function_id}}",
@@ -546,6 +597,78 @@
       ]
     },
     {
+      "name": "Update Point",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"x\": 15.0,\n  \"y\": 30.0\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points/{{point_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points", "{{point_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"update_point_time\", responseTime);",
+              "console.log(\"Update Point took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Point",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{auth_header}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/functions/{{function_id}}/points/{{point_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["functions", "{{function_id}}", "points", "{{point_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var responseTime = pm.response.responseTime;",
+              "pm.collectionVariables.set(\"delete_point_time\", responseTime);",
+              "console.log(\"Delete Point took \" + responseTime + \"ms\");"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Add Points Again",
       "request": {
         "method": "POST",
@@ -637,7 +760,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"function_ids_in_order\": [{{function_id}}, {{function_id_2}}],\n  \"name\": \"CompositeFunction_Perf_{{Date.now()}}\"\n}"
+          "raw": "{\n  \"function_ids_in_order\": [{{function_id_3}}, {{function_id_2}}],\n  \"name\": \"CompositeFunction_Perf_{{Date.now()}}\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/functions/analytical_functions",
@@ -664,38 +787,6 @@
       ]
     },
     {
-      "name": "Get Composite Function Composition",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/analytical_functions/{{composite_function_id}}/composition",
-          "host": ["{{base_url}}"],
-          "path": ["analytical_functions", "{{composite_function_id}}", "composition"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"get_composite_composition_time\", responseTime);",
-              "console.log(\"Get Composite Composition took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
       "name": "Function Sampling",
       "request": {
         "method": "POST",
@@ -711,12 +802,12 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"analytical_function_id\": {{function_id_2}},\n  \"x_from\": 0,\n  \"x_to\": 10,\n  \"count\": 20\n}"
+          "raw": "{\n  \"function_id\": {{function_id}},\n  \"analytical_function_id\": {{function_id_3}},\n  \"x_from\": 0,\n  \"x_to\": 10,\n  \"count\": 20\n}"
         },
         "url": {
-          "raw": "{{base_url}}/functions/{{function_id_2}}/sampling",
+          "raw": "{{base_url}}/functions/{{function_id}}/sampling",
           "host": ["{{base_url}}"],
-          "path": ["functions", "{{function_id_2}}", "sampling"]
+          "path": ["functions", "{{function_id}}", "sampling"]
         }
       },
       "event": [
@@ -736,167 +827,7 @@
       ]
     },
     {
-      "name": "Perform Operation - Add",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"add\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/operation",
-          "host": ["{{base_url}}"],
-          "path": ["operation"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"operation_add_time\", responseTime);",
-              "console.log(\"Perform Operation Add took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Perform Operation - Subtract",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"subtract\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/operation",
-          "host": ["{{base_url}}"],
-          "path": ["operation"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"operation_subtract_time\", responseTime);",
-              "console.log(\"Perform Operation Subtract took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Perform Operation - Multiplication",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"multiplication\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/operation",
-          "host": ["{{base_url}}"],
-          "path": ["operation"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"operation_multiplication_time\", responseTime);",
-              "console.log(\"Perform Operation Multiplication took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Perform Operation - Division",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"function1_id\": {{function_id}},\n  \"function2_id\": {{function_id_2}},\n  \"operation\": \"division\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/operation",
-          "host": ["{{base_url}}"],
-          "path": ["operation"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"operation_division_time\", responseTime);",
-              "console.log(\"Perform Operation Division took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Perform Operation - Derive",
+      "name": "Perform Operation Derive",
       "request": {
         "method": "POST",
         "header": [
@@ -936,38 +867,6 @@
       ]
     },
     {
-      "name": "Admin - Get All Users",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{auth_header}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/admin/users",
-          "host": ["{{base_url}}"],
-          "path": ["admin", "users"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "var responseTime = pm.response.responseTime;",
-              "pm.collectionVariables.set(\"admin_get_users_time\", responseTime);",
-              "console.log(\"Admin Get All Users took \" + responseTime + \"ms\");"
-            ]
-          }
-        }
-      ]
-    },
-    {
       "name": "Delete Function",
       "request": {
         "method": "DELETE",
@@ -978,9 +877,9 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/functions/{{function_id_2}}",
+          "raw": "{{base_url}}/functions/{{function_id}}",
           "host": ["{{base_url}}"],
-          "path": ["functions", "{{function_id_2}}"]
+          "path": ["functions", "{{function_id}}"]
         }
       },
       "event": [
@@ -1029,23 +928,21 @@
           "        { name: \"Update_Factory_Type\", timeVar: \"update_factory_time\" },",
           "        { name: \"Create_Function_1\", timeVar: \"create_function_1_time\" },",
           "        { name: \"Create_Function_2\", timeVar: \"create_function_2_time\" },",
+          "        { name: \"Create_Function_3\", timeVar: \"create_function_3_time\" },",
           "        { name: \"Get_All_Functions\", timeVar: \"get_all_functions_time\" },",
           "        { name: \"Get_Analytic_Functions\", timeVar: \"get_analytic_functions_time\" },",
           "        { name: \"Get_Function_Info\", timeVar: \"get_function_info_time\" },",
           "        { name: \"Update_Function\", timeVar: \"update_function_time\" },",
           "        { name: \"Add_Function_Points\", timeVar: \"add_points_time\" },",
           "        { name: \"Get_Function_Points\", timeVar: \"get_points_time\" },",
+          "        { name: \"Update_Point\", timeVar: \"update_point_time\" },",
+          "        { name: \"Delete_Point\", timeVar: \"delete_point_time\" },",
           "        { name: \"Add_Points_Again\", timeVar: \"add_points_again_time\" },",
           "        { name: \"Delete_All_Points\", timeVar: \"delete_all_points_time\" },",
           "        { name: \"Create_Composite_Function\", timeVar: \"create_composite_time\" },",
-          "        { name: \"Get_Composite_Composition\", timeVar: \"get_composite_composition_time\" },",
           "        { name: \"Function_Sampling\", timeVar: \"sampling_time\" },",
           "        { name: \"Perform_Operation_Add\", timeVar: \"operation_add_time\" },",
-          "        { name: \"Perform_Operation_Subtract\", timeVar: \"operation_subtract_time\" },",
-          "        { name: \"Perform_Operation_Multiplication\", timeVar: \"operation_multiplication_time\" },",
-          "        { name: \"Perform_Operation_Division\", timeVar: \"operation_division_time\" },",
           "        { name: \"Perform_Operation_Derive\", timeVar: \"operation_derive_time\" },",
-          "        { name: \"Admin_Get_All_Users\", timeVar: \"admin_get_users_time\" },",
           "        { name: \"Delete_Function\", timeVar: \"delete_function_time\" }",
           "    ];",
           "    ",

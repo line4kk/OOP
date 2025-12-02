@@ -136,7 +136,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -163,7 +163,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -174,7 +174,7 @@ public class FunctionController {
             }
 
             boolean nameExists = multipleSearchService.findFunctionsByName(request.getName()).stream()
-                    .anyMatch(f -> f.getUser().getId().equals(currentUser.getId()) && !f.getId().equals(functionId));
+                    .anyMatch(f -> securityUtils.canAccessUserData(f.getUser()) && !f.getId().equals(functionId));
             if (nameExists) {
                 return ResponseEntity.status(409).body("Функция с таким именем уже существует");
             }
@@ -205,7 +205,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
             if (singleSearchService.isFunctionUsedInComposition(function)) {
@@ -235,7 +235,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -266,7 +266,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -319,7 +319,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -364,7 +364,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
@@ -396,7 +396,7 @@ public class FunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions function = functionOpt.get();
-            if (!function.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(function.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 

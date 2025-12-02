@@ -62,7 +62,7 @@ public class AnalyticalFunctionController {
             }
 
             boolean nameExists = multipleSearchService.findFunctionsByName(request.getName()).stream()
-                    .anyMatch(f -> f.getUser().getId().equals(currentUser.getId()));
+                    .anyMatch(f -> securityUtils.canAccessUserData(f.getUser()));
             if (nameExists) {
                 return ResponseEntity.status(409).body("Композиция с таким именем уже существует");
             }
@@ -78,7 +78,7 @@ public class AnalyticalFunctionController {
                     return ResponseEntity.status(404).body("Функция не найдена");
                 }
                 Functions component = componentOpt.get();
-                if (!component.getUser().getId().equals(currentUser.getId())) {
+                if (!securityUtils.canAccessUserData(component.getUser())) {
                     return ResponseEntity.status(403).body("Forbidden");
                 }
                 orderedComponents.add(component);
@@ -137,7 +137,7 @@ public class AnalyticalFunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions targetFunction = targetFunctionOpt.get();
-            if (!targetFunction.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(targetFunction.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
             if (!"linked_list_tabulated".equals(targetFunction.getType()) &&
@@ -150,7 +150,7 @@ public class AnalyticalFunctionController {
                 return ResponseEntity.status(404).body("Функция не найдена");
             }
             Functions analyticalFunction = analyticalFunctionOpt.get();
-            if (!analyticalFunction.getUser().getId().equals(currentUser.getId())) {
+            if (!securityUtils.canAccessUserData(analyticalFunction.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
             if (!"analytical".equals(analyticalFunction.getType())) {

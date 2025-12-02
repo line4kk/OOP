@@ -52,4 +52,23 @@ public class SecurityUtils {
     public boolean isAdmin() {
         return hasRole("ADMIN");
     }
+
+    public boolean canAccessUserData(Users resourceOwner) {
+        Users currentUser = getCurrentUser();
+        if (currentUser == null || resourceOwner == null) {
+            return false;
+        }
+
+        boolean ownerAccess = resourceOwner.getId() != null && resourceOwner.getId().equals(currentUser.getId());
+        boolean adminAccess = isAdmin();
+
+        logger.debug("Проверка доступа: текущий={}, владелец={}, админ={}",
+                currentUser.getUsername(),
+                resourceOwner.getUsername(),
+                adminAccess);
+
+        return ownerAccess || adminAccess;
+    }
 }
+
+
