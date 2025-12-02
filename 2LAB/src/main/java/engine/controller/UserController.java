@@ -10,14 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -33,6 +30,7 @@ public class UserController {
     @Autowired private BCryptPasswordEncoder passwordEncoder;
 
     @GetMapping("/users")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCurrentUser() {
         try {
             logger.info("GET /users - получение информации о текущем пользователе");
@@ -58,6 +56,7 @@ public class UserController {
     }
 
     @PutMapping("/users/settings/factory_types")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateFactoryType(@RequestBody FactoryTypeUpdateRequest request) {
         try {
             logger.info("PUT /users/settings/factory_types - обновление типа фабрики: {}", request.getFactory_type());
@@ -127,11 +126,23 @@ public class UserController {
             if (request.getPassword() == null || request.getPassword().length() < 8 || request.getPassword().length() > 64) {
                 return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
             }
-            if (request.getRole() == null || !ALLOWED_ROLES.contains(request.getRole())) {
-                return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
-            }
             if (request.getFactory_type() == null || !ALLOWED_FACTORY_TYPES.contains(request.getFactory_type())) {
                 return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
+            }
+
+            Users currentUser = securityUtils.getCurrentUser();
+            boolean isAdmin = securityUtils.isAdmin();
+
+            String requestedRole = request.getRole() == null ? "user" : request.getRole().toLowerCase();
+            if (!ALLOWED_ROLES.contains(requestedRole)) {
+                return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
+            }
+            if ("admin".equals(requestedRole) && !isAdmin) {
+                logger.warn("Попытка назначить роль ADMIN без прав: {}", request.getUsername());
+                return ResponseEntity.status(403).body("Назначение роли доступно только администратору");
+            }
+            if (currentUser == null && "user".equals(requestedRole)) {
+                logger.info("Регистрация без аутентификации: роль установлена по умолчанию USER");
             }
 
             if (singleSearchService.findUserByUsername(request.getUsername()) != null) {
@@ -143,7 +154,7 @@ public class UserController {
             Users newUser = new Users(
                     request.getUsername(),
                     hashedPassword,
-                    request.getRole().toLowerCase(),
+                    requestedRole,
                     request.getFactory_type()
             );
             Users savedUser = singleSearchService.saveUser(newUser);
@@ -154,6 +165,36 @@ public class UserController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Ошибка при регистрации", e);
+            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
+        }
+    }
+
+    @PutMapping("/users/{user_id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUserRole(@PathVariable("user_id") Long userId,
+                                            @RequestBody RoleUpdateRequest request) {
+        try {
+            logger.info("PUT /users/{}/role - изменение роли пользователя", userId);
+
+            if (userId == null || userId <= 0) {
+                return ResponseEntity.status(400).body("Некорректный ID пользователя");
+            }
+            if (request.getRole() == null || !ALLOWED_ROLES.contains(request.getRole())) {
+                return ResponseEntity.status(400).body("Некорректная роль");
+            }
+
+            Users targetUser = singleSearchService.findUserById(userId);
+            if (targetUser == null) {
+                return ResponseEntity.status(404).body("Пользователь не найден");
+            }
+
+            targetUser.setRole(request.getRole());
+            Users savedUser = singleSearchService.saveUser(targetUser);
+
+            logger.info("Роль пользователя {} изменена на {}", savedUser.getUsername(), savedUser.getRole());
+            return ResponseEntity.ok(mapToUserResponse(savedUser));
+        } catch (Exception e) {
+            logger.error("Ошибка при изменении роли пользователя", e);
             return ResponseEntity.status(500).body("Ошибка со стороны сервера");
         }
     }
@@ -173,6 +214,12 @@ public class UserController {
 
         public String getFactory_type() { return factory_type; }
         public void setFactory_type(String factory_type) { this.factory_type = factory_type; }
+    }
+    public static class RoleUpdateRequest {
+        private String role;
+
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
     }
 }
 

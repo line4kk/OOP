@@ -13,6 +13,7 @@ import operations.TabulatedFunctionOperationService;
 import functions.TabulatedFunction;
 import functions.factory.ArrayTabulatedFunctionFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class OperationsController {
 
     private static final Logger logger = LoggerFactory.getLogger(OperationsController.class);
