@@ -1,9 +1,6 @@
 package engine.controller;
 
-import engine.dto.CompositeCreateRequest;
-import engine.dto.FunctionResponse;
-import engine.dto.FunctionSamplingRequest;
-import engine.dto.PointResponse;
+import engine.dto.*;
 import engine.entity.CompositeFunctionElements;
 import engine.entity.FunctionPoints;
 import engine.entity.Functions;
@@ -21,10 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -99,6 +93,47 @@ public class AnalyticalFunctionController {
             ));
         } catch (Exception e) {
             logger.error("Ошибка при создании композитной функции", e);
+            return ResponseEntity.status(500).body("Ошибка со стороны сервера");
+        }
+    }
+
+    @GetMapping("/functions/{function_id}/composition")
+    public ResponseEntity<?> getCompositeFunctionElements(@PathVariable("function_id") Long functionId) {
+        try {
+            logger.info("GET /functions/{}/composition - получение состава композитной функции", functionId);
+
+            Users currentUser = securityUtils.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+
+            Optional<Functions> compositeFunctionOpt = singleSearchService.findFunctionById(functionId);
+            if (compositeFunctionOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Функция не найдена");
+            }
+
+            Functions compositeFunction = compositeFunctionOpt.get();
+            if (!securityUtils.canAccessUserData(compositeFunction.getUser())) {
+                return ResponseEntity.status(403).body("Forbidden");
+            }
+            if (!"composite".equals(compositeFunction.getSource()) ||
+                    !"analytical".equals(compositeFunction.getType())) {
+                return ResponseEntity.status(400).body("Функция не является композитной аналитической");
+            }
+
+            List<CompositeElementResponse> response = multipleSearchService
+                    .findCompositeFunctionElementsOrdered(functionId)
+                    .stream()
+                    .map(element -> new CompositeElementResponse(
+                            element.getId(),
+                            element.getFunctionOrder(),
+                            element.getFunction().getId()
+                    ))
+                    .toList();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Ошибка при получении состава композитной функции", e);
             return ResponseEntity.status(500).body("Ошибка со стороны сервера");
         }
     }

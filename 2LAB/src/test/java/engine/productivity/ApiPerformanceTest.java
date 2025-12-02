@@ -585,49 +585,11 @@ public class ApiPerformanceTest {
             }
             System.out.println("Results saved to api_performance_results.csv");
 
-            // Выводим статистику в консоль
-            printStatistics();
-
         } catch (IOException e) {
             System.err.println("Error writing CSV: " + e.getMessage());
         }
     }
 
-    private void printStatistics() {
-        System.out.println("\n=== PERFORMANCE STATISTICS ===");
-        double totalTime = 0;
-        int successCount = 0;
-        List<Double> times = new ArrayList<>();
-
-        for (int i = 1; i < results.size(); i++) {
-            String[] record = results.get(i);
-            if (!"SKIPPED".equals(record[2])) {
-                try {
-                    double time = Double.parseDouble(record[1]);
-                    totalTime += time;
-                    times.add(time);
-                    if ("SUCCESS".equals(record[2])) {
-                        successCount++;
-                    }
-                } catch (NumberFormatException e) {
-                    // Пропускаем некорректные записи
-                }
-            }
-        }
-
-        if (times.size() > 0) {
-            double avgTime = totalTime / times.size();
-            double maxTime = times.stream().max(Double::compare).orElse(0.0);
-            double minTime = times.stream().min(Double::compare).orElse(0.0);
-
-            System.out.println("Total Operations: " + (results.size() - 1));
-            System.out.println("Successful Operations: " + successCount);
-            System.out.println("Total Time: " + String.format("%.2f", totalTime) + "ms");
-            System.out.println("Average Time: " + String.format("%.2f", avgTime) + "ms");
-            System.out.println("Fastest Operation: " + String.format("%.2f", minTime) + "ms");
-            System.out.println("Slowest Operation: " + String.format("%.2f", maxTime) + "ms");
-        }
-    }
 
     @FunctionalInterface
     private interface StatusOperation {
