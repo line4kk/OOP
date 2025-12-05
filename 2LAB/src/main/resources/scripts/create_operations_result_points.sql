@@ -1,4 +1,4 @@
-CREATE TABLE operations_result_points(
+CREATE TABLE IF NOT EXISTS operations_result_points(
     id SERIAL PRIMARY KEY,
     operation VARCHAR(50) NOT NULL,
     point1_id INT NOT NULL,

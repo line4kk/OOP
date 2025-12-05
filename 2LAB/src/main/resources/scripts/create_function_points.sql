@@ -1,4 +1,4 @@
-CREATE TABLE function_points(
+CREATE TABLE IF NOT EXISTS function_points(
     id SERIAL PRIMARY KEY,
     function_id INT NOT NULL,
     x_value DOUBLE PRECISION NOT NULL,
@@ -21,6 +21,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS after_point_update ON function_points;
 CREATE TRIGGER after_point_update
 AFTER UPDATE ON function_points
 FOR EACH ROW

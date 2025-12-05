@@ -29,7 +29,6 @@ final class DaoTestSupport {
             for (String script : schemaScripts()) {
                 runScript(connection, script);
             }
-            createUpdateTrigger(connection);
             initialized = true;
         } catch (SQLException | IOException e) {
             throw new IllegalStateException("Не удалось инициализировать тестовую БД", e);
@@ -62,27 +61,12 @@ final class DaoTestSupport {
             if (is == null) {
                 throw new IllegalStateException("Скрипт не найден: " + resourcePath);
             }
-            String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            for (String statementText : sql.split(";")) {
-                String trimmed = statementText.trim();
-                if (trimmed.isEmpty()) {
-                    continue;
-                }
-                try (Statement statement = connection.createStatement()) {
-                    statement.execute(trimmed);
-                }
-            }
-        }
-    }
 
-    private static void createUpdateTrigger(Connection connection) throws SQLException {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(
-                    "CREATE TRIGGER IF NOT EXISTS delete_operations_after_point_update " +
-                            "AFTER UPDATE ON function_points FOR EACH ROW " +
-                            "DELETE FROM operations_result_points " +
-                            "WHERE point1_id = NEW.id OR point2_id = NEW.id"
-            );
+            String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(sql); // ← PostgreSQL позволяет выполнять много операторов одним вызовом
+            }
         }
     }
 }
