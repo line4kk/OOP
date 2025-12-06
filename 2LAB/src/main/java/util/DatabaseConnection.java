@@ -12,7 +12,7 @@ public class DatabaseConnection {
     private final Connection connection;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
 
-    private DatabaseConnection() throws SQLException {
+    private DatabaseConnection() throws SQLException, ClassNotFoundException {
         Dotenv dotenv = Dotenv.load();
 
         String url = dotenv.get("DB_URL");
@@ -24,6 +24,7 @@ public class DatabaseConnection {
             throw new IllegalStateException("Отсутствует конфигурация базы данных в .env");
         }
 
+        Class.forName("org.postgresql.Driver");
         this.connection = DriverManager.getConnection(url, user, password);
     }
 
@@ -35,6 +36,10 @@ public class DatabaseConnection {
             catch (SQLException e) {
                 logger.error("Ошибка при подключении к базе данных", e);
                 throw new IllegalStateException("Ошибка при подключении к базе данных", e);
+            }
+            catch (ClassNotFoundException e) {
+                logger.error("Не найден драйвер JDBC для подключения к базе данных", e);
+                throw new IllegalStateException("Ошибка при подключении к базе данных: не найден драйвер.", e);
             }
         return instance.connection;
     }
