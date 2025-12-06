@@ -1,7 +1,6 @@
 package services;
 
 import dao.DAO;
-import model.dto.requests.FunctionCreateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -84,8 +84,8 @@ public class UserService extends AbstractService<UserDAO> {
                 userFromRequest.getFactoryType()
         );
 
-        dao.insert(newUser);
+        newUser = dao.insert(newUser);
         logger.info("Пользователь {} успешно зарегистрирован", newUser.getUsername());
-        return UserResponse.from(dao.select(newUser.getUsername()));
+        return UserResponse.from(newUser);
     }
 }

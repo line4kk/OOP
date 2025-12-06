@@ -1,6 +1,6 @@
 package dao;
 
 public interface DAO<T> {
-    void insert(T entity);
+    T insert(T entity);
     void deleteById(long id);
 }

@@ -44,7 +44,7 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
             throw new AlreadyExistsException("Функция с таким именем уже существует");
         }
 
-        dao.insert(function);
+        function = dao.insert(function);
         return FunctionResponse.from(function);
     }
 

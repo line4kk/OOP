@@ -58,6 +58,16 @@ class FunctionDAOTest {
     }
 
     @Test
+    void testInsertFunction() {
+        long userId = createTestUser();
+
+        Function f = new Function(userId, "Testinsertfun", "linked_list_tabulated", "base");
+        f = functionDAO.insert(f);
+
+        assertNotEquals(0, f.getId());
+    }
+
+    @Test
     void testSelectByUserIdMultiple() {
         long userId = createTestUser();
 

@@ -17,26 +17,32 @@ public class FunctionPointDAO implements SearchableDAO<FunctionPoint, FunctionPo
     private static final Logger logger = LoggerFactory.getLogger(FunctionPointDAO.class);
 
     @Override
-    public void insert(FunctionPoint point) {
+    public FunctionPoint insert(FunctionPoint point) {
         logger.info("Вставка строки в таблицу function_points: {}", point);
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO function_points (function_id, x_value, y_value) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setLong(1, point.getFunctionId());
             pstmt.setDouble(2, point.getXValue());
             pstmt.setDouble(3, point.getYValue());
             pstmt.executeUpdate();
+
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next())
+                    point.setId(keys.getLong(1));
+            }
         } catch (SQLException e) {
             logger.error("Ошибка при вставке данных в таблицу function_points", e);
             throw new DAOException("Ошибка при вставке данных в базу данных function_points", e);
         }
+        return point;
     }
 
     public void insertList(List<FunctionPoint> points) {
         logger.info("Вставка строк (транзакция) в таблицу function_points: {}", points);
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO function_points (function_id, x_value, y_value) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             conn.setAutoCommit(false);
             for (FunctionPoint point : points) {
                 pstmt.setLong(1, point.getFunctionId());

@@ -4,15 +4,11 @@ import dao.criteria.CompositeFunctionElementSearchCriteria;
 import dao.criteria.SortDirection;
 import exceptions.DAOException;
 import model.CompositeFunctionElement;
-import model.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,21 +16,27 @@ public class CompositeFunctionElementDAO implements SearchableDAO<CompositeFunct
     private static final Logger logger = LoggerFactory.getLogger(CompositeFunctionElementDAO.class);
 
     @Override
-    public void insert(CompositeFunctionElement compositeFunctionElement) {
+    public CompositeFunctionElement insert(CompositeFunctionElement compositeFunctionElement) {
         logger.info("Вставка строки в таблицу composite_function_elements: {}", compositeFunctionElement);
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO composite_function_elements (composite_id, function_order, function_id) VALUES (?, ?, ?)";
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setLong(1, compositeFunctionElement.getCompositeId());
             pstmt.setInt(2, compositeFunctionElement.getFunctionOrder());
             pstmt.setLong(3, compositeFunctionElement.getFunctionId());
             pstmt.executeUpdate();
+
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next())
+                    compositeFunctionElement.setId(keys.getLong(1));
+            }
         }
         catch (SQLException e) {
             logger.error("Ошибка при вставке данных в таблицу composite_functions_elements", e);
             throw new DAOException("Ошибка при вставке данных в базу данных composite_function_elements", e);
         }
+        return compositeFunctionElement;
     }
 
     @Override

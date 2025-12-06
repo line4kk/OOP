@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,20 +16,26 @@ public class OperationResultPointDAO implements SearchableDAO<OperationResultPoi
     private static final Logger logger = LoggerFactory.getLogger(OperationResultPointDAO.class);
 
     @Override
-    public void insert(OperationResultPoint point) {
+    public OperationResultPoint insert(OperationResultPoint point) {
         logger.info("Вставка строки в таблицу operations_result_points: {}", point);
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO operations_result_points (point1_id, point2_id, operation, result_y) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setLong(1, point.getPoint1Id());
             pstmt.setLong(2, point.getPoint2Id());
             pstmt.setString(3, point.getOperation());
             pstmt.setDouble(4, point.getResultY());
             pstmt.executeUpdate();
+
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next())
+                    point.setId(keys.getLong(1));
+            }
         } catch (SQLException e) {
             logger.error("Ошибка при вставке данных в таблицу operations_result_points", e);
             throw new DAOException("Ошибка при вставке данных в базу данных operations_result_points", e);
         }
+        return point;
     }
 
     @Override

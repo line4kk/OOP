@@ -17,23 +17,36 @@ public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriter
     private static final Logger logger = LoggerFactory.getLogger(FunctionDAO.class);
 
     @Override
-    public void insert(Function function) {
+    public Function insert(Function function) {
         logger.info("Вставка строки в таблицу functions: {}", function);
 
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO functions (user_id, name, type, source) VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setLong(1, function.getUserId());
             pstmt.setString(2, function.getName());
             pstmt.setString(3, function.getType());
             pstmt.setString(4, function.getSource());
             pstmt.executeUpdate();
 
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    logger.debug("Inserted with id = {}", keys.getLong(1));
+                    function.setId(keys.getLong(1));
+                }
+                else {
+                    logger.error("Вставка данных в таблицу functions с нулевым id");
+                    throw new DAOException("Возвращение функции с нулевым id", null);
+                }
+            }
+
         } catch (SQLException e) {
             logger.error("Ошибка при вставке данных в таблицу functions: {}", function, e);
             throw new DAOException("Ошибка при вставке данных в базу данных functions", e);
         }
+
+        return function;
     }
 
     @Override
@@ -214,7 +227,6 @@ public class FunctionDAO implements SearchableDAO<Function, FunctionSearchCriter
                 }
             }
 
-            CompositeFunctionElementDAO elementDAO = new CompositeFunctionElementDAO();
             String insertElementSql = """
                 INSERT INTO composite_function_elements (composite_id, function_order, function_id) 
                 VALUES (?, ?, ?)

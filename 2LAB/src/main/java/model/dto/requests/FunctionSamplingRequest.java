@@ -1,5 +1,6 @@
 package model.dto.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,8 +9,13 @@ public class FunctionSamplingRequest {
 
     private long functionId;
     private long analyticalFunctionId;
+
+    @JsonProperty("x_from")
     private double xFrom;
+
+    @JsonProperty("x_to")
     private double xTo;
+
     private int count;
 
     public FunctionSamplingRequest() {

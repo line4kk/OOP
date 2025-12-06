@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,20 +17,26 @@ public class UserDAO implements SearchableDAO<User, UserSearchCriteria> {
     private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
 
     @Override
-    public void insert(User user) {
+    public User insert(User user) {
         logger.info("Вставка строки в таблицу users: {}", user);
         Connection conn = DatabaseConnection.getConnection();
         String sql = "INSERT INTO users (username, password_hash, role, factory_type) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, user.getUsername());
             pstmt.setString(2, user.getPasswordHash());
             pstmt.setString(3, user.getRole());
             pstmt.setString(4, user.getFactoryType());
             pstmt.executeUpdate();
+
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next())
+                    user.setId(keys.getLong(1));
+            }
         } catch (SQLException e) {
             logger.error("Ошибка при вставке данных в базу данных user", e);
             throw new DAOException("Ошибка при вставке данных в базу данных user", e);
         }
+        return user;
     }
 
     @Override
