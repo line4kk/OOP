@@ -8,6 +8,7 @@ import exceptions.MethodNotAllowedException;
 import model.Function;
 import model.dto.requests.*;
 import model.dto.responses.FunctionResponse;
+import model.dto.responses.UserResponse;
 import model.enums.FunctionType;
 import model.enums.SourceType;
 
@@ -32,7 +33,7 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
 
     public FunctionResponse createFunction(long userId, FunctionCreateRequest functionCreateRequest) {
         if (!SourceType.isValidSourceType(functionCreateRequest.getSource())
-            || !FunctionType.isValidType(functionCreateRequest.getType())
+                || !FunctionType.isValidType(functionCreateRequest.getType())
         ) {
             throw new IllegalArgumentException("Bad Request");
         }
@@ -48,16 +49,18 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
         return FunctionResponse.from(function);
     }
 
-    public FunctionResponse getFunction(long functionId) {
+    public FunctionResponse getFunction(UserResponse user, long functionId) {
         Function function = dao.selectById(functionId);
-        if (function != null) {
-            return FunctionResponse.from(function);
+        if (function == null) {
+            throw new NoSuchElementException("Функция не найдена");
         }
-        throw new NoSuchElementException("Функция не найдена");
+
+        ensureAccess(user, function.getUserId());
+        return FunctionResponse.from(function);
     }
 
-    public FunctionResponse updateFunction(long userId, long functionId, FunctionCreateRequest updateRequest) {
-        logger.info("Обновление функции id={} для пользователя userId={}", functionId, updateRequest);
+    public FunctionResponse updateFunction(UserResponse user, long functionId, FunctionCreateRequest updateRequest) {
+        logger.info("Обновление функции id={} для пользователя userId={}", functionId, user.getId());
 
         if (!SourceType.isValidSourceType(updateRequest.getSource())
                 || !FunctionType.isValidType(updateRequest.getType())) {
@@ -73,10 +76,12 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
             throw new NoSuchElementException("Функция не найдена");
         }
 
+        ensureAccess(user, existingFunction.getUserId());
+
         String newName = updateRequest.getName();
 
         // Проверяем, не занято ли новое имя у этого же пользователя (кроме текущей функции)
-        boolean nameAlreadyUsed = dao.selectByUserId(userId).stream()
+        boolean nameAlreadyUsed = dao.selectByUserId(existingFunction.getUserId()).stream()
                 .anyMatch(f -> f.getId() != functionId && f.getName().equals(newName));
 
         if (nameAlreadyUsed) {
@@ -96,8 +101,8 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
         return FunctionResponse.from(existingFunction);
     }
 
-    public void deleteFunction(long userId, long functionId) {
-        logger.info("Запрос на удаление функции id={} от пользователя userId={}", functionId, userId);
+    public void deleteFunction(UserResponse user, long functionId) {
+        logger.info("Запрос на удаление функции id={} от пользователя userId={}", functionId, user.getId());
 
         // Проверяем, существует ли функция
         Function function = dao.selectById(functionId);
@@ -105,6 +110,8 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
             logger.info("Попытка удалить несуществующую функцию id={}", functionId);
             throw new NoSuchElementException("Функция не найдена");
         }
+
+        ensureAccess(user, function.getUserId());
 
         // Проверяем, используется ли функция в какой-либо композиции
         CompositeFunctionElementDAO compositeElementDAO = new CompositeFunctionElementDAO();
@@ -116,6 +123,6 @@ public class FunctionsService extends AbstractService<FunctionDAO> {
 
         dao.deleteById(functionId);
 
-        logger.info("Функция id={} успешно удалена пользователем {}", functionId, userId);
+        logger.info("Функция id={} успешно удалена пользователем {}", functionId, user.getId());
     }
 }

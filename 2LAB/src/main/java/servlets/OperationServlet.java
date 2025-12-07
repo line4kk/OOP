@@ -27,7 +27,7 @@ public class OperationServlet extends BaseServlet {
             UserResponse user = authenticate(req);
             logger.info("POST /operation от пользователя {}", user.getId());
             OperationRequest requestBody = objectMapper.readValue(req.getInputStream(), OperationRequest.class);
-            List<PointResponse> result = operationService.getOperationResult(requestBody);
+            List<PointResponse> result = operationService.getOperationResult(user, requestBody);
             writeJson(resp, HttpServletResponse.SC_OK, result);
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при вызове /operation: {}", e.getMessage());

@@ -33,16 +33,16 @@ public class FunctionDetailsServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            authenticate(req);
+            UserResponse user = authenticate(req);
             List<String> segments = getPathSegments(req.getPathInfo());
             logger.info("GET {} с сегментами {}", req.getRequestURI(), segments);
             if (segments.size() == 1) {
                 long functionId = parseId(segments.get(0));
-                FunctionResponse response = functionsService.getFunction(functionId);
+                FunctionResponse response = functionsService.getFunction(user, functionId);
                 writeJson(resp, HttpServletResponse.SC_OK, response);
             } else if (segments.size() == 2 && "points".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
-                List<PointResponse> points = functionPointsService.getFunctionPoints(functionId);
+                List<PointResponse> points = functionPointsService.getFunctionPoints(user, functionId);
                 writeJson(resp, HttpServletResponse.SC_OK, points);
             } else {
                 logger.warn("Неизвестный путь при GET {}", req.getRequestURI());
@@ -72,7 +72,7 @@ public class FunctionDetailsServlet extends BaseServlet {
             if (segments.size() == 2 && "points".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
                 List<PointRequest> points = objectMapper.readValue(req.getInputStream(), new TypeReference<List<PointRequest>>() {});
-                List<PointResponse> created = functionPointsService.addFunctionPoints(functionId, points);
+                List<PointResponse> created = functionPointsService.addFunctionPoints(user, functionId, points);
                 writeJson(resp, HttpServletResponse.SC_OK, created);
             } else if (segments.size() == 2 && "sampling".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
@@ -80,8 +80,8 @@ public class FunctionDetailsServlet extends BaseServlet {
                 if (requestBody.getFunctionId() == 0) {
                     requestBody.setFunctionId(functionId);
                 }
-                functionsService.getFunction(functionId);
-                List<PointResponse> created = functionPointsService.addFunctionPointsBySampling(requestBody);
+                functionsService.getFunction(user, functionId);
+                List<PointResponse> created = functionPointsService.addFunctionPointsBySampling(user, requestBody);
                 writeJson(resp, HttpServletResponse.SC_OK, created);
             } else {
                 logger.warn("Неизвестный путь при POST {}", req.getRequestURI());
@@ -114,13 +114,13 @@ public class FunctionDetailsServlet extends BaseServlet {
             if (segments.size() == 1) {
                 long functionId = parseId(segments.get(0));
                 FunctionCreateRequest updateRequest = objectMapper.readValue(req.getInputStream(), FunctionCreateRequest.class);
-                FunctionResponse updated = functionsService.updateFunction(user.getId(), functionId, updateRequest);
+                FunctionResponse updated = functionsService.updateFunction(user, functionId, updateRequest);
                 writeJson(resp, HttpServletResponse.SC_OK, updated);
             } else if (segments.size() == 3 && "points".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
                 long pointId = parseId(segments.get(2));
                 PointRequest requestBody = objectMapper.readValue(req.getInputStream(), PointRequest.class);
-                PointResponse updated = functionPointsService.updateFunctionPointY(user.getId(), functionId, pointId, requestBody);
+                PointResponse updated = functionPointsService.updateFunctionPointY(user, functionId, pointId, requestBody);
                 writeJson(resp, HttpServletResponse.SC_OK, updated);
             } else {
                 logger.warn("Неизвестный путь при PUT {}", req.getRequestURI());
@@ -152,16 +152,16 @@ public class FunctionDetailsServlet extends BaseServlet {
             logger.info("DELETE {} от пользователя {} с сегментами {}", req.getRequestURI(), user.getId(), segments);
             if (segments.size() == 1) {
                 long functionId = parseId(segments.get(0));
-                functionsService.deleteFunction(user.getId(), functionId);
+                functionsService.deleteFunction(user, functionId);
                 writeJson(resp, HttpServletResponse.SC_OK, null);
             } else if (segments.size() == 2 && "points".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
-                functionPointsService.deleteAllFunctionPoints(user.getId(), functionId);
+                functionPointsService.deleteAllFunctionPoints(user, functionId);
                 writeJson(resp, HttpServletResponse.SC_OK, null);
             } else if (segments.size() == 3 && "points".equals(segments.get(1))) {
                 long functionId = parseId(segments.get(0));
                 long pointId = parseId(segments.get(2));
-                functionPointsService.deleteFunctionPoint(user.getId(), functionId, pointId);
+                functionPointsService.deleteFunctionPoint(user, functionId, pointId);
                 writeJson(resp, HttpServletResponse.SC_OK, null);
             } else {
                 logger.warn("Неизвестный путь при DELETE {}", req.getRequestURI());

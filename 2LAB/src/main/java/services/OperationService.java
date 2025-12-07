@@ -16,6 +16,7 @@ import model.OperationResultPoint;
 import model.User;
 import model.dto.requests.OperationRequest;
 import model.dto.responses.PointResponse;
+import model.dto.responses.UserResponse;
 import operations.TabulatedDifferentialOperator;
 import operations.TabulatedFunctionOperationService;
 
@@ -44,7 +45,7 @@ public class OperationService extends AbstractService<FunctionDAO> {
         super(new FunctionDAO());
     }
 
-    public List<PointResponse> getOperationResult(OperationRequest request) {
+    public List<PointResponse> getOperationResult(UserResponse user, OperationRequest request) {
         if (request == null || request.getOperation() == null || request.getOperation().isBlank()) {
             throw new IllegalArgumentException("Bad Request");
         }
@@ -59,11 +60,14 @@ public class OperationService extends AbstractService<FunctionDAO> {
             throw new NoSuchElementException("Функция не найдена");
         }
 
+        ensureAccess(user, firstFunction.getUserId());
+
         if (operation.equals("derive")) {
             return buildDerivativeResponses(firstFunction);
         }
 
-        Function secondFunction = resolveSecondFunction(request);
+        Function secondFunction = resolveSecondFunction(user, request);
+        ensureAccess(user, secondFunction.getUserId());
         List<FunctionPoint> firstPoints = getPoints(firstFunction.getId());
         List<FunctionPoint> secondPoints = getPoints(secondFunction.getId());
         ensureCompatiblePoints(firstPoints, secondPoints);
@@ -91,7 +95,7 @@ public class OperationService extends AbstractService<FunctionDAO> {
         return responses;
     }
 
-    private Function resolveSecondFunction(OperationRequest request) {
+    private Function resolveSecondFunction(UserResponse user, OperationRequest request) {
         Long secondFunctionId = request.getFunction2Id();
         if (secondFunctionId == null) {
             throw new IllegalArgumentException("Bad Request");

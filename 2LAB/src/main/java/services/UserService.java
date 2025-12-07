@@ -57,7 +57,7 @@ public class UserService extends AbstractService<UserDAO> {
 
         if (userFromDatabase != null && BCrypt.checkpw(plainPassword, userFromDatabase.getPasswordHash())) {
             logger.info("Пользователь {} успешно авторизован", userFromDatabase);
-            return UserResponse.from(userFromDatabase);
+            return UserResponse.from(dao.select(userLoginRequest.getUsername()));
         }
 
         logger.info("Неудачная авторизация. Username = {}", userLoginRequest.getUsername());

@@ -15,6 +15,7 @@ import model.User;
 import model.dto.requests.FunctionSamplingRequest;
 import model.dto.requests.PointRequest;
 import model.dto.responses.PointResponse;
+import model.dto.responses.UserResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,19 +28,25 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
         super(new FunctionPointDAO());
     }
 
-    public List<PointResponse> getFunctionPoints(long functionId) {
-        if (functionsDAO.selectById(functionId) == null) {
+    public List<PointResponse> getFunctionPoints(UserResponse user, long functionId) {
+        Function function = functionsDAO.selectById(functionId);
+        if (function == null) {
             throw new NoSuchElementException("Функция не найдена");
         }
+
+        ensureAccess(user, function.getUserId());
         List<FunctionPoint> functionPoints = dao.selectByFunctionId(functionId);
 
         return PointResponse.fromList(functionPoints);
     }
 
-    public List<PointResponse> addFunctionPoints(long functionId, List<PointRequest> pointRequests) {
-        if (functionsDAO.selectById(functionId) == null) {
+    public List<PointResponse> addFunctionPoints(UserResponse user, long functionId, List<PointRequest> pointRequests) {
+        Function function = functionsDAO.selectById(functionId);
+        if (function == null) {
             throw new NoSuchElementException("Функция не найдена");
         }
+
+        ensureAccess(user, function.getUserId());
         List<FunctionPoint> points = new ArrayList<>();
         for (PointRequest pr : pointRequests) {
             points.add(pr.toEntity(functionId));
@@ -49,21 +56,26 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
         return PointResponse.fromList(points);
     }
 
-    public List<PointResponse> addFunctionPointsBySampling(FunctionSamplingRequest request) {
+    public List<PointResponse> addFunctionPointsBySampling(UserResponse user, FunctionSamplingRequest request) {
         Function functionToCreate = functionsDAO.selectById(request.getFunctionId());
-        User user = userDAO.select(functionToCreate.getUserId());
+        if (functionToCreate == null) {
+            throw new NoSuchElementException("Функция не найдена");
+        }
 
-        if (user == null) {
+        ensureAccess(user, functionToCreate.getUserId());
+        User owner = userDAO.select(functionToCreate.getUserId());
+
+        if (owner == null) {
             logger.error("Пользователь {} не найден", functionToCreate.getUserId());
             throw new NoSuchElementException("Пользователь не найден");
         }
 
         TabulatedFunctionFactory factory;
-        switch (user.getFactoryType()) {
+        switch (owner.getFactoryType()) {
             case "linked_list" -> factory = new LinkedListTabulatedFunctionFactory();
             case "array" -> factory = new ArrayTabulatedFunctionFactory();
             default -> {
-                logger.error("Неизвестный тип фабрики у пользователя {}: {}", user.getId(), user.getFactoryType());
+                logger.error("Неизвестный тип фабрики у пользователя {}: {}", owner.getId(), owner.getFactoryType());
                 throw new IllegalStateException("Некорректная фабрика пользователя");
             }
         }
@@ -102,8 +114,8 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
         return result;
     }
 
-    public void deleteAllFunctionPoints(long userId, long functionId) {
-        logger.info("Запрос на удаление всех точек функции id={} от пользователя userId={}", functionId, userId);
+    public void deleteAllFunctionPoints(UserResponse user, long functionId) {
+        logger.info("Запрос на удаление всех точек функции id={} от пользователя userId={}", functionId, user.getId());
 
         Function function = functionsDAO.selectById(functionId);
         if (function == null) {
@@ -111,13 +123,15 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
             throw new NoSuchElementException("Функция не найдена");
         }
 
+        ensureAccess(user, function.getUserId());
+
         dao.deleteByFunctionId(functionId);
 
-        logger.info("Успешно удалены все точки функции id={} (пользователь {})", functionId, userId);
+        logger.info("Успешно удалены все точки функции id={} (пользователь {})", functionId, user.getId());
     }
 
-    public PointResponse updateFunctionPointY(long userId, long functionId, long pointId, PointRequest pointRequest) {
-        logger.info("Обновление Y-значения точки id={} функции id={} пользователем {}", pointId, functionId, userId);
+    public PointResponse updateFunctionPointY(UserResponse user, long functionId, long pointId, PointRequest pointRequest) {
+        logger.info("Обновление Y-значения точки id={} функции id={} пользователем {}", pointId, functionId, user.getId());
 
         if (pointRequest.getY() == null) {
             logger.warn("Попытка обновить точку без указания Y: {}", pointRequest);
@@ -129,6 +143,8 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
             logger.info("Функция id={} не найдена при обновлении точки", functionId);
             throw new NoSuchElementException("Функция не найдена");
         }
+
+        ensureAccess(user, function.getUserId());
 
         FunctionPoint point = dao.selectById(pointId);
         if (point == null) {
@@ -143,13 +159,15 @@ public class FunctionPointsService extends AbstractService<FunctionPointDAO> {
         return PointResponse.from(point);
     }
 
-    public void deleteFunctionPoint(long userId, long functionId, long pointId) {
-        logger.info("Удаление точки id={} из функции id={} пользователем {}", pointId, functionId, userId);
+    public void deleteFunctionPoint(UserResponse user, long functionId, long pointId) {
+        logger.info("Удаление точки id={} из функции id={} пользователем {}", pointId, functionId, user.getId());
 
         Function function = functionsDAO.selectById(functionId);
         if (function == null) {
             throw new NoSuchElementException("Функция не найдена");
         }
+
+        ensureAccess(user, function.getUserId());
 
         FunctionPoint point = dao.selectById(pointId);
         if (point == null) {
