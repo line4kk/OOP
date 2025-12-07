@@ -5,6 +5,8 @@ import engine.entity.CompositeFunctionElements;
 import engine.entity.FunctionPoints;
 import engine.entity.Functions;
 import engine.entity.Users;
+import engine.service.AnalyticalFunctionRegistry;
+import functions.MathFunction;
 import engine.repository.CompositeFunctionElementsRepository;
 import engine.service.MultipleSearchService;
 import engine.service.SingleSearchService;
@@ -190,9 +192,12 @@ public class AnalyticalFunctionController {
             if (!securityUtils.canAccessUserData(analyticalFunction.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
-            if (!"analytical".equals(analyticalFunction.getType())) {
+
+            if (!AnalyticalFunctionRegistry.isAnalyticalFunction(analyticalFunction.getName())) {
                 return ResponseEntity.status(400).body("Сэмплирование доступно только для аналитических функций");
             }
+
+            MathFunction mathFunction = AnalyticalFunctionRegistry.getFunction(analyticalFunction.getName());
 
             List<PointResponse> response = new ArrayList<>();
             double step = (request.getX_to() - request.getX_from()) / (request.getCount() - 1);
@@ -204,7 +209,7 @@ public class AnalyticalFunctionController {
                     return ResponseEntity.status(409).body("Добавление существующей точки");
                 }
 
-                double y = calculateAnalyticalFunctionValue(analyticalFunction, x);
+                double y = mathFunction.apply(x);
                 FunctionPoints savedPoint = singleSearchService.saveFunctionPoint(new FunctionPoints(targetFunction, x, y));
                 response.add(new PointResponse(savedPoint.getId(), savedPoint.getX_value(), savedPoint.getY_value()));
             }
@@ -221,7 +226,9 @@ public class AnalyticalFunctionController {
             if ("composite".equals(analyticalFunction.getSource())) {
                 return calculateCompositeFunction(analyticalFunction, x);
             }
-            return calculateBasicFunction(analyticalFunction.getName(), x);
+            MathFunction mathFunction = AnalyticalFunctionRegistry.getFunction(analyticalFunction.getName());
+            return mathFunction.apply(x);
+
         } catch (Exception e) {
             logger.error("Ошибка вычисления функции '{}' для x={}", analyticalFunction.getName(), x, e);
             return Double.NaN;
@@ -250,27 +257,6 @@ public class AnalyticalFunctionController {
         } catch (Exception e) {
             logger.error("Ошибка вычисления композитной функции '{}'", compositeFunction.getName(), e);
             return Double.NaN;
-        }
-    }
-
-    private Double calculateBasicFunction(String functionName, double x) {
-        if (functionName == null) return Double.NaN;
-
-        switch (functionName.toLowerCase()) {
-            case "sin": case "синус": return Math.sin(x);
-            case "cos": case "косинус": return Math.cos(x);
-            case "tan": case "tangent": case "тангенс": return Math.tan(x);
-            case "exp": case "exponential": case "экспонента": return Math.exp(x);
-            case "log": case "logarithm": case "логарифм": return x > 0 ? Math.log(x) : Double.NaN;
-            case "sqrt": case "square_root": case "квадратный_корень": return x >= 0 ? Math.sqrt(x) : Double.NaN;
-            case "quadratic": case "квадратичная": case "sqr": case "square":
-                return new SqrFunction().apply(x);
-            case "identity": case "тождественная": case "x":
-                return new IdentityFunction().apply(x);
-            case "zero": case "ноль": return new ZeroFunction().apply(x);
-            case "unit": case "единичная": return new UnitFunction().apply(x);
-            default:
-                return new IdentityFunction().apply(x);
         }
     }
 }

@@ -1,5 +1,8 @@
 package functions;
 
+import engine.annotations.AnalyticalFunction;
+
+@AnalyticalFunction
 public class SqrFunction implements MathFunction {
     @Override
     public double apply(double x) {

@@ -8,6 +8,7 @@ import engine.repository.CompositeFunctionElementsRepository;
 import engine.repository.FunctionPointsRepository;
 import engine.repository.FunctionsRepository;
 import engine.repository.UsersRepository;
+import engine.service.AnalyticalFunctionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,11 @@ public class SingleSearchService {
     public boolean existsFunctionByNameAndUser(String name, Users user) {
         logger.debug("Проверка существования функции по имени и пользователю: {}, {}", name, user.getUsername());
         return functionsRepository.existsByNameAndUser(name, user);
+    }
+
+    public long countUsersByRole(String role) {
+        logger.debug("Подсчет пользователей с ролью: {}", role);
+        return usersRepository.countByRole(role);
     }
 
     @Transactional

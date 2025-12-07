@@ -130,24 +130,30 @@ public class UserController {
                 return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
             }
 
+            if (singleSearchService.findUserByUsername(request.getUsername()) != null) {
+                logger.warn("Попытка регистрации с существующим именем: {}", request.getUsername());
+                return ResponseEntity.status(409).body("Имя пользователя уже занято");
+            }
+
             Users currentUser = securityUtils.getCurrentUser();
-            boolean isAdmin = securityUtils.isAdmin();
 
             String requestedRole = request.getRole() == null ? "user" : request.getRole().toLowerCase();
             if (!ALLOWED_ROLES.contains(requestedRole)) {
                 return ResponseEntity.status(400).body("Ошибка. Некорректные данные");
             }
-            if ("admin".equals(requestedRole) && !isAdmin) {
-                logger.warn("Попытка назначить роль ADMIN без прав: {}", request.getUsername());
-                return ResponseEntity.status(403).body("Назначение роли доступно только администратору");
+            if ("admin".equals(requestedRole)) {
+                boolean haveAdmin = securityUtils.isAdmin();
+                if (!haveAdmin) {
+                    long adminCount = singleSearchService.countUsersByRole("admin");
+                    if (adminCount > 0) {
+                        logger.warn("Попытка назначить роль ADMIN без прав: {}", request.getUsername());
+                        return ResponseEntity.status(403).body("Назначение роли доступно только администратору");
+                    }
+                    logger.info("Создание первого администратора в системе: {}", request.getUsername());
+                }
             }
             if (currentUser == null && "user".equals(requestedRole)) {
                 logger.info("Регистрация без аутентификации: роль установлена по умолчанию USER");
-            }
-
-            if (singleSearchService.findUserByUsername(request.getUsername()) != null) {
-                logger.warn("Попытка регистрации с существующим именем: {}", request.getUsername());
-                return ResponseEntity.status(409).body("Имя пользователя уже занято");
             }
 
             String hashedPassword = passwordEncoder.encode(request.getPassword());

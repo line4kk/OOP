@@ -1,5 +1,9 @@
 package engine.controller;
 
+import engine.service.AnalyticalFunctionRegistry;
+import functions.MathFunction;
+import operations.MiddleSteppingDifferentialOperator;
+import operations.SteppingDifferentialOperator;
 import engine.dto.OperationRequest;
 import engine.dto.PointResponse;
 import engine.entity.FunctionPoints;
@@ -22,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +41,7 @@ public class OperationsController {
     @Autowired private MultipleSearchService multipleSearchService;
     @Autowired private SingleSearchService singleSearchService;
     @Autowired private SecurityUtils securityUtils;
+    private static final double DIFFERENTIATION_STEP = 1e-5;
 
     @PostMapping("/operation")
     @Transactional
@@ -76,6 +82,9 @@ public class OperationsController {
             List<PointResponse> response;
             switch (request.getOperation()) {
                 case "derive":
+                    if (isAnalyticalFunction(function1)) {
+                        response = deriveAnalyticalFunction(function1);
+                    }
                     Functions derivativeFunction = createDerivativeFunction(function1, tabulatedFunction1);
                     response = multipleSearchService.findPointsByFunction(derivativeFunction.getId()).stream()
                             .map(p -> new PointResponse(p.getId(), p.getX_value(), p.getY_value()))
@@ -150,6 +159,58 @@ public class OperationsController {
         saveFunctionPoints(savedFunction, derivativeFunction);
 
         return savedFunction;
+    }
+
+    private List<PointResponse> deriveAnalyticalFunction(Functions analyticalFunction) {
+        try {
+            MathFunction mathFunction = AnalyticalFunctionRegistry.getFunction(analyticalFunction.getName());
+            List<FunctionPoints> originalPoints = multipleSearchService.findPointsByFunction(analyticalFunction.getId());
+
+            if (originalPoints.isEmpty()) {
+                logger.info("У аналитической функции {} нет точек, создаем точки через рефлексию", analyticalFunction.getName());
+                originalPoints = createPointsForAnalyticalFunction(analyticalFunction, mathFunction);
+            }
+
+            SteppingDifferentialOperator differentialOperator = new MiddleSteppingDifferentialOperator(1e-5);
+            MathFunction derivativeFunction = differentialOperator.derive(mathFunction);
+
+            List<PointResponse> derivativePoints = new ArrayList<>();
+            for (FunctionPoints point : originalPoints) {
+                double derivative = derivativeFunction.apply(point.getX_value());
+                derivativePoints.add(new PointResponse(null, point.getX_value(), derivative));
+            }
+
+            logger.info("Вычислена производная аналитической функции {} для {} точек",
+                    analyticalFunction.getName(), derivativePoints.size());
+
+            return derivativePoints;
+
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Аналитическая функция '" + analyticalFunction.getName() +
+                    "' не найдена в реестре. Проверьте аннотацию @AnalyticalFunction", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при вычислении производной: " + e.getMessage(), e);
+        }
+    }
+
+    private List<FunctionPoints> createPointsForAnalyticalFunction(Functions function, MathFunction mathFunction) {
+        List<FunctionPoints> points = new ArrayList<>();
+
+        double xFrom = -10.0;
+        double xTo = 10.0;
+        int count = 21;
+        double step = (xTo - xFrom) / (count - 1);
+
+        for (int i = 0; i < count; i++) {
+            double x = xFrom + (i * step);
+            double y = mathFunction.apply(x);
+
+            FunctionPoints point = new FunctionPoints(function, x, y);
+            points.add(point);
+        }
+
+        logger.info("Создано {} точек для функции {} через рефлексию", count, function.getName());
+        return points;
     }
 
     private Functions createBinaryOperationFunction(Functions func1, Functions func2, String operation,
@@ -228,5 +289,14 @@ public class OperationsController {
 
     private boolean hasZeroY(List<FunctionPoints> points) {
         return points.stream().anyMatch(p -> p.getY_value() == 0.0);
+    }
+
+    private boolean isAnalyticalFunction(Functions function) {
+        try {
+            return AnalyticalFunctionRegistry.isAnalyticalFunction(function.getName());
+        } catch (Exception e) {
+            logger.error("Ошибка при проверке аналитической функции: {}", function.getName(), e);
+            return false;
+        }
     }
 }
