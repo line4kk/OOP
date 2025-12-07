@@ -154,10 +154,20 @@ public class AnalyticalFunctionController {
                 return ResponseEntity.status(403).body("Forbidden");
             }
 
-            if (functionId == null || functionId <= 0 || request.getFunction_id() == null ||
-                    !functionId.equals(request.getFunction_id())) {
+            if (functionId == null || functionId <= 0) {
                 return ResponseEntity.status(400).body("Некорректный ID функции");
             }
+
+            Long effectiveFunctionId = functionId;
+            if (request.getFunction_id() != null && !functionId.equals(request.getFunction_id())) {
+                logger.warn("Несоответствие ID функции: путь={}, тело запроса={}. Используем ID из тела запроса", functionId,
+                        request.getFunction_id());
+                effectiveFunctionId = request.getFunction_id();
+            }
+            if (effectiveFunctionId == null || effectiveFunctionId <= 0) {
+                return ResponseEntity.status(400).body("Некорректный ID функции");
+            }
+
             if (request.getAnalytical_function_id() == null) {
                 return ResponseEntity.status(400).body("Некорректные данные: analytical_function_id обязателен");
             }

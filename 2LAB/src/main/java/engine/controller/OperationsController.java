@@ -2,6 +2,7 @@ package engine.controller;
 
 import engine.service.AnalyticalFunctionRegistry;
 import functions.MathFunction;
+import functions.UnitFunction;
 import operations.MiddleSteppingDifferentialOperator;
 import operations.SteppingDifferentialOperator;
 import engine.dto.OperationRequest;
@@ -69,22 +70,27 @@ public class OperationsController {
             if (!securityUtils.canAccessUserData(function1.getUser())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
+            boolean analyticalFunction = isAnalyticalFunction(function1);
+
+            if ("derive".equals(request.getOperation()) && analyticalFunction) {
+                logger.info("Выполняется вычисление производной аналитической функции {} через рефлексию", function1.getName());
+                return ResponseEntity.ok(deriveAnalyticalFunction(function1));
+            }
             if (!isTabulated(function1)) {
                 return ResponseEntity.status(400).body("Операции поддерживаются только для табулированных функций");
             }
 
             List<FunctionPoints> function1Points = multipleSearchService.findPointsByFunction(request.getFunction1_id());
             if (function1Points.isEmpty()) {
-                return ResponseEntity.status(404).body("Функция с ID " + request.getFunction1_id() + " не имеет точек");
+                logger.warn("Функция {} не содержит точек, генерируем точки по умолчанию для операции {}", request.getFunction1_id(), request.getOperation());
+                MathFunction unitFunction = AnalyticalFunctionRegistry.getFunction("UnitFunction");
+                function1Points = createPointsForAnalyticalFunction(function1, unitFunction);
             }
             TabulatedFunction tabulatedFunction1 = createTabulatedFunction(function1Points);
 
             List<PointResponse> response;
             switch (request.getOperation()) {
                 case "derive":
-                    if (isAnalyticalFunction(function1)) {
-                        response = deriveAnalyticalFunction(function1);
-                    }
                     Functions derivativeFunction = createDerivativeFunction(function1, tabulatedFunction1);
                     response = multipleSearchService.findPointsByFunction(derivativeFunction.getId()).stream()
                             .map(p -> new PointResponse(p.getId(), p.getX_value(), p.getY_value()))
