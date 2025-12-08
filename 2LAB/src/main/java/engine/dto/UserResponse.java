@@ -25,4 +25,5 @@ public class UserResponse {
     public void setFactoryType(String factoryType) {
         this.factoryType = factoryType;
     }
+
 }
