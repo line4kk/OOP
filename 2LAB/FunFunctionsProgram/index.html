@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -11,33 +10,25 @@
 <div class="grid">
     <section class="card hero">
         <div class="pill">Табулированные функции • API готово</div>
-        <h1>Добро пожаловать в <span>FunFunctions</span></h1>
-        <p class="subtitle">Создавайте аккаунт или входите, чтобы работать с фабриками табличных функций. После авторизации покажем сохранённые данные и подскажем, что делать дальше.</p>
+        <h1>Добро пожаловать в программу по работе с функциями</h1>
+        <p class="active">Здесь реализовано:</p>
         <ul class="features">
-            <li>Надёжная авторизация с подробными ошибками</li>
-            <li>Выбор типа фабрики при регистрации</li>
-            <li>Готовность к локальной разработке (localhost:3000 → backend)</li>
+            <li>Создание функций</li>
+            <li>Изменение функций и их точек</li>
+            <li>Просмотр графиков функций</li>
+            <li>Различные операции над функциями</li>
         </ul>
     </section>
-
     <section class="card form-card">
         <div class="tabs" role="tablist">
             <button class="tab active" data-tab="login" role="tab" aria-selected="true">Вход</button>
             <button class="tab" data-tab="register" role="tab" aria-selected="false">Регистрация</button>
         </div>
 
-        <div class="api-base" role="group" aria-label="Настройки подключения">
-            <label>Адрес backend</label>
-            <div class="quick-bases" aria-label="Быстрый выбор порта">
-                <button type="button" class="chip" data-base-target="http://localhost:3000">localhost:3000</button>
-            </div>
-            <p id="api-hint" class="note">Адрес определяется автоматически. Если что-то пошло не так, попробуйте вариант выше.</p>
-        </div>
-
-        <form id="loginForm" autocomplete="on">
+        <form id="loginForm" autocomplete="on" class="stacked-form">
             <div class="row">
                 <label for="login-username">Имя пользователя</label>
-                <input id="login-username" name="username" type="text" minlength="3" required placeholder="user123">
+                <input id="login-username" name="username" type="text" minlength="3" required placeholder="Существующий пользователь">
             </div>
             <div class="row">
                 <label for="login-password">Пароль</label>
@@ -46,24 +37,21 @@
             <button type="submit">Войти</button>
         </form>
 
-        <form id="registerForm" class="hidden" autocomplete="on">
-            <div class="row two-col">
-                <div class="row">
-                    <label for="reg-username">Имя пользователя</label>
-                    <input id="reg-username" name="username" type="text" minlength="3" required placeholder="new_user">
-                </div>
-                <div class="row">
-                    <label for="reg-factory">Тип фабрики</label>
-                    <select id="reg-factory" name="factory_type" required>
-                        <option value="linked_list">Связный список</option>
-                        <option value="array">Динамический массив</option>
-                    </select>
-                    <p class="note">Варианты соответствуют API (FunFunctionsAPI.yaml)</p>
-                </div>
+        <form id="registerForm" class="hidden stacked-form" autocomplete="on">
+            <div class="row">
+                <label for="reg-username">Имя пользователя</label>
+                <input id="reg-username" name="username" type="text" minlength="3" required placeholder="Новый пользователь">
             </div>
             <div class="row">
                 <label for="reg-password">Пароль (8-64 символа)</label>
                 <input id="reg-password" name="password" type="password" minlength="8" maxlength="64" required placeholder="Придумайте надежный пароль">
+            </div>
+            <div class="row">
+                <label for="reg-factory">Тип фабрики</label>
+                <select id="reg-factory" name="factory_type" required>
+                    <option value="linked_list">Linked_List</option>
+                    <option value="array">Array</option>
+                </select>
             </div>
             <button type="submit">Создать аккаунт</button>
         </form>
