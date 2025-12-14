@@ -75,7 +75,7 @@ async function sendJson(endpoint, payload) {
         return data;
     } catch (networkError) {
         const cleanMessage = stripHtml(networkError.message || networkError.toString());
-        const message = `Не удалось связаться с сервером: ${cleanMessage}.\nТекущий адрес backend: ${currentApiBase}. Убедитесь, что backend запущен и доступен.`;
+        const message = `Не удалось связаться с сервером: ${cleanMessage} Повторите попытку позже или обратитесь к администратору.`;
         throw new Error(message);
     }
 }
@@ -135,12 +135,12 @@ function buildNextPageUrl() {
         const current = new URL(window.location.href);
         const parts = current.pathname.split('/');
         if (parts[parts.length - 1].toLowerCase() === 'index.html') {
-            parts[parts.length - 1] = 'next.html';
+            parts[parts.length - 1] = 'home.html';
             return `${current.origin}${parts.join('/')}${current.search}${current.hash}`;
         }
-        return new URL('next.html', current).toString();
+        return new URL('home.html', current).toString();
     } catch (e) {
-        return 'next.html';
+        return 'home.html';
     }
 }
 
