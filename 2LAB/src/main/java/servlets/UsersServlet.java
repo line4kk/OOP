@@ -23,13 +23,13 @@ public class UsersServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, response);
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при получении пользователя: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Пользователь не найден: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при получении данных пользователя", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

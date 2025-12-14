@@ -28,10 +28,10 @@ public class AnalyticalFunctionsServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, functions);
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при запросе аналитических функций: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при получении аналитических функций", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -45,16 +45,16 @@ public class AnalyticalFunctionsServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, created);
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при создании аналитической функции: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при создании аналитической функции: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (AlreadyExistsException e) {
             logger.info("Попытка создать существующую аналитическую функцию: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при создании аналитической функции", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

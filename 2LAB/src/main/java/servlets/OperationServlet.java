@@ -31,19 +31,19 @@ public class OperationServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, result);
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при вызове /operation: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при вызове /operation: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Ресурс не найден при вызове /operation: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (DivisionByZeroException e) {
             logger.warn("Ошибка деления на ноль при вызове /operation: {}", e.getMessage());
-            resp.sendError(418, e.getMessage());
+            writeError(resp, 418, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при вызове /operation", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

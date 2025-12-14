@@ -23,13 +23,13 @@ public class UserRegisterServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, response);
         } catch (AlreadyExistsException e) {
             logger.warn("Пользователь уже существует при регистрации: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при регистрации: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при регистрации", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

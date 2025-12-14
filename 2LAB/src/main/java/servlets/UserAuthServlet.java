@@ -24,13 +24,13 @@ public class UserAuthServlet extends BaseServlet {
             writeJson(resp, HttpServletResponse.SC_OK, response);
         } catch (AuthException e) {
             logger.warn("Неуспешная авторизация: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при авторизации: {}", e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при авторизации", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

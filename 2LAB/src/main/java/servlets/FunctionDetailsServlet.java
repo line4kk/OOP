@@ -46,20 +46,20 @@ public class FunctionDetailsServlet extends BaseServlet {
                 writeJson(resp, HttpServletResponse.SC_OK, points);
             } else {
                 logger.warn("Неизвестный путь при GET {}", req.getRequestURI());
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
+                writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
             }
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при GET {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Ресурс не найден при GET {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (NumberFormatException e) {
             logger.warn("Некорректный идентификатор в пути {}", req.getRequestURI());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request");
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Bad Request");
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при обработке GET {}", req.getRequestURI(), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -85,23 +85,23 @@ public class FunctionDetailsServlet extends BaseServlet {
                 writeJson(resp, HttpServletResponse.SC_OK, created);
             } else {
                 logger.warn("Неизвестный путь при POST {}", req.getRequestURI());
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
+                writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
             }
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при POST {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при POST {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (AlreadyExistsException e) {
             logger.info("Попытка создать существующий ресурс при POST {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Ресурс не найден при POST {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при обработке POST {}", req.getRequestURI(), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -124,23 +124,23 @@ public class FunctionDetailsServlet extends BaseServlet {
                 writeJson(resp, HttpServletResponse.SC_OK, updated);
             } else {
                 logger.warn("Неизвестный путь при PUT {}", req.getRequestURI());
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
+                writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
             }
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при PUT {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.warn("Некорректные данные при PUT {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (AlreadyExistsException e) {
             logger.info("Попытка создать существующий ресурс при PUT {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Ресурс не найден при PUT {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при обработке PUT {}", req.getRequestURI(), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -165,23 +165,23 @@ public class FunctionDetailsServlet extends BaseServlet {
                 writeJson(resp, HttpServletResponse.SC_OK, null);
             } else {
                 logger.warn("Неизвестный путь при DELETE {}", req.getRequestURI());
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
+                writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Unsupported path");
             }
         } catch (AuthException e) {
             logger.warn("Доступ запрещен при DELETE {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (NoSuchElementException e) {
             logger.warn("Ресурс не найден при DELETE {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (MethodNotAllowedException e) {
             logger.warn("Операция не разрешена при DELETE {}: {}", req.getRequestURI(), e.getMessage());
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED, e.getMessage());
         } catch (NumberFormatException e) {
             logger.warn("Некорректный идентификатор в пути {}", req.getRequestURI());
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request");
+            writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "Bad Request");
         } catch (Exception e) {
             logger.error("Внутренняя ошибка при обработке DELETE {}", req.getRequestURI(), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            writeError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

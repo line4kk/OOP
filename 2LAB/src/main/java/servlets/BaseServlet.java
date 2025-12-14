@@ -71,4 +71,14 @@ public abstract class BaseServlet extends HttpServlet {
             objectMapper.writeValue(response.getWriter(), body);
         }
     }
+
+    protected void writeError(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+        logger.debug("Отправка ошибки со статусом {}: {}", status, message);
+        if (message != null) {
+            response.getWriter().write(message);
+        }
+    }
 }
