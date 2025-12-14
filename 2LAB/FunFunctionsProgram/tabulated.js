@@ -6,6 +6,7 @@ const chartsButton = document.getElementById('openCharts');
 const backButton = document.getElementById('backButton');
 
 const apiBase = determineApiBase();
+const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 
 attachActions();
 loadFunctions();
@@ -31,47 +32,7 @@ function informComingSoon(message) {
 
 async function loadFunctions(force = false) {
     if (!force && functionsList.dataset.loading === 'true') return;
-    setLoading(true);
-    updateStatus('Загружаем список функций...', 'muted');
-
-    try {
-        const data = await getJson('/functions');
-        const tabulated = filterTabulated(data?.functions);
-        renderFunctions(tabulated);
-    } catch (error) {
-        updateStatus(error.message || 'Не удалось получить список функций.', 'error');
-        functionsList.innerHTML = '';
-    } finally {
-        setLoading(false);
-    }
-}
-
-function filterTabulated(functions) {
-    if (!Array.isArray(functions)) return [];
-    return functions.filter(fn => (fn?.type || '').includes('tabulated'));
-}
-
-function renderFunctions(functions) {
-    functionsList.innerHTML = '';
-
-    if (!functions.length) {
-        updateStatus('Табулированные функции отсутствуют. Создайте новую функцию, чтобы начать работу.', 'muted');
-        return;
-    }
-
-    updateStatus(`Найдено табулированных функций: ${functions.length}`, 'success');
-
-    functions.forEach(fn => {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'function-item';
-        item.setAttribute('role', 'listitem');
-        item.innerHTML = buildFunctionMarkup(fn);
-        item.addEventListener('click', () => handleFunctionClick(fn));
-        functionsList.appendChild(item);
-    });
-}
-
+@@ -75,122 +76,154 @@ function renderFunctions(functions) {
 function buildFunctionMarkup(fn) {
     const safeName = escapeHtml(fn?.name) || 'Без названия';
     const safeType = escapeHtml(fn?.type || '');
@@ -97,8 +58,12 @@ async function getJson(endpoint) {
     const url = buildUrl(endpoint);
     let response;
 
+    const headers = {};
+    const authHeader = buildAuthHeader(endpoint);
+    if (authHeader) headers['Authorization'] = authHeader;
+
     try {
-        response = await fetch(url, { method: 'GET' });
+        response = await fetch(url, { method: 'GET', headers });
     } catch (networkError) {
         const cleanMessage = stripHtml(networkError.message || networkError.toString());
         const message = `Не удалось связаться с сервером: ${cleanMessage}. Повторите попытку позже.`;
@@ -147,6 +112,34 @@ function withHttp(value) {
 function buildUrl(endpoint) {
     const sanitizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${apiBase}${sanitizedEndpoint}`;
+}
+
+function buildAuthHeader(endpoint) {
+    if (!shouldIncludeAuth(endpoint)) return null;
+    const credentials = loadCredentials();
+    if (!credentials) return null;
+
+    const token = btoa(`${credentials.username}:${credentials.password}`);
+    return `Basic ${token}`;
+}
+
+function shouldIncludeAuth(endpoint = '') {
+    const normalized = endpoint.toLowerCase();
+    return normalized !== '/users/auth' && normalized !== '/users/register';
+}
+
+function loadCredentials() {
+    try {
+        const stored = localStorage.getItem(BASIC_AUTH_KEY);
+        if (!stored) return null;
+        const parsed = JSON.parse(stored);
+        if (parsed?.username && parsed?.password) {
+            return { username: parsed.username, password: parsed.password };
+        }
+    } catch (e) {
+        console.error('Не удалось прочитать данные авторизации', e);
+    }
+    return null;
 }
 
 function stripHtml(rawText = '') {
