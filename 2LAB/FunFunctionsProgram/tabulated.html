@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunFunctions | Табулированные функции</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="functions-page">
+<div class="page-shell">
+    <button id="backButton" class="back-btn" type="button" aria-label="Вернуться назад">
+        ←
+    </button>
+    <button class="settings-btn" type="button" title="Открыть настройки" aria-label="Открыть настройки">
+        <span aria-hidden="true">⚙</span>
+    </button>
+
+    <header class="page-header">
+        <div class="header-text">
+            <p class="eyebrow">Раздел функций</p>
+            <h1>Табулированные функции</h1>
+            <p class="subtitle">Здесь отображаются все табулированные функции, доступные вашему пользователю.</p>
+        </div>
+        <div class="toolbar" aria-label="Действия с функциями">
+            <button id="createFunction" type="button" class="ghost">Создать функцию</button>
+            <button id="openCharts" type="button" class="ghost">Графики</button>
+        </div>
+    </header>
+
+    <section class="card list-card" aria-labelledby="tabulated-title">
+        <div class="list-header">
+            <div>
+                <p id="tabulated-title" class="eyebrow">Список функций</p>
+                <h2>Все табулированные функции</h2>
+            </div>
+            <button id="refreshList" type="button" class="ghost">Обновить список</button>
+        </div>
+
+        <div id="functionsStatus" class="feedback" role="status"></div>
+        <div id="functionsList" class="functions-list" role="list" aria-live="polite"></div>
+    </section>
+</div>
+<script src="tabulated.js"></script>
+</body>
+</html>
