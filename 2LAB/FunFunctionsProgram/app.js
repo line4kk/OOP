@@ -4,22 +4,10 @@ const registerForm = document.getElementById('registerForm');
 const feedback = document.getElementById('feedback');
 const resultBlock = document.getElementById('result');
 const resultBody = document.getElementById('result-body');
-const quickBaseButtons = document.querySelectorAll('[data-base-target]');
 
-const storedUser = localStorage.getItem('funfunctions_username');
-const storedFactory = localStorage.getItem('funfunctions_factory');
-const currentFromStorage = localStorage.getItem('funfunctions_api_base');
-let currentApiBase = determineApiBase(currentFromStorage);
-const detectionPromise = detectApiBase();
+const currentApiBase = determineApiBase();
 
 tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
-
-quickBaseButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const target = button.getAttribute('data-base-target');
-        updateApiBase(target);
-    });
-});
 
 function switchTab(target) {
     tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === target));
@@ -29,10 +17,10 @@ function switchTab(target) {
     feedback.className = 'feedback';
 }
 
-function determineApiBase(saved) {
-    if (saved && saved.includes('localhost:3000')) return normalizeBase(saved);
+function determineApiBase() {
+    const stored = localStorage.getItem('funfunctions_api_base');
+    if (stored) return normalizeBase(withHttp(stored));
 
-    // Фронтенд всегда ориентируется на backend на localhost:3000
     const safeProtocol = window.location.protocol && window.location.protocol.startsWith('http')
         ? window.location.protocol
         : 'http:';
@@ -50,72 +38,19 @@ function withHttp(value) {
     return `http://${value}`;
 }
 
-function updateApiBase(nextBase) {
-    const normalized = normalizeBase(withHttp((nextBase || '').trim()));
-    if (!normalized) return;
-
-    currentApiBase = normalized;
-    localStorage.setItem('funfunctions_api_base', normalized);
-    feedback.textContent = `Адрес backend переключён на ${normalized}`;
-    feedback.className = 'feedback success';
-}
-
 function buildUrl(endpoint) {
     const sanitizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${currentApiBase}${sanitizedEndpoint}`;
 }
 
-async function detectApiBase() {
-    const candidates = buildCandidates();
-
-    for (const candidate of candidates) {
-        const reachable = await isReachable(candidate);
-        if (reachable) {
-            currentApiBase = normalizeBase(candidate);
-            localStorage.setItem('funfunctions_api_base', currentApiBase);
-            feedback.textContent = `Автоопределён адрес backend: ${currentApiBase}`;
-            feedback.className = 'feedback success';
-            return currentApiBase;
-        }
-    }
-
-    feedback.textContent = `Не удалось автоматически определить backend. Используется текущий адрес: ${currentApiBase}`;
-    feedback.className = 'feedback error';
-    return currentApiBase;
-}
-
-function buildCandidates() {
-    const safeProtocol = window.location.protocol && window.location.protocol.startsWith('http')
-        ? window.location.protocol
-        : 'http:';
-    const bases = [
-        currentFromStorage && currentFromStorage.includes('localhost:3000') ? currentFromStorage : null,
-        `${safeProtocol}//localhost:3000`
-    ].filter(Boolean);
-    return Array.from(new Set(bases.map(base => normalizeBase(withHttp(base)))));
-}
-
-async function isReachable(base) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-    try {
-        const response = await fetch(`${base}/`, {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            signal: controller.signal
-        });
-        return true;
-    } catch (error) {
-        return false;
-    } finally {
-        clearTimeout(timeout);
-    }
+function stripHtml(rawText = '') {
+    const temp = document.createElement('div');
+    temp.innerHTML = rawText;
+    return (temp.textContent || temp.innerText || '').trim();
 }
 
 async function sendJson(endpoint, payload) {
     try {
-        await detectionPromise.catch(() => {});
         const url = buildUrl(endpoint);
         const response = await fetch(url, {
             method: 'POST',
@@ -127,7 +62,11 @@ async function sendJson(endpoint, payload) {
 
         const text = await response.text();
         let data;
-        try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            data = { message: stripHtml(text) || text };
+        }
 
         if (!response.ok) {
             const message = buildErrorMessage(response.status, response.statusText, data, url);
@@ -135,21 +74,20 @@ async function sendJson(endpoint, payload) {
         }
         return data;
     } catch (networkError) {
-        const message = `Не удалось связаться с сервером: ${networkError.message}.\nТекущий адрес backend: ${currentApiBase}. Проверьте, что сервер запущен на localhost:3000.`;
+        const cleanMessage = stripHtml(networkError.message || networkError.toString());
+        const message = `Не удалось связаться с сервером: ${cleanMessage} Повторите попытку позже или обратитесь к администратору.`;
         throw new Error(message);
     }
 }
 
 function buildErrorMessage(status, statusText, data, endpoint) {
-    const reason = data?.message || data?.error || statusText || 'Неизвестная ошибка';
+    const reason = stripHtml(data?.message) || stripHtml(data?.error) || statusText || 'Неизвестная ошибка';
     let hint = 'Проверьте введённые данные и повторите попытку.';
 
     if (status === 403) {
-        hint = 'Сервер вернул 403 Forbidden. Обычно это значит, что запрос пришёл без авторизации. ' +
-            'Если запускаете фронтенд на localhost:3000, убедитесь, что proxy направляет запросы на backend и что Spring Security разрешает OPTIONS.';
+        hint = 'Сервер вернул 403 Forbidden. Обычно это значит, что запрос пришёл без авторизации или с истекшей сессией.';
     } else if (status === 404) {
-        hint = 'Эндпоинт не найден. Убедитесь, что URL корректен: ' + endpoint + '. ' +
-            'Текущий адрес backend: ' + currentApiBase + '. Все запросы должны идти на localhost:3000.';
+        hint = `Эндпоинт не найден. Убедитесь, что URL корректен: ${endpoint}.`;
     } else if (status >= 500) {
         hint = 'Проблема на стороне сервера. Проверьте логи backend и повторите попытку позже.';
     }
@@ -183,6 +121,8 @@ function handleSuccess(data) {
     if (data?.factory_type) {
         localStorage.setItem('funfunctions_factory', data.factory_type);
     }
+    localStorage.setItem('funfunctions_api_base', currentApiBase);
+
     showResult(data);
     setTimeout(() => {
         const target = buildNextPageUrl();
@@ -195,12 +135,12 @@ function buildNextPageUrl() {
         const current = new URL(window.location.href);
         const parts = current.pathname.split('/');
         if (parts[parts.length - 1].toLowerCase() === 'index.html') {
-            parts[parts.length - 1] = 'next.html';
+            parts[parts.length - 1] = 'home.html';
             return `${current.origin}${parts.join('/')}${current.search}${current.hash}`;
         }
-        return new URL('next.html', current).toString();
+        return new URL('home.html', current).toString();
     } catch (e) {
-        return 'next.html';
+        return 'home.html';
     }
 }
 
