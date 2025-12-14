@@ -40,6 +40,92 @@
         <div id="functionsList" class="functions-list" role="list" aria-live="polite"></div>
     </section>
 </div>
+<div id="creationModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="creationTitle">
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-window">
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">Создание новой функции</p>
+                <h2 id="creationTitle">Как хотите задать точки?</h2>
+            </div>
+            <button id="closeCreationModal" type="button" class="icon-btn" aria-label="Закрыть окно">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="choice-row" role="group" aria-label="Способ создания функции">
+                <button type="button" class="choice-btn active" data-mode="manual">Ввести точки вручную</button>
+                <button type="button" class="choice-btn" data-mode="sampling">Использовать равномерную дискретизацию</button>
+            </div>
+
+            <div id="manualMode" class="mode-panel">
+                <div class="field">
+                    <label for="manualName">Имя функции</label>
+                    <input id="manualName" name="manualName" type="text" placeholder="Например, MyTabFunction" autocomplete="off">
+                </div>
+
+                <div class="points-wrapper" aria-label="Точки функции">
+                    <div class="points-header">
+                        <div>
+                            <h3>Введите точки</h3>
+                            <p class="subtitle">Сначала задано две точки. Добавляйте новые через кнопку «+» справа.</p>
+                        </div>
+                        <button type="button" id="addPoint" class="icon-btn" aria-label="Добавить точку">+</button>
+                    </div>
+                    <div class="points-grid" role="group" aria-label="Значения точек">
+                        <div class="points-row">
+                            <div class="row-label">x</div>
+                            <div id="xRow" class="points-cells" aria-label="Координаты x"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                        <div class="points-row">
+                            <div class="row-label">y</div>
+                            <div id="yRow" class="points-cells" aria-label="Координаты y"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="manualFeedback" class="feedback" role="status"></div>
+                <button id="submitManual" type="button">Создать функцию</button>
+            </div>
+
+            <div id="samplingMode" class="mode-panel hidden">
+                <div class="field">
+                    <label for="samplingName">Имя функции</label>
+                    <input id="samplingName" name="samplingName" type="text" placeholder="Например, SampledFunction" autocomplete="off">
+                </div>
+
+                <div class="grid two-cols">
+                    <div class="field">
+                        <label for="xFrom">X начальное</label>
+                        <input id="xFrom" name="xFrom" type="text" inputmode="decimal" autocomplete="off" placeholder="От">
+                    </div>
+                    <div class="field">
+                        <label for="xTo">X конечное</label>
+                        <input id="xTo" name="xTo" type="text" inputmode="decimal" autocomplete="off" placeholder="До">
+                    </div>
+                    <div class="field">
+                        <label for="pointsCount">Количество точек</label>
+                        <input id="pointsCount" name="pointsCount" type="number" min="2" step="1" autocomplete="off" placeholder="Например, 20">
+                    </div>
+                    <div class="field">
+                        <label for="analyticSelect">Выберите функцию, которая будет применяться к точкам</label>
+                        <select id="analyticSelect" name="analyticSelect">
+                            <option value="" disabled selected>Загружаем список функций...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="info-callout" role="note">
+                    <strong>Как это работает:</strong> точки равномерно распределяются на выбранном отрезке, после чего к каждому значению x применяется выбранная аналитическая функция. Полученные пары (x, y) сохраняются в новую табулированную функцию.
+                </div>
+
+                <div id="samplingFeedback" class="feedback" role="status"></div>
+                <button id="submitSampling" type="button">Создать с дискретизацией</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="tabulated.js"></script>
 </body>
 </html>

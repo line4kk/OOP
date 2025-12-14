@@ -5,10 +5,32 @@ const createButton = document.getElementById('createFunction');
 const chartsButton = document.getElementById('openCharts');
 const backButton = document.getElementById('backButton');
 
+const creationModal = document.getElementById('creationModal');
+const modalOverlay = creationModal?.querySelector('[data-close-modal]');
+const closeModalButton = document.getElementById('closeCreationModal');
+const modeButtons = creationModal ? creationModal.querySelectorAll('.choice-btn') : [];
+const manualPanel = document.getElementById('manualMode');
+const samplingPanel = document.getElementById('samplingMode');
+const manualNameInput = document.getElementById('manualName');
+const samplingNameInput = document.getElementById('samplingName');
+const addPointButton = document.getElementById('addPoint');
+const xRow = document.getElementById('xRow');
+const yRow = document.getElementById('yRow');
+const submitManualButton = document.getElementById('submitManual');
+const manualFeedback = document.getElementById('manualFeedback');
+const samplingFeedback = document.getElementById('samplingFeedback');
+const xFromInput = document.getElementById('xFrom');
+const xToInput = document.getElementById('xTo');
+const pointsCountInput = document.getElementById('pointsCount');
+const analyticSelect = document.getElementById('analyticSelect');
+const submitSamplingButton = document.getElementById('submitSampling');
+
 const apiBase = determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
+let analyticFunctionsLoaded = false;
 
 attachActions();
+initCreationModal();
 loadFunctions();
 
 function attachActions() {
@@ -16,7 +38,7 @@ function attachActions() {
         refreshButton.addEventListener('click', () => loadFunctions(true));
     }
     if (createButton) {
-        createButton.addEventListener('click', () => informComingSoon('Создание функций скоро будет доступно.'));
+        createButton.addEventListener('click', () => openCreationModal('manual'));
     }
     if (chartsButton) {
         chartsButton.addEventListener('click', () => informComingSoon('Переход к графикам будет добавлен позже.'));
@@ -24,6 +46,43 @@ function attachActions() {
     if (backButton) {
         backButton.addEventListener('click', () => navigateBack());
     }
+}
+
+function initCreationModal() {
+    if (!creationModal) return;
+
+    addPointButton?.addEventListener('click', () => {
+        addPointColumn();
+        validateManualForm();
+    });
+
+    modeButtons.forEach(btn => {
+        btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+
+    submitManualButton?.addEventListener('click', handleManualSubmit);
+    submitSamplingButton?.addEventListener('click', handleSamplingSubmit);
+    closeModalButton?.addEventListener('click', closeCreationModal);
+    modalOverlay?.addEventListener('click', closeCreationModal);
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !creationModal.classList.contains('hidden')) {
+            closeCreationModal();
+        }
+    });
+
+    [manualNameInput, samplingNameInput, xFromInput, xToInput, pointsCountInput, analyticSelect]
+        .filter(Boolean)
+        .forEach(input => input.addEventListener('input', () => {
+            if (manualPanel && !manualPanel.classList.contains('hidden')) {
+                validateManualForm();
+            }
+            if (samplingPanel && !samplingPanel.classList.contains('hidden')) {
+                validateSamplingForm();
+            }
+        }));
+
+    resetManualForm();
+    switchMode('manual');
 }
 
 function informComingSoon(message) {
@@ -79,6 +138,278 @@ function handleFunctionClick(fn) {
     updateStatus(`Откройте окно функции ${safeName} (ID: ${fn?.id ?? 'неизвестно'}) после подключения интерфейса.`, 'muted');
 }
 
+function openCreationModal(mode = 'manual') {
+    if (!creationModal) return;
+    resetManualForm();
+    resetSamplingForm();
+    switchMode(mode);
+    creationModal.classList.remove('hidden');
+    if (mode === 'manual') {
+        manualNameInput?.focus();
+    } else {
+        samplingNameInput?.focus();
+    }
+}
+
+function closeCreationModal() {
+    if (!creationModal) return;
+    creationModal.classList.add('hidden');
+    showFormFeedback(manualFeedback, '');
+    showFormFeedback(samplingFeedback, '');
+    setModalBusy(false);
+}
+
+function switchMode(targetMode) {
+    if (!manualPanel || !samplingPanel) return;
+
+    modeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === targetMode);
+    });
+
+    manualPanel.classList.toggle('hidden', targetMode !== 'manual');
+    samplingPanel.classList.toggle('hidden', targetMode !== 'sampling');
+
+    if (targetMode === 'manual') {
+        validateManualForm();
+    } else {
+        ensureAnalyticFunctions();
+        validateSamplingForm();
+    }
+}
+
+function resetManualForm() {
+    if (manualNameInput) manualNameInput.value = '';
+    if (xRow) xRow.innerHTML = '';
+    if (yRow) yRow.innerHTML = '';
+    addPointColumn();
+    addPointColumn();
+    showFormFeedback(manualFeedback, '');
+    validateManualForm();
+}
+
+function addPointColumn() {
+    if (!xRow || !yRow) return;
+    const index = xRow.children.length + 1;
+    xRow.appendChild(buildPointInput('x', index));
+    yRow.appendChild(buildPointInput('y', index));
+}
+
+function buildPointInput(prefix, index) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `${prefix}${index}`;
+    input.inputMode = 'decimal';
+    input.autocomplete = 'off';
+    input.addEventListener('input', validateManualForm);
+    return input;
+}
+
+function validateManualForm() {
+    const { valid, message } = readManualPoints();
+    showFormFeedback(manualFeedback, message, valid ? 'muted' : 'error');
+    if (submitManualButton) submitManualButton.disabled = !valid;
+    return valid;
+}
+
+function readManualPoints() {
+    if (!xRow || !yRow) return { valid: false, message: 'Добавьте точки.' };
+
+    const xInputs = Array.from(xRow.querySelectorAll('input'));
+    const yInputs = Array.from(yRow.querySelectorAll('input'));
+
+    if (xInputs.length === 0 || yInputs.length === 0) {
+        return { valid: false, message: 'Добавьте минимум одну точку.' };
+    }
+
+    const points = [];
+    const usedX = new Set();
+
+    for (let i = 0; i < Math.min(xInputs.length, yInputs.length); i++) {
+        const xVal = parseNumber(xInputs[i].value);
+        const yVal = parseNumber(yInputs[i].value);
+
+        if (!xVal.valid || !yVal.valid) {
+            return { valid: false, message: 'Точки должны содержать только числа. Используйте запятую или точку для дробей.' };
+        }
+
+        const xValue = xVal.value;
+        if (usedX.has(xValue)) {
+            return { valid: false, message: 'Значения x должны быть уникальны: повторения недопустимы.' };
+        }
+        usedX.add(xValue);
+        points.push({ x: xValue, y: yVal.value });
+    }
+
+    if (points.length < 2) {
+        return { valid: false, message: 'Нужно минимум две точки для построения функции.' };
+    }
+
+    const name = manualNameInput?.value.trim();
+    if (!name) {
+        return { valid: false, message: 'Введите имя функции.' };
+    }
+
+    return { valid: true, message: '', points, name };
+}
+
+function validateSamplingForm() {
+    const validation = readSamplingFields();
+    showFormFeedback(samplingFeedback, validation.message, validation.valid ? 'muted' : 'error');
+    if (submitSamplingButton) submitSamplingButton.disabled = !validation.valid;
+    return validation.valid;
+}
+
+function readSamplingFields() {
+    const name = samplingNameInput?.value.trim();
+    if (!name) return { valid: false, message: 'Введите имя функции.' };
+
+    const xFrom = parseNumber(xFromInput?.value);
+    const xTo = parseNumber(xToInput?.value);
+
+    if (!xFrom.valid || !xTo.valid) {
+        return { valid: false, message: 'Координаты x начальное/конечное должны быть числом.' };
+    }
+
+    if (xFrom.value === xTo.value) {
+        return { valid: false, message: 'Начало и конец отрезка должны отличаться.' };
+    }
+
+    const countRaw = pointsCountInput?.value;
+    const count = Number.parseInt(countRaw ?? '', 10);
+    if (!Number.isFinite(count) || count < 2) {
+        return { valid: false, message: 'Количество точек должно быть целым числом не меньше 2.' };
+    }
+
+    const analyticId = analyticSelect?.value;
+    if (!analyticId) {
+        return { valid: false, message: 'Выберите аналитическую функцию.' };
+    }
+
+    return {
+        valid: true,
+        message: '',
+        name,
+        xFrom: xFrom.value,
+        xTo: xTo.value,
+        count,
+        analyticId: Number(analyticId)
+    };
+}
+
+async function handleManualSubmit() {
+    const validation = readManualPoints();
+    if (!validation.valid) {
+        showFormFeedback(manualFeedback, validation.message, 'error');
+        return;
+    }
+
+    setModalBusy(true);
+    try {
+        const fn = await createTabulatedFunction(validation.name);
+        if (!fn?.id) throw new Error('Не удалось создать функцию.');
+        await postJson(`/functions/${fn.id}/points`, validation.points);
+        showFormFeedback(manualFeedback, 'Функция создана и точки сохранены.', 'success');
+        updateStatus('Функция создана, обновляем список...', 'success');
+        await loadFunctions(true);
+        closeCreationModal();
+    } catch (error) {
+        showFormFeedback(manualFeedback, error.message || 'Не удалось создать функцию.', 'error');
+    } finally {
+        setModalBusy(false);
+    }
+}
+
+async function handleSamplingSubmit() {
+    const validation = readSamplingFields();
+    if (!validation.valid) {
+        showFormFeedback(samplingFeedback, validation.message, 'error');
+        return;
+    }
+
+    setModalBusy(true);
+    try {
+        const fn = await createTabulatedFunction(validation.name);
+        if (!fn?.id) throw new Error('Не удалось создать функцию.');
+        const payload = {
+            function_id: fn.id,
+            analytical_function_id: validation.analyticId,
+            x_from: validation.xFrom,
+            x_to: validation.xTo,
+            count: validation.count
+        };
+        await postJson(`/functions/${fn.id}/sampling`, payload);
+        showFormFeedback(samplingFeedback, 'Функция создана с использованием дискретизации.', 'success');
+        updateStatus('Функция создана, обновляем список...', 'success');
+        await loadFunctions(true);
+        closeCreationModal();
+    } catch (error) {
+        showFormFeedback(samplingFeedback, error.message || 'Не удалось создать функцию.', 'error');
+    } finally {
+        setModalBusy(false);
+    }
+}
+
+async function ensureAnalyticFunctions() {
+    if (analyticFunctionsLoaded || !analyticSelect) return;
+    showFormFeedback(samplingFeedback, 'Загружаем аналитические функции...', 'muted');
+    try {
+        const response = await getJson('/functions/analytical_functions');
+        const list = Array.isArray(response) ? response : response?.functions || [];
+        populateAnalyticOptions(list);
+        analyticFunctionsLoaded = true;
+        showFormFeedback(samplingFeedback, 'Функции загружены.', 'success');
+    } catch (error) {
+        showFormFeedback(samplingFeedback, error.message || 'Не удалось загрузить функции.', 'error');
+    }
+}
+
+function populateAnalyticOptions(functions = []) {
+    if (!analyticSelect) return;
+    analyticSelect.innerHTML = '';
+
+    if (!functions.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = 'Нет доступных аналитических функций';
+        analyticSelect.appendChild(option);
+        return;
+    }
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = 'Выберите аналитическую функцию';
+    analyticSelect.appendChild(placeholder);
+
+    functions.forEach(fn => {
+        const option = document.createElement('option');
+        option.value = fn.id;
+        option.textContent = fn.name || `Функция #${fn.id}`;
+        analyticSelect.appendChild(option);
+    });
+}
+
+async function createTabulatedFunction(name) {
+    const payload = {
+        name: name?.trim(),
+        type: 'linked_list_tabulated',
+        source: 'base'
+    };
+    return await postJson('/functions', payload);
+}
+
+function parseNumber(value) {
+    const normalized = (value ?? '').toString().trim().replace(',', '.');
+    if (!normalized) return { valid: false, message: 'Введите число.' };
+    const num = Number(normalized);
+    if (!Number.isFinite(num)) return { valid: false, message: 'Введите корректное число.' };
+    return { valid: true, value: num };
+}
+
+
 async function getJson(endpoint) {
     const url = buildUrl(endpoint);
     let response;
@@ -95,20 +426,52 @@ async function getJson(endpoint) {
         throw new Error(message);
     }
 
+    const data = await parseResponse(response);
+    if (!response.ok) {
+        const message = data?.message || response.statusText || `Ошибка ${response.status}`;
+        throw new Error(message);
+    }
+    return data;
+}
+
+async function postJson(endpoint, payload) {
+    const url = buildUrl(endpoint);
+    let response;
+
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    const authHeader = buildAuthHeader(endpoint);
+    if (authHeader) headers['Authorization'] = authHeader;
+
+    try {
+        response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+    } catch (networkError) {
+        const cleanMessage = stripHtml(networkError.message || networkError.toString());
+        const message = `Не удалось связаться с сервером: ${cleanMessage}. Повторите попытку позже.`;
+        throw new Error(message);
+    }
+
+    const data = await parseResponse(response);
+    if (!response.ok) {
+        const message = data?.message || response.statusText || `Ошибка ${response.status}`;
+        throw new Error(message);
+    }
+    return data;
+}
+
+async function parseResponse(response) {
     const text = await response.text();
     let data;
     try {
         data = text ? JSON.parse(text) : {};
     } catch {
         data = { message: stripHtml(text) || text };
-    }
-
-    if (!response.ok) {
-        const message = stripHtml(data?.message)
-            || stripHtml(data?.error)
-            || response.statusText
-            || `Ошибка ${response.status}`;
-        throw new Error(message);
     }
     return data;
 }
@@ -199,16 +562,62 @@ function buildPageUrl(target) {
 }
 
 function setLoading(state) {
+    if (!functionsList) return;
     if (state) {
         functionsList.dataset.loading = 'true';
     } else {
         delete functionsList.dataset.loading;
     }
-    document.querySelectorAll('button').forEach(btn => btn.disabled = state && btn.id === 'refreshList');
+    document.querySelectorAll('button').forEach(btn => {
+        if (btn.id === 'refreshList') {
+            btn.disabled = state;
+        }
+    });
+}
+
+function setModalBusy(state) {
+    [submitManualButton, submitSamplingButton, addPointButton].forEach(btn => {
+        if (btn) btn.disabled = state;
+    });
+    if (modeButtons) {
+        modeButtons.forEach(btn => btn.disabled = state);
+    }
 }
 
 function updateStatus(message, type = 'muted') {
     if (!functionsStatus) return;
     functionsStatus.textContent = message || '';
     functionsStatus.className = `feedback ${type}`.trim();
+}
+
+function showFormFeedback(target, message, type = 'muted') {
+    if (!target) return;
+    target.textContent = message || '';
+    target.className = `feedback ${type}`.trim();
+}
+
+function buildFunctionMarkup(fn) {
+    const safeName = escapeHtml(fn?.name || 'Без названия');
+    const id = fn?.id ?? '—';
+    const type = escapeHtml(fn?.type || 'неизвестно');
+    const source = escapeHtml(fn?.source || 'не указано');
+    return `
+        <div class="fn-name">${safeName}</div>
+        <div class="fn-meta">
+            <span class="badge">ID: ${id}</span>
+            <span class="badge">Тип: ${type}</span>
+            <span class="badge">Источник: ${source}</span>
+        </div>
+    `;
+}
+
+function resetSamplingForm() {
+    if (samplingNameInput) samplingNameInput.value = '';
+    if (xFromInput) xFromInput.value = '';
+    if (xToInput) xToInput.value = '';
+    if (pointsCountInput) pointsCountInput.value = '';
+    if (analyticSelect && analyticSelect.options.length) {
+        analyticSelect.selectedIndex = 0;
+    }
+    showFormFeedback(samplingFeedback, '');
 }
