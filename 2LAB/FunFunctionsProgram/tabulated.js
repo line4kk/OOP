@@ -31,22 +31,47 @@ function informComingSoon(message) {
 }
 
 async function loadFunctions(force = false) {
+    if (!functionsList) return;
     if (!force && functionsList.dataset.loading === 'true') return;
-@@ -75,122 +76,154 @@ function renderFunctions(functions) {
-function buildFunctionMarkup(fn) {
-    const safeName = escapeHtml(fn?.name) || 'Без названия';
-    const safeType = escapeHtml(fn?.type || '');
-    const safeSource = escapeHtml(fn?.source || 'base');
-    const safeId = escapeHtml(String(fn?.id || '—'));
 
-    return `
-        <div class="fn-name">${safeName}</div>
-        <div class="fn-meta">
-            <span class="badge">ID: ${safeId}</span>
-            <span class="badge">Тип: ${safeType}</span>
-            <span class="badge">Источник: ${safeSource}</span>
-        </div>
-    `;
+    setLoading(true);
+    updateStatus('Загружаем список функций...', 'muted');
+
+    try {
+        const response = await getJson('/functions');
+        const functions = Array.isArray(response) ? response : response?.functions || [];
+        renderFunctions(functions);
+        updateStatus(`Загружено функций: ${functions.length}.`, 'success');
+    } catch (error) {
+        renderFunctions([]);
+        const message = error?.message || 'Не удалось загрузить список функций.';
+        updateStatus(message, 'error');
+    } finally {
+        setLoading(false);
+    }
+}
+
+function renderFunctions(functions) {
+    if (!functionsList) return;
+
+    functionsList.innerHTML = '';
+
+    if (!Array.isArray(functions) || functions.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'function-item empty';
+        emptyState.textContent = 'Список функций пуст.';
+        functionsList.appendChild(emptyState);
+        return;
+    }
+
+    functions.forEach(fn => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'function-item';
+        item.innerHTML = buildFunctionMarkup(fn);
+        item.addEventListener('click', () => handleFunctionClick(fn));
+        functionsList.appendChild(item);
+    });
 }
 
 function handleFunctionClick(fn) {
