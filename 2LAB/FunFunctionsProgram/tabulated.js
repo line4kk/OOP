@@ -598,17 +598,37 @@ function showFormFeedback(target, message, type = 'muted') {
 
 function buildFunctionMarkup(fn) {
     const safeName = escapeHtml(fn?.name || 'Без названия');
-    const id = fn?.id ?? '—';
-    const type = escapeHtml(fn?.type || 'неизвестно');
-    const source = escapeHtml(fn?.source || 'не указано');
+    const type = formatFunctionType(fn?.type);
+    const source = formatFunctionSource(fn?.source);
+
+    const badges = [`<span class="badge">Тип: ${type}</span>`];
+    if (source) {
+        badges.push(`<span class="badge">${source}</span>`);
+    }
+
     return `
         <div class="fn-name">${safeName}</div>
         <div class="fn-meta">
-            <span class="badge">ID: ${id}</span>
-            <span class="badge">Тип: ${type}</span>
-            <span class="badge">Источник: ${source}</span>
+            ${badges.join(' ')}
         </div>
     `;
+}
+
+function formatFunctionType(type) {
+    const humanReadable = {
+        linked_list_tabulated: 'Связный список',
+        array_tabulated: 'Динамический массив'
+    };
+
+    const resolved = humanReadable[type] || type || 'неизвестно';
+    return escapeHtml(resolved);
+}
+
+function formatFunctionSource(source) {
+    if (source === 'operation') {
+        return 'В результате операции';
+    }
+    return '';
 }
 
 function resetSamplingForm() {
