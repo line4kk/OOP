@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunFunctions | Вход или регистрация</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="grid">
+    <section class="card hero">
+        <div class="pill">Табулированные функции • API готово</div>
+        <h1>Добро пожаловать в <span>FunFunctions</span></h1>
+        <p class="subtitle">Создавайте аккаунт или входите, чтобы работать с фабриками табличных функций. После авторизации покажем сохранённые данные и подскажем, что делать дальше.</p>
+        <ul class="features">
+            <li>Надёжная авторизация с подробными ошибками</li>
+            <li>Выбор типа фабрики при регистрации</li>
+            <li>Готовность к локальной разработке (localhost:3000 → backend)</li>
+        </ul>
+    </section>
+
+    <section class="card form-card">
+        <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="login" role="tab" aria-selected="true">Вход</button>
+            <button class="tab" data-tab="register" role="tab" aria-selected="false">Регистрация</button>
+        </div>
+
+        <div class="api-base" role="group" aria-label="Настройки подключения">
+            <label>Адрес backend</label>
+            <div class="quick-bases" aria-label="Быстрый выбор порта">
+                <button type="button" class="chip" data-base-target="http://localhost:3000">localhost:3000</button>
+            </div>
+            <p id="api-hint" class="note">Адрес определяется автоматически. Если что-то пошло не так, попробуйте вариант выше.</p>
+        </div>
+
+        <form id="loginForm" autocomplete="on">
+            <div class="row">
+                <label for="login-username">Имя пользователя</label>
+                <input id="login-username" name="username" type="text" minlength="3" required placeholder="user123">
+            </div>
+            <div class="row">
+                <label for="login-password">Пароль</label>
+                <input id="login-password" name="password" type="password" minlength="8" required placeholder="••••••••">
+            </div>
+            <button type="submit">Войти</button>
+        </form>
+
+        <form id="registerForm" class="hidden" autocomplete="on">
+            <div class="row two-col">
+                <div class="row">
+                    <label for="reg-username">Имя пользователя</label>
+                    <input id="reg-username" name="username" type="text" minlength="3" required placeholder="new_user">
+                </div>
+                <div class="row">
+                    <label for="reg-factory">Тип фабрики</label>
+                    <select id="reg-factory" name="factory_type" required>
+                        <option value="linked_list">Связный список</option>
+                        <option value="array">Динамический массив</option>
+                    </select>
+                    <p class="note">Варианты соответствуют API (FunFunctionsAPI.yaml)</p>
+                </div>
+            </div>
+            <div class="row">
+                <label for="reg-password">Пароль (8-64 символа)</label>
+                <input id="reg-password" name="password" type="password" minlength="8" maxlength="64" required placeholder="Придумайте надежный пароль">
+            </div>
+            <button type="submit">Создать аккаунт</button>
+        </form>
+
+        <div id="feedback" class="feedback" role="status"></div>
+
+        <div id="result" class="result hidden" aria-live="polite">
+            <div class="result-header">Успешно! Сессия сохранена.</div>
+            <p id="result-body" class="result-body"></p>
+            <p class="result-note">Сейчас откроется следующая вкладка.</p>
+        </div>
+    </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
