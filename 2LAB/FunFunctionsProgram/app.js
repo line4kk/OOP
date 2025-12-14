@@ -50,49 +50,43 @@ function stripHtml(rawText = '') {
 }
 
 async function sendJson(endpoint, payload) {
+    const url = buildUrl(endpoint);
+    let response;
+
     try {
-        const url = buildUrl(endpoint);
-        const response = await fetch(url, {
+        response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
         });
-
-        const text = await response.text();
-        let data;
-        try {
-            data = text ? JSON.parse(text) : {};
-        } catch {
-            data = { message: stripHtml(text) || text };
-        }
-
-        if (!response.ok) {
-            const message = buildErrorMessage(response.status, response.statusText, data, url);
-            throw new Error(message);
-        }
-        return data;
     } catch (networkError) {
         const cleanMessage = stripHtml(networkError.message || networkError.toString());
         const message = `Не удалось связаться с сервером: ${cleanMessage} Повторите попытку позже или обратитесь к администратору.`;
         throw new Error(message);
     }
-}
 
-function buildErrorMessage(status, statusText, data, endpoint) {
-    const reason = stripHtml(data?.message) || stripHtml(data?.error) || statusText || 'Неизвестная ошибка';
-    let hint = 'Проверьте введённые данные и повторите попытку.';
-
-    if (status === 403) {
-        hint = 'Сервер вернул 403 Forbidden. Обычно это значит, что запрос пришёл без авторизации или с истекшей сессией.';
-    } else if (status === 404) {
-        hint = `Эндпоинт не найден. Убедитесь, что URL корректен: ${endpoint}.`;
-    } else if (status >= 500) {
-        hint = 'Проблема на стороне сервера. Проверьте логи backend и повторите попытку позже.';
+    const text = await response.text();
+    let data;
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        data = { message: stripHtml(text) || text };
     }
 
-    return `Ошибка ${status}: ${reason}.\n${hint}`;
+    if (!response.ok) {
+        const message = buildErrorMessage(response.status, response.statusText, data);
+        throw new Error(message);
+    }
+    return data;
+}
+
+function buildErrorMessage(status, statusText, data) {
+    return stripHtml(data?.message)
+        || stripHtml(data?.error)
+        || statusText
+        || `Ошибка ${status}`;
 }
 
 function setLoading(state) {
@@ -118,11 +112,6 @@ function handleSuccess(data) {
     if (data?.username) {
         localStorage.setItem('funfunctions_username', data.username);
     }
-    if (data?.factory_type) {
-        localStorage.setItem('funfunctions_factory', data.factory_type);
-    }
-    localStorage.setItem('funfunctions_api_base', currentApiBase);
-
     showResult(data);
     setTimeout(() => {
         const target = buildNextPageUrl();
