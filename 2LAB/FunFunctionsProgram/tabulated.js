@@ -7,6 +7,7 @@ const functionsStatus = document.getElementById('functionsStatus');
 const functionsList = document.getElementById('functionsList');
 const refreshButton = document.getElementById('refreshList');
 const createButton = document.getElementById('createFunction');
+const operationsButton = document.getElementById('functionOperations');
 const chartsButton = document.getElementById('openCharts');
 const backButton = document.getElementById('backButton');
 
@@ -59,16 +60,36 @@ const chartsStatus = document.getElementById('chartsStatus');
 const resetGlobalChartButton = document.getElementById('resetGlobalChart');
 const clearChartCanvasButton = document.getElementById('clearChartCanvas');
 
+const operationsModal = document.getElementById('operationsModal');
+const operationsModalOverlay = document.querySelector('[data-close-operations-modal]');
+const closeOperationsModalButton = document.getElementById('closeOperationsModal');
+const operationFirstSelect = document.getElementById('operationFirst');
+const operationSecondSelect = document.getElementById('operationSecond');
+const operationTypeSelect = document.getElementById('operationType');
+const operationPreviewButton = document.getElementById('previewOperation');
+const operationSaveButton = document.getElementById('saveOperationResult');
+const operationResultNameInput = document.getElementById('operationResultName');
+const operationsFeedback = document.getElementById('operationsFeedback');
+const operationChartsStatus = document.getElementById('operationChartsStatus');
+const operationFirstCanvas = document.getElementById('operationFirstCanvas');
+const operationSecondCanvas = document.getElementById('operationSecondCanvas');
+const operationResultCanvas = document.getElementById('operationResultCanvas');
+
 const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 const FACTORY_TYPE_KEY = 'funfunctions_factory_type';
 let analyticFunctionsLoaded = false;
 let currentFunction = null;
 let cachedFunctions = [];
+let functionPointsCache = new Map();
 let functionChart;
 let globalChart;
 let globalChartSeries = [];
 let chartUpdateTimeout;
+let operationChartA;
+let operationChartB;
+let operationChartResult;
+let lastOperationResult = null;
 const chartPalette = [
     '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
     '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ac'
@@ -322,6 +343,7 @@ initCharts();
 attachActions();
 initCreationModal();
 initFunctionModal();
+initOperationsModal();
 loadFunctions();
 
 function initCharts() {
@@ -332,6 +354,16 @@ function initCharts() {
     if (globalChartCanvas) {
         globalChart = new ChartCanvas(globalChartCanvas);
         setChartsStatus('Добавьте функции, чтобы сравнить их на одном полотне.', 'muted');
+    }
+
+    if (operationFirstCanvas) {
+        operationChartA = new ChartCanvas(operationFirstCanvas);
+    }
+    if (operationSecondCanvas) {
+        operationChartB = new ChartCanvas(operationSecondCanvas);
+    }
+    if (operationResultCanvas) {
+        operationChartResult = new ChartCanvas(operationResultCanvas);
     }
 
     refreshFunctionChartButton?.addEventListener('click', refreshFunctionChartFromInputs);
@@ -366,6 +398,9 @@ function attachActions() {
     }
     if (createButton) {
         createButton.addEventListener('click', () => openCreationModal('manual'));
+    }
+    if (operationsButton) {
+        operationsButton.addEventListener('click', openOperationsModal);
     }
     if (chartsButton) {
         chartsButton.addEventListener('click', openChartsModal);
@@ -443,6 +478,25 @@ function informComingSoon(message) {
     updateStatus(message, 'muted');
 }
 
+function initOperationsModal() {
+    if (!operationsModal) return;
+
+    closeOperationsModalButton?.addEventListener('click', closeOperationsModal);
+    operationsModalOverlay?.addEventListener('click', closeOperationsModal);
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !operationsModal.classList.contains('hidden')) {
+            closeOperationsModal();
+        }
+    });
+
+    [operationFirstSelect, operationSecondSelect, operationTypeSelect].forEach(select => {
+        select?.addEventListener('change', () => setOperationFeedback(''));
+    });
+
+    operationPreviewButton?.addEventListener('click', handleOperationPreview);
+    operationSaveButton?.addEventListener('click', saveOperationResult);
+}
+
 async function loadFunctions(force = false) {
     if (!functionsList) return;
     if (!force && functionsList.dataset.loading === 'true') return;
@@ -453,14 +507,15 @@ async function loadFunctions(force = false) {
     try {
         const response = await getJson('/functions');
         const functions = Array.isArray(response) ? response : response?.functions || [];
-        const allowedTabulatedTypes = new Set(['linked_list_tabulated', 'array_tabulated']);
-        const tabulatedFunctions = functions.filter(fn => allowedTabulatedTypes.has(fn?.type));
-        cachedFunctions = tabulatedFunctions;
+        const tabulatedOnly = functions.filter(isTabulatedFunction);
+        cachedFunctions = tabulatedOnly;
+        functionPointsCache.clear();
         populateChartSelect();
-        renderFunctions(tabulatedFunctions);
-        updateStatus(`Загружено функций: ${tabulatedFunctions.length}.`, 'success');
+        renderFunctions(tabulatedOnly);
+        updateStatus(`Загружено функций: ${tabulatedOnly.length}.`, 'success');
     } catch (error) {
         cachedFunctions = [];
+        functionPointsCache.clear();
         populateChartSelect();
         renderFunctions([]);
         const message = error?.message || 'Не удалось загрузить список функций.';
@@ -468,6 +523,65 @@ async function loadFunctions(force = false) {
     } finally {
         setLoading(false);
     }
+}
+
+async function openOperationsModal() {
+    if (!operationsModal) return;
+    resetOperationModal();
+    populateOperationSelects();
+
+    if (!cachedFunctions.length) {
+        await loadFunctions(true);
+        populateOperationSelects();
+    }
+
+    operationsModal.classList.remove('hidden');
+    operationChartA?.resize();
+    operationChartB?.resize();
+    operationChartResult?.resize();
+}
+
+function closeOperationsModal() {
+    operationsModal?.classList.add('hidden');
+    resetOperationModal();
+}
+
+function populateOperationSelects() {
+    populateOperationSelect(operationFirstSelect);
+    populateOperationSelect(operationSecondSelect);
+}
+
+function populateOperationSelect(select) {
+    if (!select) return;
+    const previous = select.value;
+    select.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = cachedFunctions.length ? 'Выберите функцию' : 'Нет доступных функций';
+    select.appendChild(placeholder);
+
+    cachedFunctions.forEach(fn => {
+        const option = document.createElement('option');
+        option.value = fn.id;
+        option.textContent = fn.name || `Функция #${fn.id}`;
+        select.appendChild(option);
+    });
+
+    const hasPrevious = Array.from(select.options).some(opt => opt.value === previous);
+    if (hasPrevious) {
+        select.value = previous;
+    }
+}
+
+function resetOperationModal() {
+    lastOperationResult = null;
+    if (operationResultNameInput) operationResultNameInput.value = '';
+    renderOperationCharts([], [], []);
+    setOperationFeedback('');
+    setOperationChartsStatus('Выберите две функции и операцию, затем нажмите «Показать результат».', 'muted');
 }
 
 function renderFunctions(functions) {
@@ -516,6 +630,49 @@ function openChartForFunction(fn) {
     setTimeout(() => {
         functionChartCanvas?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 250);
+}
+
+async function handleOperationPreview() {
+    if (!operationTypeSelect || !operationFirstSelect || !operationSecondSelect) return;
+    const firstId = Number(operationFirstSelect.value);
+    const secondId = Number(operationSecondSelect.value);
+    const operation = operationTypeSelect.value;
+
+    if (!Number.isFinite(firstId) || !Number.isFinite(secondId) || !operation) {
+        setOperationFeedback('Выберите обе функции и операцию.', 'error');
+        return;
+    }
+
+    if (firstId === secondId) {
+        setOperationFeedback('Выберите разные функции для выполнения операции.', 'error');
+        return;
+    }
+
+    try {
+        setOperationFeedback('Выполняем операцию...', 'muted');
+        setOperationChartsStatus('Загружаем точки выбранных функций...', 'muted');
+        const [firstPoints, secondPoints] = await Promise.all([
+            fetchFunctionPoints(firstId),
+            fetchFunctionPoints(secondId)
+        ]);
+
+        const resultPoints = computeOperationResult(firstPoints, secondPoints, operation);
+        renderOperationCharts(firstPoints, secondPoints, resultPoints);
+        lastOperationResult = { firstId, secondId, operation, resultPoints };
+        setOperationChartsStatus('Операция выполнена. Проверьте результат и сохраните функцию при необходимости.', 'success');
+        setOperationFeedback('', 'muted');
+    } catch (error) {
+        lastOperationResult = null;
+        renderOperationCharts([], [], []);
+        setOperationFeedback(error?.message || 'Не удалось выполнить операцию.', 'error');
+        setOperationChartsStatus('Не удалось построить графики.', 'error');
+    }
+}
+
+function renderOperationCharts(firstPoints = [], secondPoints = [], resultPoints = []) {
+    operationChartA?.setSeries(firstPoints.length ? [{ points: firstPoints, color: '#4e79a7' }] : []);
+    operationChartB?.setSeries(secondPoints.length ? [{ points: secondPoints, color: '#f28e2b' }] : []);
+    operationChartResult?.setSeries(resultPoints.length ? [{ points: resultPoints, color: '#59a14f' }] : []);
 }
 
 function openCreationModal(mode = 'manual') {
@@ -1179,6 +1336,96 @@ function buildGlobalSeriesPayload() {
     }));
 }
 
+async function fetchFunctionPoints(id) {
+    if (functionPointsCache.has(id)) return functionPointsCache.get(id);
+    const response = await getJson(`/functions/${id}/points`);
+    const points = normalizePointsList(Array.isArray(response) ? response : response?.points || []);
+    if (!points.length) {
+        throw new Error('У функции нет точек для выполнения операции.');
+    }
+    functionPointsCache.set(id, points);
+    return points;
+}
+
+function computeOperationResult(firstPoints = [], secondPoints = [], operation) {
+    if (!operation) throw new Error('Выберите операцию.');
+    if (firstPoints.length !== secondPoints.length) {
+        throw new Error('Функции должны содержать одинаковое количество точек.');
+    }
+    if (!firstPoints.length) {
+        throw new Error('Недостаточно точек для выполнения операции.');
+    }
+
+    const result = [];
+    for (let i = 0; i < firstPoints.length; i++) {
+        const pointA = firstPoints[i];
+        const pointB = secondPoints[i];
+        if (Math.abs(pointA.x - pointB.x) > 1e-9) {
+            throw new Error('Значения X в функциях должны совпадать.');
+        }
+        const y = applyOperation(operation, pointA.y, pointB.y);
+        if (!Number.isFinite(y)) {
+            throw new Error('Результат операции содержит некорректные значения.');
+        }
+        result.push({ x: pointA.x, y });
+    }
+    return result;
+}
+
+function applyOperation(operation, a, b) {
+    switch (operation) {
+        case 'add':
+            return a + b;
+        case 'subtract':
+            return a - b;
+        case 'multiplication':
+            return a * b;
+        case 'division':
+            if (b === 0) {
+                throw new Error('Деление на ноль невозможно.');
+            }
+            return a / b;
+        default:
+            throw new Error('Неизвестная операция.');
+    }
+}
+
+async function saveOperationResult() {
+    if (!lastOperationResult?.resultPoints?.length) {
+        setOperationFeedback('Сначала выполните операцию и убедитесь, что результат построен.', 'error');
+        return;
+    }
+
+    const name = operationResultNameInput?.value.trim();
+    if (!name) {
+        setOperationFeedback('Введите имя для новой функции.', 'error');
+        return;
+    }
+
+    try {
+        setOperationFeedback('Сохраняем функцию...', 'muted');
+        const fn = await createTabulatedFunction(name, 'operation');
+        await postJson(`/functions/${fn.id}/points`, lastOperationResult.resultPoints);
+        setOperationFeedback('Функция сохранена. Список будет обновлён.', 'success');
+        await loadFunctions(true);
+        populateOperationSelects();
+    } catch (error) {
+        setOperationFeedback(error?.message || 'Не удалось сохранить функцию.', 'error');
+    }
+}
+
+function setOperationFeedback(message, type = 'muted') {
+    if (!operationsFeedback) return;
+    operationsFeedback.textContent = message || '';
+    operationsFeedback.className = `feedback ${type}`.trim();
+}
+
+function setOperationChartsStatus(message, type = 'muted') {
+    if (!operationChartsStatus) return;
+    operationChartsStatus.textContent = message || '';
+    operationChartsStatus.className = `feedback ${type}`.trim();
+}
+
 function normalizePointsList(list = []) {
     return (Array.isArray(list) ? list : [])
         .map(point => ({ x: Number(point.x), y: Number(point.y) }))
@@ -1244,11 +1491,11 @@ function populateAnalyticOptions(functions = []) {
     });
 }
 
-async function createTabulatedFunction(name) {
+async function createTabulatedFunction(name, source = 'base') {
     const payload = {
         name: name?.trim(),
         type: resolveTabulatedType(),
-        source: 'base'
+        source
     };
     return await postJson('/functions', payload);
 }
@@ -1484,6 +1731,10 @@ function buildFunctionMarkup(fn) {
             ${badges.join(' ')}
         </div>
     `;
+}
+
+function isTabulatedFunction(fn) {
+    return fn?.type === 'linked_list_tabulated' || fn?.type === 'array_tabulated';
 }
 
 function formatFunctionType(type) {

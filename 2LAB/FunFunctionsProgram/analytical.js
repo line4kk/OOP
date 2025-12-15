@@ -322,7 +322,6 @@ function refreshComponentPicker() {
             const option = document.createElement('option');
             option.value = fn.id;
             option.textContent = fn.name || `Функция #${fn.id}`;
-            option.disabled = state.compositionDraft.includes(fn.id);
             componentPicker.appendChild(option);
         });
 
@@ -335,7 +334,7 @@ function refreshComponentPicker() {
 function addComponentToDraft() {
     if (!componentPicker) return;
     const chosen = Number(componentPicker.value);
-    if (!chosen || state.compositionDraft.includes(chosen)) return;
+    if (!chosen) return;
     state.compositionDraft.push(chosen);
     renderCompositionDraft();
     refreshComponentPicker();
@@ -352,13 +351,20 @@ function renderCompositionDraft() {
         compositionList.appendChild(placeholder);
         return;
     }
+    const countMap = new Map();
 
     state.compositionDraft.forEach((id, index) => {
         const fn = state.functions.find(item => item.id === id);
+        const name = fn?.name || `Функция #${id}`;
+        const count = (countMap.get(id) || 0) + 1;
+        countMap.set(id, count);
+
+        const displayName = count > 1 ? `${name} (${count})` : name;
+
         const item = document.createElement('div');
         item.className = 'composition-item';
         item.innerHTML = `
-            <div class="composition-name">${index + 1}. ${escapeHtml(fn?.name || `Функция #${id}`)}</div>
+            <div class="composition-name">${index + 1}. ${escapeHtml(displayName)}</div>
             <div class="composition-actions">
                 <button type="button" class="icon-btn" data-action="up" data-index="${index}" aria-label="Выше">↑</button>
                 <button type="button" class="icon-btn" data-action="down" data-index="${index}" aria-label="Ниже">↓</button>
