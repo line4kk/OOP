@@ -17,8 +17,8 @@
             '--accent': '#10b981',
             '--accent-strong': '#059669',
             '--accent-soft': '#84cc16',
-            '--text': '#032418',
-            '--muted': '#4b5563',
+            '--text': '#000000',
+            '--muted': '#000000',
             '--danger': '#ef4444',
             '--success': '#16a34a'
         },

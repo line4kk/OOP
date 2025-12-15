@@ -23,7 +23,7 @@
         </div>
         <div class="toolbar" aria-label="Действия с аналитическими функциями">
             <button id="createAnalytic" type="button" class="ghost">Создать функцию</button>
-            <button id="editAnalytic" type="button" class="ghost" disabled>Изменить выбранную</button>
+            <button id="editAnalytic" type="button" class="ghost" disabled>Изменить функцию</button>
             <button id="deleteAnalytic" type="button" class="danger ghost" disabled>Удалить</button>
         </div>
     </header>
@@ -65,8 +65,13 @@
                     <select id="baseName" name="baseName">
                         <option value="IdentityFunction">IdentityFunction (f(x)=x)</option>
                         <option value="SqrFunction">SqrFunction (f(x)=x²)</option>
+                        <option value="CubeFunction">CubeFunction (f(x)=x³)</option>
                         <option value="UnitFunction">UnitFunction (f(x)=1)</option>
                         <option value="ZeroFunction">ZeroFunction (f(x)=0)</option>
+                        <option value="SinFunction">SinFunction (f(x)=sin(x))</option>
+                        <option value="CosFunction">CosFunction (f(x)=cos(x))</option>
+                        <option value="ExpFunction">ExpFunction (f(x)=eˣ)</option>
+                        <option value="LogFunction">LogFunction (f(x)=ln|x|)</option>
                         <option value="custom">Другое имя из каталога functions...</option>
                     </select>
                 </div>

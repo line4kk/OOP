@@ -29,8 +29,13 @@ const submitButton = document.getElementById('submitAnalytic');
 const AVAILABLE_BASE_FUNCTIONS = [
     'IdentityFunction',
     'SqrFunction',
+    'CubeFunction',
     'UnitFunction',
-    'ZeroFunction'
+    'ZeroFunction',
+    'SinFunction',
+    'CosFunction',
+    'ExpFunction',
+    'LogFunction'
 ];
 
 const state = {
@@ -274,10 +279,20 @@ function describeBase(name) {
             return 'f(x) = x';
         case 'SqrFunction':
             return 'f(x) = x²';
+        case 'CubeFunction':
+            return 'f(x) = x³';
         case 'UnitFunction':
             return 'f(x) = 1';
         case 'ZeroFunction':
             return 'f(x) = 0';
+        case 'SinFunction':
+            return 'f(x) = sin(x)';
+        case 'CosFunction':
+            return 'f(x) = cos(x)';
+        case 'ExpFunction':
+            return 'f(x) = eˣ';
+        case 'LogFunction':
+            return 'f(x) = ln|x|';
         default:
             return 'функция из каталога';
     }
