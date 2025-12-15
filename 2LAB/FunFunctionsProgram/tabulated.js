@@ -229,6 +229,7 @@ function resetManualForm() {
     if (manualNameInput) manualNameInput.value = '';
     if (xRow) xRow.innerHTML = '';
     if (yRow) yRow.innerHTML = '';
+    if (manualActionsRow) manualActionsRow.innerHTML = '';
     addPointColumn();
     addPointColumn();
     showFormFeedback(manualFeedback, '');
