@@ -615,49 +615,32 @@ input:checked + .slider:before {
 }
 
 .inclusive-mode {
-    font-size: calc(1rem + 16px);
-    line-height: 2.05;
-    letter-spacing: 0.25px;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    letter-spacing: 0.1px;
 }
 
 .inclusive-mode * {
-    font-size: calc(1em + 16px) !important;
+    font-size: 1.1em !important;
 }
 
 .inclusive-mode h1,
 .inclusive-mode h2,
 .inclusive-mode h3 {
-    font-size: calc(1.6em + 16px) !important;
+    font-size: 1.2em !important;
 }
 
-.inclusive-mode,
-.inclusive-mode .card,
-.inclusive-mode .settings-block {
-    border-color: #f5f5f5 !important;
-    box-shadow: none;
+.inclusive-mode p,
+.inclusive-mode span,
+.inclusive-mode div:not(.card):not(.settings-block) {
+    font-size: 1.05em !important;
 }
 
-.inclusive-mode a,
 .inclusive-mode button,
+.inclusive-mode input,
+.inclusive-mode select,
 .inclusive-mode label {
-    text-decoration: underline;
-    font-weight: 700;
-}
-
-.inclusive-mode .feedback {
-    font-weight: 700;
-    border-color: #f5f5f5;
-}
-
-.inclusive-mode img {
-    transform: scale(1.25);
-    transform-origin: center;
-}
-
-.inclusive-mode .chip input[type="radio"],
-.inclusive-mode .theme-swatch,
-.inclusive-mode .palette-grid input[type="color"] {
-    transform: scale(1.1);
+    font-size: 1.1em !important;
 }
 
 .eyebrow {

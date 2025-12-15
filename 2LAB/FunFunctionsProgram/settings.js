@@ -76,21 +76,23 @@ function loadThemeControls() {
     setPaletteInputs(paletteToRender);
 }
 
+function applyThemeFromForm(showMessage = false) {
+    const preset = themeForm.theme.value || 'neon';
+    shared?.applyTheme(preset, collectCustomPalette());
+    if (showMessage) {
+        setFeedback(themeFeedback, 'Тема применена.', 'success');
+    }
+}
+
 if (themeForm) {
     loadThemeControls();
-    themeForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const preset = themeForm.theme.value || 'neon';
-        shared?.applyTheme(preset, collectCustomPalette());
-        setFeedback(themeFeedback, 'Тема сохранена и применена.', 'success');
-    });
 
     themeForm.querySelectorAll('input[name="theme"]').forEach(input => {
         input.addEventListener('change', () => {
-            themeFeedback.textContent = '';
             const preset = themeForm.theme.value || 'neon';
             const base = shared?.getThemePalette ? shared.getThemePalette(preset) : {};
             setPaletteInputs(base);
+            setFeedback(themeFeedback, 'Тема применена.', 'success');
             shared?.applyTheme(preset, {});
         });
     });
@@ -98,8 +100,7 @@ if (themeForm) {
     ['bg', 'panel', 'accent', 'accentStrong', 'accentSoft', 'text', 'muted'].forEach(name => {
         const input = themeForm.querySelector(`input[name="${name}"]`);
         input?.addEventListener('input', () => {
-            const preset = themeForm.theme.value || 'neon';
-            shared?.applyTheme(preset, collectCustomPalette());
+            applyThemeFromForm(true);
         });
     });
 }

@@ -125,6 +125,8 @@ function handleSuccess(data, credentials) {
     if (data?.username) {
         localStorage.setItem('funfunctions_username', data.username);
     }
+    const factoryType = data?.factory_type || credentials?.factory_type;
+    persistFactoryType(factoryType);
     rememberCredentials(credentials);
     showResult(data);
     setTimeout(() => {
@@ -227,6 +229,15 @@ function safeBase64(value) {
 function shouldIncludeAuth(endpoint = '') {
     const normalized = endpoint.toLowerCase();
     return normalized !== '/users/auth' && normalized !== '/users/register';
+}
+
+function persistFactoryType(value) {
+    if (!value) return;
+    try {
+        localStorage.setItem('funfunctions_factory_type', value);
+    } catch (e) {
+        console.error('Не удалось сохранить тип фабрики', e);
+    }
 }
 
 function rememberCredentials(credentials) {

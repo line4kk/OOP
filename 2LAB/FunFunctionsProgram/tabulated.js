@@ -32,6 +32,7 @@ const submitSamplingButton = document.getElementById('submitSampling');
 
 const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
+const FACTORY_TYPE_KEY = 'funfunctions_factory_type';
 let analyticFunctionsLoaded = false;
 
 attachActions();
@@ -406,10 +407,18 @@ function populateAnalyticOptions(functions = []) {
 async function createTabulatedFunction(name) {
     const payload = {
         name: name?.trim(),
-        type: 'linked_list_tabulated',
+        type: resolveTabulatedType(),
         source: 'base'
     };
     return await postJson('/functions', payload);
+}
+
+function resolveTabulatedType() {
+    const stored = localStorage.getItem(FACTORY_TYPE_KEY) || 'linked_list';
+    if (stored === 'array' || stored === 'array_tabulated') return 'array_tabulated';
+    if (stored === 'linked_list' || stored === 'linked_list_tabulated') return 'linked_list_tabulated';
+    if (stored.endsWith('_tabulated')) return stored;
+    return `${stored}_tabulated`;
 }
 
 function parseNumber(value) {
