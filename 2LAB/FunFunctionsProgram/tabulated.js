@@ -111,8 +111,9 @@ async function loadFunctions(force = false) {
     try {
         const response = await getJson('/functions');
         const functions = Array.isArray(response) ? response : response?.functions || [];
-        renderFunctions(functions);
-        updateStatus(`Загружено функций: ${functions.length}.`, 'success');
+        const tabulatedOnly = functions.filter(fn => fn?.type !== 'analytical');
+        renderFunctions(tabulatedOnly);
+        updateStatus(`Загружено табулированных функций: ${tabulatedOnly.length}.`, 'success');
     } catch (error) {
         renderFunctions([]);
         const message = error?.message || 'Не удалось загрузить список функций.';

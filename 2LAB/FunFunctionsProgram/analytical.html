@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunFunctions | Аналитические функции</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="functions-page">
+<div class="page-shell">
+    <button id="backButton" class="back-btn" type="button" aria-label="Вернуться назад">
+        ←
+    </button>
+    <button class="settings-btn" type="button" title="Открыть настройки" aria-label="Открыть настройки">
+        <span aria-hidden="true">⚙</span>
+    </button>
+
+    <header class="page-header">
+        <div class="header-text">
+            <p class="eyebrow">Раздел функций</p>
+            <h1>Аналитические функции</h1>
+            <p class="subtitle">Создавайте и управляйте базовыми и композитными аналитическими функциями, доступными для табулирования.</p>
+        </div>
+        <div class="toolbar" aria-label="Действия с аналитическими функциями">
+            <button id="createAnalytic" type="button" class="ghost">Создать функцию</button>
+            <button id="editAnalytic" type="button" class="ghost" disabled>Изменить функцию</button>
+            <button id="deleteAnalytic" type="button" class="danger ghost" disabled>Удалить</button>
+        </div>
+    </header>
+
+    <section class="card list-card" aria-labelledby="analytic-title">
+        <div class="list-header">
+            <div>
+                <p id="analytic-title" class="eyebrow">Список функций</p>
+                <h2>Доступные аналитические функции</h2>
+            </div>
+            <button id="refreshAnalytic" type="button" class="ghost">Обновить список</button>
+        </div>
+
+        <div id="analyticStatus" class="feedback" role="status"></div>
+        <div id="analyticList" class="functions-list" role="list" aria-live="polite"></div>
+    </section>
+</div>
+
+<div id="analyticModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="analyticModalTitle">
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-window large">
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">Работа с аналитическими функциями</p>
+                <h2 id="analyticModalTitle">Добавить функцию</h2>
+            </div>
+            <button id="closeAnalyticModal" type="button" class="icon-btn" aria-label="Закрыть окно">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="choice-row" role="group" aria-label="Тип создаваемой функции">
+                <button type="button" class="choice-btn active" data-mode="base">Базовая функция</button>
+                <button type="button" class="choice-btn" data-mode="composite">Композиция</button>
+            </div>
+
+            <div id="baseMode" class="mode-panel">
+                <div class="field">
+                    <label for="baseName">Имя функции из пакета functions</label>
+                    <select id="baseName" name="baseName">
+                        <option value="IdentityFunction">IdentityFunction (f(x)=x)</option>
+                        <option value="SqrFunction">SqrFunction (f(x)=x²)</option>
+                        <option value="CubeFunction">CubeFunction (f(x)=x³)</option>
+                        <option value="UnitFunction">UnitFunction (f(x)=1)</option>
+                        <option value="ZeroFunction">ZeroFunction (f(x)=0)</option>
+                        <option value="SinFunction">SinFunction (f(x)=sin(x))</option>
+                        <option value="CosFunction">CosFunction (f(x)=cos(x))</option>
+                        <option value="ExpFunction">ExpFunction (f(x)=eˣ)</option>
+                        <option value="LogFunction">LogFunction (f(x)=ln|x|)</option>
+                        <option value="custom">Другое имя из каталога functions...</option>
+                    </select>
+                </div>
+                <div class="field hidden" id="customBaseRow">
+                    <label for="customBaseName">Укажите имя функции из каталога</label>
+                    <input id="customBaseName" type="text" placeholder="Например, MyCustomFunction" autocomplete="off">
+                </div>
+                <p class="note">Функция должна существовать в пакете <code>functions</code>, иначе вычисления будут недоступны.</p>
+            </div>
+
+            <div id="compositeMode" class="mode-panel hidden">
+                <div class="field">
+                    <label for="compositeName">Имя композиции</label>
+                    <input id="compositeName" type="text" placeholder="Например, ChainOfSquares" autocomplete="off">
+                </div>
+
+                <div class="field">
+                    <label for="componentPicker">Добавьте функции в порядок композиции</label>
+                    <div class="inline-row">
+                        <select id="componentPicker" name="componentPicker"></select>
+                        <button id="addComponent" type="button" class="ghost">Добавить</button>
+                    </div>
+                </div>
+
+                <div class="composition-block">
+                    <div class="composition-head">
+                        <h3>Последовательность функций</h3>
+                        <p class="subtitle">Композиция применяется сверху вниз. Нужно минимум две функции.</p>
+                    </div>
+                    <div id="compositionList" class="composition-list"></div>
+                </div>
+            </div>
+
+            <div id="analyticModalFeedback" class="feedback" role="status"></div>
+            <button id="submitAnalytic" type="button">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="analytical.js"></script>
+</body>
+</html>
