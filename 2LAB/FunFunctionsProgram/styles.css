@@ -869,6 +869,14 @@ input:checked + .slider:before {
     padding: 10px 10px 6px;
     display: grid;
     gap: 10px;
+    overflow: hidden;
+}
+
+.points-scroll {
+    display: grid;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
 }
 
 .points-row {
@@ -876,7 +884,9 @@ input:checked + .slider:before {
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 10px;
+    min-width: max-content;
 }
+
 
 .row-label {
     width: 42px;
@@ -894,8 +904,6 @@ input:checked + .slider:before {
 .points-cells {
     display: flex;
     gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 6px;
 }
 
 .points-cells input {
