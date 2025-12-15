@@ -105,16 +105,6 @@ if (themeForm) {
     });
 }
 
-function preloadCredentials(targetPasswordInput) {
-    if (!shared || !targetPasswordInput) return;
-    const { password } = shared.getCredentials();
-    if (password) {
-        targetPasswordInput.value = password;
-    }
-}
-
-preloadCredentials(document.getElementById('factory-password'));
-
 factoryForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     setFeedback(factoryFeedback, '');
@@ -194,11 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     } else {
         console.log('Пользователь авторизован:', username);
-
-        const passwordInput = document.getElementById('factory-password');
-        if (passwordInput) {
-            passwordInput.value = password;
-        }
 
         const savedFactoryType = localStorage.getItem('funfunctions_factory_type');
         if (savedFactoryType) {

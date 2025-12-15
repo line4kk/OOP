@@ -1,13 +1,14 @@
-const tabulatedButton = document.querySelector('[data-action="tabulated"]');
+const navButtons = document.querySelectorAll('.nav-link');
 
-if (tabulatedButton) {
-    tabulatedButton.addEventListener('click', (event) => {
-        const target = tabulatedButton.getAttribute('href') || 'tabulated.html';
+navButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+        const target = button.dataset.target || button.getAttribute('href');
+        if (!target) return;
         const targetPage = buildNextPageUrl(target);
         if (event) event.preventDefault();
         window.location.href = targetPage;
     });
-}
+});
 
 function buildNextPageUrl(target) {
     try {
