@@ -721,6 +721,22 @@ input:checked + .slider:before {
     box-shadow: 0 22px 48px rgba(0,0,0,0.38);
 }
 
+.function-item.with-actions {
+    display: grid;
+    gap: 12px;
+}
+
+.fn-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.fn-actions .action-btn {
+    width: auto;
+    flex: 1;
+    padding: 10px 12px;
+}
+
 .fn-name {
     font-size: 18px;
     font-weight: 700;
@@ -782,6 +798,10 @@ input:checked + .slider:before {
     z-index: 1;
 }
 
+.modal-window.wide {
+    width: min(1200px, 98vw);
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -798,6 +818,127 @@ input:checked + .slider:before {
 .modal-body {
     display: grid;
     gap: 16px;
+}
+
+.chart-card {
+    margin-top: 12px;
+    border-radius: 16px;
+    padding: 16px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.08);
+    display: grid;
+    gap: 12px;
+}
+
+.chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.chart-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chart-actions button {
+    width: auto;
+}
+
+.chart-canvas-wrapper {
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 10px;
+}
+
+.chart-canvas-wrapper canvas {
+    width: 100%;
+    height: 420px;
+    display: block;
+}
+
+.charts-body {
+    display: grid;
+    gap: 14px;
+}
+
+.charts-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.toolbar-field {
+    flex: 1;
+    min-width: 320px;
+}
+
+.toolbar-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.toolbar-row select {
+    min-width: 240px;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.toolbar-actions button {
+    width: auto;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: minmax(520px, 2fr) minmax(240px, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.chart-legend {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.chart-legend button {
+    width: auto;
+}
+
+.legend-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.legend-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.legend-color {
+    width: 52px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.legend-empty {
+    color: var(--muted);
 }
 
 .choice-row {

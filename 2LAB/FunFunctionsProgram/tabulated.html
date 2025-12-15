@@ -183,6 +183,57 @@
                     <button id="deleteFunction" type="button" class="ghost danger-btn full-width">Удалить функцию</button>
                 </div>
             </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h3>График функции</h3>
+                        <p class="subtitle">Точки берутся прямо из текущей таблицы. Используйте колесо мыши для зума и удерживайте левую кнопку для перетаскивания.</p>
+                    </div>
+                    <div class="chart-actions">
+                        <button id="refreshFunctionChart" type="button" class="ghost">Обновить точки</button>
+                        <button id="resetFunctionChart" type="button" class="ghost">Сбросить масштаб</button>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="functionChart" aria-label="График выбранной функции"></canvas>
+                </div>
+                <div id="functionChartStatus" class="feedback muted" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="chartsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="chartsModalTitle">
+    <div class="modal-overlay" data-close-charts-modal></div>
+    <div class="modal-window wide">
+        <div class="modal-header">
+            <div class="modal-title-block">
+                <p class="eyebrow">Общий график</p>
+                <h2 id="chartsModalTitle">Полотно для табулированных функций</h2>
+                <p class="subtitle">Добавляйте любые функции на общее полотно, меняйте их цвета и сравнивайте значения.</p>
+            </div>
+            <button id="closeChartsModal" type="button" class="icon-btn" aria-label="Закрыть окно графиков">×</button>
+        </div>
+        <div class="modal-body charts-body">
+            <div class="charts-toolbar" role="group" aria-label="Управление общим графиком">
+                <div class="toolbar-field">
+                    <label for="chartFunctionSelect">Добавить функцию</label>
+                    <div class="toolbar-row">
+                        <select id="chartFunctionSelect" name="chartFunctionSelect"></select>
+                        <button id="addFunctionToChart" type="button">Добавить</button>
+                    </div>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="resetGlobalChart" type="button" class="ghost">Сбросить масштаб</button>
+                    <button id="clearChartCanvas" type="button" class="ghost">Очистить полотно</button>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-canvas-wrapper">
+                    <canvas id="globalChart" aria-label="Общий график табулированных функций"></canvas>
+                </div>
+                <div class="chart-legend" id="chartLegend" aria-label="Выбранные функции"></div>
+            </div>
+            <div id="chartsStatus" class="feedback muted" role="status"></div>
         </div>
     </div>
 </div>

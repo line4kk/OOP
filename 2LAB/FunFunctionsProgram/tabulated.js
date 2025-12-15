@@ -43,17 +43,322 @@ const deleteAllPointsButton = document.getElementById('deleteAllPoints');
 const deleteFunctionButton = document.getElementById('deleteFunction');
 const closeFunctionModalButton = document.getElementById('closeFunctionModal');
 const functionModalOverlay = document.querySelector('[data-close-function-modal]');
+const functionChartCanvas = document.getElementById('functionChart');
+const functionChartStatus = document.getElementById('functionChartStatus');
+const resetFunctionChartButton = document.getElementById('resetFunctionChart');
+const refreshFunctionChartButton = document.getElementById('refreshFunctionChart');
+
+const chartsModal = document.getElementById('chartsModal');
+const chartsModalOverlay = document.querySelector('[data-close-charts-modal]');
+const closeChartsModalButton = document.getElementById('closeChartsModal');
+const chartFunctionSelect = document.getElementById('chartFunctionSelect');
+const addFunctionToChartButton = document.getElementById('addFunctionToChart');
+const globalChartCanvas = document.getElementById('globalChart');
+const chartLegend = document.getElementById('chartLegend');
+const chartsStatus = document.getElementById('chartsStatus');
+const resetGlobalChartButton = document.getElementById('resetGlobalChart');
+const clearChartCanvasButton = document.getElementById('clearChartCanvas');
 
 const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 const FACTORY_TYPE_KEY = 'funfunctions_factory_type';
 let analyticFunctionsLoaded = false;
 let currentFunction = null;
+let cachedFunctions = [];
+let functionChart;
+let globalChart;
+let globalChartSeries = [];
+let chartUpdateTimeout;
+const chartPalette = [
+    '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
+    '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ac'
+];
 
+class ChartCanvas {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas?.getContext('2d');
+        this.series = [];
+        this.view = null;
+        this.padding = { left: 56, right: 16, top: 24, bottom: 44 };
+        this.attachEvents();
+    }
+
+    attachEvents() {
+        if (!this.canvas) return;
+        this.canvas.addEventListener('wheel', (event) => {
+            if (!this.view) return;
+            event.preventDefault();
+            const { offsetX, offsetY, deltaY } = event;
+            const anchor = this.toData(offsetX, offsetY);
+            const factor = deltaY < 0 ? 0.9 : 1.1;
+            this.zoom(anchor, factor);
+        });
+
+        let dragging = false;
+        let last = null;
+
+        this.canvas.addEventListener('mousedown', (event) => {
+            if (!this.view) return;
+            dragging = true;
+            last = { x: event.offsetX, y: event.offsetY };
+        });
+
+        window.addEventListener('mouseup', () => dragging = false);
+
+        this.canvas.addEventListener('mousemove', (event) => {
+            if (!dragging || !this.view) return;
+            const dx = event.offsetX - last.x;
+            const dy = event.offsetY - last.y;
+            last = { x: event.offsetX, y: event.offsetY };
+            this.pan(dx, dy);
+        });
+
+        this.canvas.addEventListener('dblclick', () => this.resetView());
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    setSeries(series = [], preserveView = false) {
+        this.series = Array.isArray(series) ? series : [];
+        if (preserveView && this.view) {
+            this.draw();
+        } else {
+            this.resetView();
+        }
+    }
+
+    resize() {
+        if (!this.canvas) return;
+        const parent = this.canvas.parentElement;
+        if (parent) {
+            this.canvas.width = parent.clientWidth;
+            this.canvas.height = Math.max(320, parent.clientHeight);
+        }
+        this.draw();
+    }
+
+    resetView() {
+        if (!this.series.length || !this.series.some(s => (s.points || []).length)) {
+            this.view = null;
+            this.draw();
+            return;
+        }
+
+        const allPoints = this.series.flatMap(s => s.points || []);
+        const xs = allPoints.map(p => p.x);
+        const ys = allPoints.map(p => p.y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const paddingX = (maxX - minX || 1) * 0.1;
+        const paddingY = (maxY - minY || 1) * 0.1;
+
+        this.view = {
+            xMin: minX - paddingX,
+            xMax: maxX + paddingX,
+            yMin: minY - paddingY,
+            yMax: maxY + paddingY
+        };
+        this.resize();
+    }
+
+    zoom(anchor, factor) {
+        if (!this.view) return;
+        const { xMin, xMax, yMin, yMax } = this.view;
+        const newXMin = anchor.x - (anchor.x - xMin) * factor;
+        const newXMax = anchor.x + (xMax - anchor.x) * factor;
+        const newYMin = anchor.y - (anchor.y - yMin) * factor;
+        const newYMax = anchor.y + (yMax - anchor.y) * factor;
+        this.view = { xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax };
+        this.draw();
+    }
+
+    pan(dx, dy) {
+        if (!this.view) return;
+        const { width, height } = this.canvas;
+        const factorX = (this.view.xMax - this.view.xMin) / Math.max(1, width - this.padding.left - this.padding.right);
+        const factorY = (this.view.yMax - this.view.yMin) / Math.max(1, height - this.padding.top - this.padding.bottom);
+        const deltaX = dx * factorX;
+        const deltaY = dy * factorY;
+        this.view = {
+            xMin: this.view.xMin - deltaX,
+            xMax: this.view.xMax - deltaX,
+            yMin: this.view.yMin + deltaY,
+            yMax: this.view.yMax + deltaY
+        };
+        this.draw();
+    }
+
+    toScreen(x, y) {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const plotWidth = width - this.padding.left - this.padding.right;
+        const plotHeight = height - this.padding.top - this.padding.bottom;
+        const sx = this.padding.left + (x - this.view.xMin) / (this.view.xMax - this.view.xMin) * plotWidth;
+        const sy = this.padding.top + (1 - (y - this.view.yMin) / (this.view.yMax - this.view.yMin)) * plotHeight;
+        return { x: sx, y: sy };
+    }
+
+    toData(sx, sy) {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const plotWidth = width - this.padding.left - this.padding.right;
+        const plotHeight = height - this.padding.top - this.padding.bottom;
+        const x = this.view.xMin + (sx - this.padding.left) / plotWidth * (this.view.xMax - this.view.xMin);
+        const y = this.view.yMax - (sy - this.padding.top) / plotHeight * (this.view.yMax - this.view.yMin);
+        return { x, y };
+    }
+
+    draw() {
+        if (!this.canvas || !this.ctx) return;
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (!this.view) {
+            this.drawEmptyState();
+            return;
+        }
+
+        this.drawGrid();
+        this.drawAxes();
+        this.series.forEach((series, index) => this.drawSeries(series, index));
+    }
+
+    drawEmptyState() {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '16px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Нет данных для отображения графика', this.canvas.width / 2, this.canvas.height / 2);
+        ctx.restore();
+    }
+
+    drawGrid() {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        const steps = 6;
+        for (let i = 0; i <= steps; i++) {
+            const ratio = i / steps;
+            const x = this.padding.left + ratio * (this.canvas.width - this.padding.left - this.padding.right);
+            const y = this.padding.top + ratio * (this.canvas.height - this.padding.top - this.padding.bottom);
+            ctx.beginPath();
+            ctx.moveTo(x, this.padding.top);
+            ctx.lineTo(x, this.canvas.height - this.padding.bottom);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(this.padding.left, y);
+            ctx.lineTo(this.canvas.width - this.padding.right, y);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    drawAxes() {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.padding.left, this.padding.top);
+        ctx.lineTo(this.padding.left, this.canvas.height - this.padding.bottom);
+        ctx.lineTo(this.canvas.width - this.padding.right, this.canvas.height - this.padding.bottom);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        const steps = 4;
+        for (let i = 0; i <= steps; i++) {
+            const ratio = i / steps;
+            const xValue = this.view.xMin + ratio * (this.view.xMax - this.view.xMin);
+            const x = this.padding.left + ratio * (this.canvas.width - this.padding.left - this.padding.right);
+            ctx.fillText(xValue.toFixed(2), x, this.canvas.height - this.padding.bottom + 18);
+        }
+
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= steps; i++) {
+            const ratio = i / steps;
+            const yValue = this.view.yMin + ratio * (this.view.yMax - this.view.yMin);
+            const y = this.padding.top + (1 - ratio) * (this.canvas.height - this.padding.top - this.padding.bottom);
+            ctx.fillText(yValue.toFixed(2), this.padding.left - 6, y + 4);
+        }
+        ctx.restore();
+    }
+
+    drawSeries(series, index) {
+        const ctx = this.ctx;
+        const points = (series.points || []).slice().sort((a, b) => a.x - b.x);
+        if (points.length === 0) return;
+        ctx.save();
+        ctx.strokeStyle = series.color || chartPalette[index % chartPalette.length];
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        points.forEach((point, i) => {
+            const { x, y } = this.toScreen(point.x, point.y);
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+
+        points.forEach(point => {
+            const { x, y } = this.toScreen(point.x, point.y);
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.restore();
+    }
+}
+
+initCharts();
 attachActions();
 initCreationModal();
 initFunctionModal();
 loadFunctions();
+
+function initCharts() {
+    if (functionChartCanvas) {
+        functionChart = new ChartCanvas(functionChartCanvas);
+        updateFunctionChartStatus('График обновится после загрузки точек функции.', 'muted');
+    }
+    if (globalChartCanvas) {
+        globalChart = new ChartCanvas(globalChartCanvas);
+        setChartsStatus('Добавьте функции, чтобы сравнить их на одном полотне.', 'muted');
+    }
+
+    refreshFunctionChartButton?.addEventListener('click', refreshFunctionChartFromInputs);
+    resetFunctionChartButton?.addEventListener('click', () => {
+        functionChart?.resetView();
+        updateFunctionChartStatus('Масштаб сброшен.', 'muted');
+    });
+
+    closeChartsModalButton?.addEventListener('click', closeChartsModal);
+    chartsModalOverlay?.addEventListener('click', closeChartsModal);
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && chartsModal && !chartsModal.classList.contains('hidden')) {
+            closeChartsModal();
+        }
+    });
+
+    addFunctionToChartButton?.addEventListener('click', addSelectedFunctionToChart);
+    resetGlobalChartButton?.addEventListener('click', () => {
+        globalChart?.resetView();
+        setChartsStatus('Масштаб сброшен.', 'muted');
+    });
+    clearChartCanvasButton?.addEventListener('click', () => {
+        globalChartSeries = [];
+        renderGlobalChart();
+        setChartsStatus('Полотно очищено.', 'muted');
+    });
+}
 
 function attachActions() {
     if (refreshButton) {
@@ -63,7 +368,7 @@ function attachActions() {
         createButton.addEventListener('click', () => openCreationModal('manual'));
     }
     if (chartsButton) {
-        chartsButton.addEventListener('click', () => informComingSoon('Переход к графикам будет добавлен позже.'));
+        chartsButton.addEventListener('click', openChartsModal);
     }
     if (backButton) {
         backButton.addEventListener('click', () => navigateBack());
@@ -148,9 +453,13 @@ async function loadFunctions(force = false) {
     try {
         const response = await getJson('/functions');
         const functions = Array.isArray(response) ? response : response?.functions || [];
+        cachedFunctions = functions;
+        populateChartSelect();
         renderFunctions(functions);
         updateStatus(`Загружено функций: ${functions.length}.`, 'success');
     } catch (error) {
+        cachedFunctions = [];
+        populateChartSelect();
         renderFunctions([]);
         const message = error?.message || 'Не удалось загрузить список функций.';
         updateStatus(message, 'error');
@@ -173,10 +482,24 @@ function renderFunctions(functions) {
     }
 
     functions.forEach(fn => {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'function-item';
-        item.innerHTML = buildFunctionMarkup(fn);
+        const item = document.createElement('div');
+        item.className = 'function-item with-actions';
+        item.innerHTML = `
+            <div class="fn-main">${buildFunctionMarkup(fn)}</div>
+            <div class="fn-actions">
+                <button type="button" class="ghost action-btn" data-action="open">Открыть</button>
+                <button type="button" class="ghost action-btn" data-action="chart">Посмотреть график</button>
+            </div>
+        `;
+
+        const openButton = item.querySelector('[data-action="open"]');
+        const chartButton = item.querySelector('[data-action="chart"]');
+
+        openButton?.addEventListener('click', () => handleFunctionClick(fn));
+        chartButton?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            openChartForFunction(fn);
+        });
         item.addEventListener('click', () => handleFunctionClick(fn));
         functionsList.appendChild(item);
     });
@@ -184,6 +507,13 @@ function renderFunctions(functions) {
 
 function handleFunctionClick(fn) {
     openFunctionModal(fn);
+}
+
+function openChartForFunction(fn) {
+    openFunctionModal(fn);
+    setTimeout(() => {
+        functionChartCanvas?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 250);
 }
 
 function openCreationModal(mode = 'manual') {
@@ -443,9 +773,11 @@ async function openFunctionModal(fn) {
         const response = await getJson(`/functions/${fn.id}/points`);
         const points = Array.isArray(response) ? response : response?.points || [];
         renderFunctionPoints(points);
+        refreshFunctionChartFromInputs();
         showFormFeedback(functionFeedback, `Найдено точек: ${points.length}.`, 'muted');
     } catch (error) {
         renderFunctionPoints([]);
+        refreshFunctionChartFromInputs();
         showFormFeedback(functionFeedback, error?.message || 'Не удалось загрузить точки функции.', 'error');
     } finally {
         setFunctionBusy(false);
@@ -463,6 +795,10 @@ function closeFunctionModal() {
 function resetFunctionModal() {
     clearFunctionRows();
     showFormFeedback(functionFeedback, '');
+    if (functionChart) {
+        functionChart.setSeries([]);
+        updateFunctionChartStatus('Откройте функцию, чтобы увидеть график.', 'muted');
+    }
 }
 
 function renderFunctionPoints(points = []) {
@@ -473,10 +809,12 @@ function renderFunctionPoints(points = []) {
     if (list.length === 0) {
         addFunctionPointColumn();
         addFunctionPointColumn();
+        scheduleFunctionChartUpdate();
         return;
     }
 
     list.forEach(point => addFunctionPointColumn(point, true));
+    scheduleFunctionChartUpdate();
 }
 
 function clearFunctionRows() {
@@ -500,6 +838,7 @@ function addFunctionPointColumn(point = {}, lockX = false) {
     removeButton.addEventListener('click', () => {
         removeFunctionPoint(columnId);
         validateFunctionForm();
+        scheduleFunctionChartUpdate();
     });
 
     functionXRow.appendChild(xInput);
@@ -530,7 +869,10 @@ function buildFunctionPointInput(prefix, columnId, value, lockX = false) {
     if (prefix === 'x' && lockX) {
         input.readOnly = true;
     }
-    input.addEventListener('input', validateFunctionForm);
+    input.addEventListener('input', () => {
+        validateFunctionForm();
+        scheduleFunctionChartUpdate();
+    });
     return input;
 }
 
@@ -579,6 +921,32 @@ function readFunctionPoints() {
     return { valid: true, message: '', points };
 }
 
+function scheduleFunctionChartUpdate() {
+    if (!functionChart) return;
+    clearTimeout(chartUpdateTimeout);
+    chartUpdateTimeout = setTimeout(refreshFunctionChartFromInputs, 140);
+}
+
+function refreshFunctionChartFromInputs() {
+    if (!functionChart) return;
+    const validation = readFunctionPoints();
+    if (!validation.valid) {
+        functionChart.setSeries([]);
+        updateFunctionChartStatus(validation.message || 'Исправьте точки, чтобы увидеть график.', 'error');
+        return;
+    }
+
+    const points = normalizePointsList(validation.points);
+    functionChart.setSeries([{ name: currentFunction?.name || 'Функция', color: chartPalette[0], points }], true);
+    updateFunctionChartStatus(`Отрисовано точек: ${points.length}. Масштабируйте колесом мыши.`, 'muted');
+}
+
+function updateFunctionChartStatus(message, type = 'muted') {
+    if (!functionChartStatus) return;
+    functionChartStatus.textContent = message || '';
+    functionChartStatus.className = `feedback ${type}`.trim();
+}
+
 async function applyFunctionChanges() {
     const validation = readFunctionPoints();
     if (!validation.valid) {
@@ -598,6 +966,7 @@ async function applyFunctionChanges() {
         showFormFeedback(functionFeedback, 'Изменения сохранены.', 'success');
         updateStatus('Точки функции обновлены.', 'success');
         await loadFunctions(true);
+        refreshFunctionChartFromInputs();
     } catch (error) {
         showFormFeedback(functionFeedback, error?.message || 'Не удалось применить изменения.', 'error');
     } finally {
@@ -618,6 +987,7 @@ async function deleteAllFunctionPoints() {
     try {
         await deleteJson(`/functions/${currentFunction.id}/points`);
         renderFunctionPoints([]);
+        refreshFunctionChartFromInputs();
         showFormFeedback(functionFeedback, 'Все точки удалены. Добавьте новые и нажмите «Применить изменения».', 'success');
         updateStatus('Все точки функции удалены.', 'muted');
     } catch (error) {
@@ -679,6 +1049,154 @@ function buildFunctionMeta(fn) {
     const parts = [idText, `Тип: ${type}`].filter(Boolean);
     if (source) parts.push(source);
     return parts.join(' · ');
+}
+
+function openChartsModal() {
+    if (!chartsModal) return;
+    chartsModal.classList.remove('hidden');
+    populateChartSelect();
+    renderGlobalChart();
+    setChartsStatus(globalChartSeries.length ? 'Используйте колесо мыши для зума и перетаскивайте полотно мышью.' : 'Выберите функцию и нажмите «Добавить».', 'muted');
+    globalChart?.resize();
+}
+
+function closeChartsModal() {
+    chartsModal?.classList.add('hidden');
+}
+
+function populateChartSelect() {
+    if (!chartFunctionSelect) return;
+    chartFunctionSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = cachedFunctions.length ? 'Выберите функцию' : 'Нет доступных функций';
+    chartFunctionSelect.appendChild(placeholder);
+
+    cachedFunctions.forEach(fn => {
+        const option = document.createElement('option');
+        option.value = fn.id;
+        option.textContent = fn.name || `Функция #${fn.id}`;
+        chartFunctionSelect.appendChild(option);
+    });
+}
+
+async function addSelectedFunctionToChart() {
+    if (!chartFunctionSelect) return;
+    const id = Number(chartFunctionSelect.value);
+    if (!Number.isFinite(id)) {
+        setChartsStatus('Выберите функцию, чтобы добавить её на полотно.', 'error');
+        return;
+    }
+    if (globalChartSeries.some(series => series.id === id)) {
+        setChartsStatus('Эта функция уже добавлена на полотно.', 'muted');
+        return;
+    }
+
+    setChartsStatus('Загружаем точки функции...', 'muted');
+    try {
+        const response = await getJson(`/functions/${id}/points`);
+        const points = normalizePointsList(Array.isArray(response) ? response : response?.points || []);
+        if (!points.length) {
+            throw new Error('У функции нет точек для отображения.');
+        }
+        const fn = cachedFunctions.find(item => item.id === id) || { name: `Функция #${id}` };
+        const color = chartPalette[globalChartSeries.length % chartPalette.length];
+        globalChartSeries.push({ id, name: fn.name || `Функция #${id}`, color, points });
+        renderGlobalChart();
+        setChartsStatus(`Добавлена функция «${fn.name || id}».`, 'success');
+    } catch (error) {
+        setChartsStatus(error?.message || 'Не удалось добавить функцию на график.', 'error');
+    }
+}
+
+function renderGlobalChart(preserveView = false) {
+    if (globalChart) {
+        globalChart.setSeries(buildGlobalSeriesPayload(), preserveView);
+    }
+    renderChartLegend();
+}
+
+function renderChartLegend() {
+    if (!chartLegend) return;
+    chartLegend.innerHTML = '';
+    if (!globalChartSeries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'legend-empty';
+        empty.textContent = 'На полотне пока нет функций.';
+        chartLegend.appendChild(empty);
+        return;
+    }
+
+    globalChartSeries.forEach(series => {
+        const row = document.createElement('div');
+        row.className = 'legend-item';
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = colorToHex(series.color);
+        colorInput.className = 'legend-color';
+        colorInput.addEventListener('input', (event) => {
+            series.color = event.target.value;
+            if (globalChart) {
+                globalChart.setSeries(buildGlobalSeriesPayload(), true);
+            }
+        });
+
+        const name = document.createElement('div');
+        name.className = 'legend-name';
+        name.textContent = series.name || `Функция #${series.id}`;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'ghost action-btn';
+        removeBtn.textContent = 'Убрать';
+        removeBtn.addEventListener('click', () => {
+            globalChartSeries = globalChartSeries.filter(item => item.id !== series.id);
+            renderGlobalChart();
+            setChartsStatus('Функция убрана с полотна.', 'muted');
+        });
+
+        row.append(colorInput, name, removeBtn);
+        chartLegend.appendChild(row);
+    });
+}
+
+function setChartsStatus(message, type = 'muted') {
+    if (!chartsStatus) return;
+    chartsStatus.textContent = message || '';
+    chartsStatus.className = `feedback ${type}`.trim();
+}
+
+function buildGlobalSeriesPayload() {
+    return globalChartSeries.map(item => ({
+        name: item.name,
+        color: item.color,
+        points: item.points
+    }));
+}
+
+function normalizePointsList(list = []) {
+    return (Array.isArray(list) ? list : [])
+        .map(point => ({ x: Number(point.x), y: Number(point.y) }))
+        .filter(point => Number.isFinite(point.x) && Number.isFinite(point.y))
+        .sort((a, b) => a.x - b.x);
+}
+
+function colorToHex(color) {
+    if (!color) return '#4e79a7';
+    if (color.startsWith('#')) return color;
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.fillStyle = color;
+    const computed = ctx.fillStyle;
+    if (computed.startsWith('#')) return computed;
+    const rgb = computed.match(/\d+/g) || [];
+    if (rgb.length >= 3) {
+        const [r, g, b] = rgb.map(Number).map(v => v.toString(16).padStart(2, '0'));
+        return `#${r}${g}${b}`;
+    }
+    return '#4e79a7';
 }
 
 async function ensureAnalyticFunctions() {
