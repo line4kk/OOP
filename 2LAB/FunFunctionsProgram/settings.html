@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunFunctions | Настройки</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="next-page">
+<div class="page-shell">
+    <a class="back-link" href="home.html">← Назад на главную</a>
+    <section class="card settings-card">
+        <header class="settings-header">
+            <div>
+                <p class="pill">Настройки профиля и приложения</p>
+                <h2>Персонализация FunFunctions</h2>
+                <p class="subtitle">Измените тип фабрики, тему или включите версию для слабовидящих.</p>
+            </div>
+            <div class="user-badge" aria-live="polite"></div>
+        </header>
+
+        <div class="settings-grid">
+            <section class="settings-block">
+                <div class="block-head">
+                    <h3>Изменить тип фабрики</h3>
+                    <p class="muted">Выберите структуру данных, которая будет использоваться по умолчанию.</p>
+                </div>
+                <form id="factoryForm" class="stacked-form">
+                    <label for="factory-type">Текущий тип фабрики</label>
+                    <select id="factory-type" name="factory_type" required>
+                        <option value="linked_list">Связный список</option>
+                        <option value="array">Динамический массив</option>
+                    </select>
+                    <div class="row inline-row">
+                        <label for="factory-password">Подтвердите пароль</label>
+                        <input id="factory-password" name="password" type="password" placeholder="Пароль для подтверждения" required>
+                    </div>
+                    <button type="submit">Обновить тип фабрики</button>
+                    <div id="factory-feedback" class="feedback" role="status"></div>
+                </form>
+            </section>
+
+            <section class="settings-block">
+                <div class="block-head">
+                    <h3>Выбор темы приложения</h3>
+                    <p class="muted">Переключайтесь между темами.</p>
+                </div>
+                <form id="themeForm" class="stacked-form">
+                    <div class="row">
+                        <label>Предустановки</label>
+                        <div class="theme-options">
+                            <label class="chip"><input type="radio" name="theme" value="neon" checked><span class="theme-swatch neon"></span> Неоновая (чёрно-малиново-сине-голубая)</label>
+                            <label class="chip"><input type="radio" name="theme" value="lime"><span class="theme-swatch lime"></span> Светлая (бело-зелёно-лаймовая)</label>
+                        </div>
+                    </div>
+                    <div class="row palette-row">
+                        <label>Кастомная палитра</label>
+                        <div class="palette-grid">
+                            <label>Фон <input type="color" name="bg" value="#050414"></label>
+                            <label>Панель <input type="color" name="panel" value="#0c1126"></label>
+                            <label>Градиент1 <input type="color" name="accent" value="#ff3f8a"></label>
+                            <label>Градиент2 <input type="color" name="accentStrong" value="#2563eb"></label>
+                            <label>Градиент3 <input type="color" name="accentSoft" value="#22d3ee"></label>
+                            <label>Основной текст <input type="color" name="text" value="#f8fafc"></label>
+                            <label>Дополнительный текст <input type="color" name="muted" value="#cdd5e0"></label>
+                        </div>
+                        <p class="note">Эти цвета перекрывают выбранную предустановку и применяются сразу.</p>
+                    </div>
+                    <button type="submit">Сохранить тему</button>
+                    <div id="theme-feedback" class="feedback" role="status"></div>
+                </form>
+            </section>
+
+            <section class="settings-block">
+                <div class="block-head">
+                    <h3>Инклюзивность</h3>
+                    <p class="muted">Режим для слабовидящих увеличивает шрифты, контраст и добавляет акценты для навигации.</p>
+                </div>
+                <div class="inclusive-row">
+                    <label class="switch">
+                        <input type="checkbox" id="inclusiveToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <div class="title">Версия для слабовидящих</div>
+                        <div class="muted">Повышенный контраст, крупный шрифт, подчёркивания ссылок.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-block danger-zone">
+                <div class="block-head">
+                    <h3>Выйти из аккаунта</h3>
+                    <p class="muted">Завершите текущую сессию и вернитесь на экран входа.</p>
+                </div>
+                <button id="logoutBtn" class="danger-btn" type="button">Выйти из аккаунта</button>
+                <div id="logout-feedback" class="feedback" role="status"></div>
+            </section>
+        </div>
+    </section>
+</div>
+<script src="shared.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

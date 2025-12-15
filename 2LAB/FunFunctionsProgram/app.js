@@ -1,3 +1,7 @@
+if (window.funFunctionsShared) {
+    window.funFunctionsShared.applyStoredPreferences();
+}
+
 const tabs = document.querySelectorAll('.tab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -5,7 +9,9 @@ const feedback = document.getElementById('feedback');
 const resultBlock = document.getElementById('result');
 const resultBody = document.getElementById('result-body');
 
-const currentApiBase = determineApiBase();
+const currentApiBase = window.funFunctionsShared?.determineApiBase()
+    || determineApiBase();
+const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 
 tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 
@@ -53,12 +59,17 @@ async function sendJson(endpoint, payload) {
     const url = buildUrl(endpoint);
     let response;
 
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    const authHeader = buildAuthHeader(endpoint);
+    if (authHeader) headers['Authorization'] = authHeader;
+
     try {
         response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers,
             body: JSON.stringify(payload)
         });
     } catch (networkError) {
@@ -108,10 +119,11 @@ function showResult(data) {
     registerForm.classList.add('hidden');
 }
 
-function handleSuccess(data) {
+function handleSuccess(data, credentials) {
     if (data?.username) {
         localStorage.setItem('funfunctions_username', data.username);
     }
+    rememberCredentials(credentials);
     showResult(data);
     setTimeout(() => {
         const target = buildNextPageUrl();
@@ -143,8 +155,11 @@ loginForm.addEventListener('submit', async (event) => {
             username: loginForm.username.value.trim(),
             password: loginForm.password.value
         };
+        if (window.funFunctionsShared) {
+            window.funFunctionsShared.storeCredentials(payload.username, payload.password);
+        }
         const data = await sendJson('/users/auth', payload);
-        handleSuccess(data);
+        handleSuccess(data, payload);
     } catch (error) {
         feedback.textContent = error.message;
         feedback.className = 'feedback error';
@@ -165,8 +180,11 @@ registerForm.addEventListener('submit', async (event) => {
             factory_type: registerForm.factory_type.value,
             role: 'user'
         };
+        if (window.funFunctionsShared) {
+            window.funFunctionsShared.storeCredentials(payload.username, payload.password);
+        }
         const data = await sendJson('/users/register', payload);
-        handleSuccess(data);
+        handleSuccess(data, payload);
     } catch (error) {
         feedback.textContent = error.message;
         feedback.className = 'feedback error';
@@ -174,3 +192,44 @@ registerForm.addEventListener('submit', async (event) => {
         setLoading(false);
     }
 });
+
+function buildAuthHeader(endpoint) {
+    if (!shouldIncludeAuth(endpoint)) return null;
+    const credentials = loadCredentials();
+    if (!credentials) return null;
+
+    const token = btoa(`${credentials.username}:${credentials.password}`);
+    return `Basic ${token}`;
+}
+
+function shouldIncludeAuth(endpoint = '') {
+    const normalized = endpoint.toLowerCase();
+    return normalized !== '/users/auth' && normalized !== '/users/register';
+}
+
+function rememberCredentials(credentials) {
+    if (!credentials?.username || !credentials?.password) return;
+    try {
+        const payload = JSON.stringify({
+            username: credentials.username,
+            password: credentials.password
+        });
+        localStorage.setItem(BASIC_AUTH_KEY, payload);
+    } catch (e) {
+        console.error('Не удалось сохранить данные авторизации', e);
+    }
+}
+
+function loadCredentials() {
+    try {
+        const stored = localStorage.getItem(BASIC_AUTH_KEY);
+        if (!stored) return null;
+        const parsed = JSON.parse(stored);
+        if (parsed?.username && parsed?.password) {
+            return { username: parsed.username, password: parsed.password };
+        }
+    } catch (e) {
+        console.error('Не удалось прочитать данные авторизации', e);
+    }
+    return null;
+}
