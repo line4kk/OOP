@@ -453,10 +453,12 @@ async function loadFunctions(force = false) {
     try {
         const response = await getJson('/functions');
         const functions = Array.isArray(response) ? response : response?.functions || [];
-        cachedFunctions = functions;
+        const allowedTabulatedTypes = new Set(['linked_list_tabulated', 'array_tabulated']);
+        const tabulatedFunctions = functions.filter(fn => allowedTabulatedTypes.has(fn?.type));
+        cachedFunctions = tabulatedFunctions;
         populateChartSelect();
-        renderFunctions(functions);
-        updateStatus(`Загружено функций: ${functions.length}.`, 'success');
+        renderFunctions(tabulatedFunctions);
+        updateStatus(`Загружено функций: ${tabulatedFunctions.length}.`, 'success');
     } catch (error) {
         cachedFunctions = [];
         populateChartSelect();
