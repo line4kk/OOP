@@ -1,3 +1,9 @@
+const shared = window.funFunctionsShared;
+
+if (shared) {
+    shared.applyStoredPreferences();
+}
+
 const tabs = document.querySelectorAll('.tab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -5,7 +11,8 @@ const feedback = document.getElementById('feedback');
 const resultBlock = document.getElementById('result');
 const resultBody = document.getElementById('result-body');
 
-const currentApiBase = determineApiBase();
+const currentApiBase = shared?.determineApiBase?.()
+    || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 
 tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
@@ -118,6 +125,8 @@ function handleSuccess(data, credentials) {
     if (data?.username) {
         localStorage.setItem('funfunctions_username', data.username);
     }
+    const factoryType = data?.factory_type || credentials?.factory_type;
+    persistFactoryType(factoryType);
     rememberCredentials(credentials);
     showResult(data);
     setTimeout(() => {
@@ -150,6 +159,9 @@ loginForm.addEventListener('submit', async (event) => {
             username: loginForm.username.value.trim(),
             password: loginForm.password.value
         };
+        if (window.funFunctionsShared) {
+            window.funFunctionsShared.storeCredentials(payload.username, payload.password);
+        }
         const data = await sendJson('/users/auth', payload);
         handleSuccess(data, payload);
     } catch (error) {
@@ -172,6 +184,9 @@ registerForm.addEventListener('submit', async (event) => {
             factory_type: registerForm.factory_type.value,
             role: 'user'
         };
+        if (window.funFunctionsShared) {
+            window.funFunctionsShared.storeCredentials(payload.username, payload.password);
+        }
         const data = await sendJson('/users/register', payload);
         handleSuccess(data, payload);
     } catch (error) {
@@ -185,15 +200,44 @@ registerForm.addEventListener('submit', async (event) => {
 function buildAuthHeader(endpoint) {
     if (!shouldIncludeAuth(endpoint)) return null;
     const credentials = loadCredentials();
-    if (!credentials) return null;
+    if (!credentials) return shared?.buildAuthHeader?.(null);
 
-    const token = btoa(`${credentials.username}:${credentials.password}`);
-    return `Basic ${token}`;
+    if (shared?.buildAuthHeader) {
+        return shared.buildAuthHeader(credentials);
+    }
+
+    const token = safeBase64(`${credentials.username}:${credentials.password}`);
+    return token ? `Basic ${token}` : null;
+}
+
+function safeBase64(value) {
+    try {
+        if (shared?.toBase64) {
+            return shared.toBase64(value);
+        }
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(value);
+        let binary = '';
+        bytes.forEach(byte => binary += String.fromCharCode(byte));
+        return btoa(binary);
+    } catch (error) {
+        console.error('Не удалось создать токен авторизации', error);
+        return null;
+    }
 }
 
 function shouldIncludeAuth(endpoint = '') {
     const normalized = endpoint.toLowerCase();
     return normalized !== '/users/auth' && normalized !== '/users/register';
+}
+
+function persistFactoryType(value) {
+    if (!value) return;
+    try {
+        localStorage.setItem('funfunctions_factory_type', value);
+    } catch (e) {
+        console.error('Не удалось сохранить тип фабрики', e);
+    }
 }
 
 function rememberCredentials(credentials) {

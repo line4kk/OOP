@@ -1,3 +1,8 @@
+const shared = window.funFunctionsShared;
+if (shared) {
+    shared.applyStoredPreferences();
+}
+
 const functionsStatus = document.getElementById('functionsStatus');
 const functionsList = document.getElementById('functionsList');
 const refreshButton = document.getElementById('refreshList');
@@ -25,8 +30,9 @@ const pointsCountInput = document.getElementById('pointsCount');
 const analyticSelect = document.getElementById('analyticSelect');
 const submitSamplingButton = document.getElementById('submitSampling');
 
-const apiBase = determineApiBase();
+const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
+const FACTORY_TYPE_KEY = 'funfunctions_factory_type';
 let analyticFunctionsLoaded = false;
 
 attachActions();
@@ -45,6 +51,12 @@ function attachActions() {
     }
     if (backButton) {
         backButton.addEventListener('click', () => navigateBack());
+    }
+    const settingsBtn = document.querySelector('.settings-btn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            window.location.href = 'settings.html';
+        });
     }
 }
 
@@ -395,10 +407,18 @@ function populateAnalyticOptions(functions = []) {
 async function createTabulatedFunction(name) {
     const payload = {
         name: name?.trim(),
-        type: 'linked_list_tabulated',
+        type: resolveTabulatedType(),
         source: 'base'
     };
     return await postJson('/functions', payload);
+}
+
+function resolveTabulatedType() {
+    const stored = localStorage.getItem(FACTORY_TYPE_KEY) || 'linked_list';
+    if (stored === 'array' || stored === 'array_tabulated') return 'array_tabulated';
+    if (stored === 'linked_list' || stored === 'linked_list_tabulated') return 'linked_list_tabulated';
+    if (stored.endsWith('_tabulated')) return stored;
+    return `${stored}_tabulated`;
 }
 
 function parseNumber(value) {
@@ -505,10 +525,16 @@ function buildUrl(endpoint) {
 function buildAuthHeader(endpoint) {
     if (!shouldIncludeAuth(endpoint)) return null;
     const credentials = loadCredentials();
-    if (!credentials) return null;
+    if (!credentials) {
+        return shared?.buildAuthHeader?.(null);
+    }
 
-    const token = btoa(`${credentials.username}:${credentials.password}`);
-    return `Basic ${token}`;
+    if (shared?.buildAuthHeader) {
+        return shared.buildAuthHeader(credentials);
+    }
+
+    const token = safeBase64(`${credentials.username}:${credentials.password}`);
+    return token ? `Basic ${token}` : null;
 }
 
 function shouldIncludeAuth(endpoint = '') {
@@ -528,6 +554,22 @@ function loadCredentials() {
         console.error('Не удалось прочитать данные авторизации', e);
     }
     return null;
+}
+
+function safeBase64(value) {
+    try {
+        if (shared?.toBase64) {
+            return shared.toBase64(value);
+        }
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(value);
+        let binary = '';
+        bytes.forEach(byte => binary += String.fromCharCode(byte));
+        return btoa(binary);
+    } catch (error) {
+        console.error('Не удалось создать токен авторизации', error);
+        return null;
+    }
 }
 
 function stripHtml(rawText = '') {

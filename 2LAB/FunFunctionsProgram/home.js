@@ -17,3 +17,22 @@ function buildNextPageUrl(target) {
         return target;
     }
 }
+
+const shared = window.funFunctionsShared;
+if (shared) {
+    shared.applyStoredPreferences();
+}
+
+const settingsBtn = document.querySelector('.settings-btn');
+settingsBtn?.addEventListener('click', () => {
+    window.location.href = 'settings.html';
+});
+
+const username = localStorage.getItem('funfunctions_username');
+if (username) {
+    const header = document.querySelector('.actions-header h2');
+    if (header && !header.dataset.usernameAdded) {
+        header.textContent = `FunFunctions | ${username}`;
+        header.dataset.usernameAdded = 'true';
+    }
+}
