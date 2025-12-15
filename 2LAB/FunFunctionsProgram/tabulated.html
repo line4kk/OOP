@@ -68,7 +68,7 @@
                         <div>
                             <h3>Введите точки</h3>
                             <p class="subtitle">Сначала задано две точки. Добавляйте новые через кнопку «+» справа.</p>
-                        </div>
+                            </div>
                         <button type="button" id="addPoint" class="icon-btn" aria-label="Добавить точку">+</button>
                     </div>
                     <div class="points-grid" role="group" aria-label="Значения точек">
@@ -83,9 +83,14 @@
                                 <div id="yRow" class="points-cells" aria-label="Координаты y"></div>
                                 <div class="row-addon"></div>
                             </div>
+                            <div class="points-row action-row">
+                                <div class="row-label">–</div>
+                                <div id="manualActionsRow" class="points-cells" aria-label="Удаление точек"></div>
+                                <div class="row-addon"></div>
+                            </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <div id="manualFeedback" class="feedback" role="status"></div>
                 <button id="submitManual" type="button">Создать функцию</button>

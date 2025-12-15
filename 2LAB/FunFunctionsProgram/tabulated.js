@@ -21,6 +21,7 @@ const samplingNameInput = document.getElementById('samplingName');
 const addPointButton = document.getElementById('addPoint');
 const xRow = document.getElementById('xRow');
 const yRow = document.getElementById('yRow');
+const manualActionsRow = document.getElementById('manualActionsRow');
 const submitManualButton = document.getElementById('submitManual');
 const manualFeedback = document.getElementById('manualFeedback');
 const samplingFeedback = document.getElementById('samplingFeedback');
@@ -235,20 +236,45 @@ function resetManualForm() {
 }
 
 function addPointColumn() {
-    if (!xRow || !yRow) return;
+    if (!xRow || !yRow || !manualActionsRow) return;
+    const columnId = `manual-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
     const index = xRow.children.length + 1;
-    xRow.appendChild(buildPointInput('x', index));
-    yRow.appendChild(buildPointInput('y', index));
+    xRow.appendChild(buildPointInput('x', index, columnId));
+    yRow.appendChild(buildPointInput('y', index, columnId));
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.dataset.columnId = columnId;
+    removeButton.className = 'point-remove-btn';
+    removeButton.textContent = '🗑️';
+    removeButton.setAttribute('aria-label', 'Удалить точку');
+    removeButton.addEventListener('click', () => {
+        removeManualPoint(columnId);
+        validateManualForm();
+    });
+
+    manualActionsRow.appendChild(removeButton);
 }
 
-function buildPointInput(prefix, index) {
+function buildPointInput(prefix, index, columnId) {
     const input = document.createElement('input');
     input.type = 'text';
     input.placeholder = `${prefix}${index}`;
     input.inputMode = 'decimal';
     input.autocomplete = 'off';
+    input.dataset.columnId = columnId;
     input.addEventListener('input', validateManualForm);
     return input;
+}
+
+function removeManualPoint(columnId) {
+    if (!xRow || !yRow || !manualActionsRow) return;
+    [xRow, yRow, manualActionsRow].forEach(row => {
+        const target = Array.from(row.children).find(el => el.dataset?.columnId === columnId);
+        if (target) {
+            target.remove();
+        }
+    });
 }
 
 function validateManualForm() {
@@ -468,7 +494,8 @@ function addFunctionPointColumn(point = {}, lockX = false) {
     removeButton.type = 'button';
     removeButton.dataset.columnId = columnId;
     removeButton.className = 'point-remove-btn';
-    removeButton.textContent = 'Удалить точку';
+    removeButton.textContent = '🗑️';
+    removeButton.setAttribute('aria-label', 'Удалить точку');
     removeButton.addEventListener('click', () => {
         removeFunctionPoint(columnId);
         validateFunctionForm();

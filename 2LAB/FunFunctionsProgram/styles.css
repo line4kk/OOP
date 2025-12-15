@@ -911,7 +911,9 @@ input:checked + .slider:before {
     gap: 10px;
 }
 
-.points-cells input {
+.points-cells input,
+.points-cells .point-remove-btn {
+    flex: 0 0 120px;
     min-width: 120px;
     text-align: center;
 }
@@ -923,10 +925,9 @@ input:checked + .slider:before {
 }
 
 .point-remove-btn {
-    height: 42px;
-    min-width: 120px;
     display: grid;
     place-items: center;
+    padding: 10px;
     background: rgba(239,68,68,0.1);
     color: var(--danger);
     border: 1px solid rgba(239,68,68,0.35);
