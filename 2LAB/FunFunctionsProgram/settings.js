@@ -132,15 +132,33 @@ factoryForm?.addEventListener('submit', async (event) => {
     }
 
     try {
-        await shared?.sendJson('/users/settings/factory_types', {
+        const data = await shared.sendJson('/users/settings/factory_types', {
             method: 'PUT',
             payload: { factory_type: factoryType },
-            withAuth: true,
-            authOverride: { username, password }
+            withAuth: true
         });
+
         setFeedback(factoryFeedback, 'Тип фабрики успешно обновлён.', 'success');
+
+        if (data && data.factory_type) {
+            localStorage.setItem('funfunctions_factory_type', data.factory_type);
+        }
+
     } catch (error) {
-        setFeedback(factoryFeedback, error.message, 'error');
+        console.error('Ошибка при обновлении фабрики:', error);
+        const errorMessage = error.message || '';
+
+        if (errorMessage.includes('Authentication is required') ||
+            errorMessage.includes('401') ||
+            errorMessage.includes('Unauthorized') ||
+            errorMessage.includes('Неверные учетные данные')) {
+
+            setFeedback(factoryFeedback, 'Проблема с авторизацией. Пожалуйста, проверьте пароль и попробуйте снова.', 'error');
+        } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden') || errorMessage.includes('Доступ запрещен')) {
+            setFeedback(factoryFeedback, 'Доступ запрещен. У вас недостаточно прав для этого действия.', 'error');
+        } else {
+            setFeedback(factoryFeedback, errorMessage, 'error');
+        }
     }
 });
 
@@ -158,4 +176,36 @@ logoutBtn?.addEventListener('click', () => {
     setTimeout(() => {
         window.location.href = 'index.html';
     }, 400);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Проверка авторизации при загрузке settings...');
+
+    const credentials = shared?.getCredentials();
+    const username = credentials?.username;
+    const password = credentials?.password;
+
+    if (!username || !password) {
+        console.log('Пользователь не авторизован. Перенаправление на страницу входа...');
+        setFeedback(factoryFeedback, 'Вы не авторизованы. Перенаправление на страницу входа...', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+    } else {
+        console.log('Пользователь авторизован:', username);
+
+        const passwordInput = document.getElementById('factory-password');
+        if (passwordInput) {
+            passwordInput.value = password;
+        }
+
+        const savedFactoryType = localStorage.getItem('funfunctions_factory_type');
+        if (savedFactoryType) {
+            const factoryTypeSelect = document.querySelector('select[name="factory_type"]');
+            if (factoryTypeSelect) {
+                factoryTypeSelect.value = savedFactoryType;
+                console.log('Тип фабрики восстановлен:', savedFactoryType);
+            }
+        }
+    }
 });

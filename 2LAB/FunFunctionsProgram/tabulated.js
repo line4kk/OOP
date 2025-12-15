@@ -1,3 +1,8 @@
+const shared = window.funFunctionsShared;
+if (shared) {
+    shared.applyStoredPreferences();
+}
+
 const functionsStatus = document.getElementById('functionsStatus');
 const functionsList = document.getElementById('functionsList');
 const refreshButton = document.getElementById('refreshList');
@@ -25,7 +30,7 @@ const pointsCountInput = document.getElementById('pointsCount');
 const analyticSelect = document.getElementById('analyticSelect');
 const submitSamplingButton = document.getElementById('submitSampling');
 
-const apiBase = determineApiBase();
+const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 let analyticFunctionsLoaded = false;
 
@@ -45,6 +50,12 @@ function attachActions() {
     }
     if (backButton) {
         backButton.addEventListener('click', () => navigateBack());
+    }
+    const settingsBtn = document.querySelector('.settings-btn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            window.location.href = 'settings.html';
+        });
     }
 }
 
@@ -505,10 +516,16 @@ function buildUrl(endpoint) {
 function buildAuthHeader(endpoint) {
     if (!shouldIncludeAuth(endpoint)) return null;
     const credentials = loadCredentials();
-    if (!credentials) return null;
+    if (!credentials) {
+        return shared?.buildAuthHeader?.(null);
+    }
 
-    const token = btoa(`${credentials.username}:${credentials.password}`);
-    return `Basic ${token}`;
+    if (shared?.buildAuthHeader) {
+        return shared.buildAuthHeader(credentials);
+    }
+
+    const token = safeBase64(`${credentials.username}:${credentials.password}`);
+    return token ? `Basic ${token}` : null;
 }
 
 function shouldIncludeAuth(endpoint = '') {
@@ -528,6 +545,22 @@ function loadCredentials() {
         console.error('Не удалось прочитать данные авторизации', e);
     }
     return null;
+}
+
+function safeBase64(value) {
+    try {
+        if (shared?.toBase64) {
+            return shared.toBase64(value);
+        }
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(value);
+        let binary = '';
+        bytes.forEach(byte => binary += String.fromCharCode(byte));
+        return btoa(binary);
+    } catch (error) {
+        console.error('Не удалось создать токен авторизации', error);
+        return null;
+    }
 }
 
 function stripHtml(rawText = '') {

@@ -39,8 +39,7 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(authz -> authz
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))                .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -86,7 +85,7 @@ public class SecurityConfig {
                             }
                         })
                 )
-                .httpBasic(AbstractHttpConfigurer::disable)
+                .httpBasic(Customizer.withDefaults())
                 .userDetailsService(customUserDetailsService);
 
         return http.build();

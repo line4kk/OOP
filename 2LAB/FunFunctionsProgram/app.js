@@ -1,5 +1,7 @@
-if (window.funFunctionsShared) {
-    window.funFunctionsShared.applyStoredPreferences();
+const shared = window.funFunctionsShared;
+
+if (shared) {
+    shared.applyStoredPreferences();
 }
 
 const tabs = document.querySelectorAll('.tab');
@@ -9,7 +11,7 @@ const feedback = document.getElementById('feedback');
 const resultBlock = document.getElementById('result');
 const resultBody = document.getElementById('result-body');
 
-const currentApiBase = window.funFunctionsShared?.determineApiBase()
+const currentApiBase = shared?.determineApiBase?.()
     || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 
@@ -196,10 +198,30 @@ registerForm.addEventListener('submit', async (event) => {
 function buildAuthHeader(endpoint) {
     if (!shouldIncludeAuth(endpoint)) return null;
     const credentials = loadCredentials();
-    if (!credentials) return null;
+    if (!credentials) return shared?.buildAuthHeader?.(null);
 
-    const token = btoa(`${credentials.username}:${credentials.password}`);
-    return `Basic ${token}`;
+    if (shared?.buildAuthHeader) {
+        return shared.buildAuthHeader(credentials);
+    }
+
+    const token = safeBase64(`${credentials.username}:${credentials.password}`);
+    return token ? `Basic ${token}` : null;
+}
+
+function safeBase64(value) {
+    try {
+        if (shared?.toBase64) {
+            return shared.toBase64(value);
+        }
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(value);
+        let binary = '';
+        bytes.forEach(byte => binary += String.fromCharCode(byte));
+        return btoa(binary);
+    } catch (error) {
+        console.error('Не удалось создать токен авторизации', error);
+        return null;
+    }
 }
 
 function shouldIncludeAuth(endpoint = '') {

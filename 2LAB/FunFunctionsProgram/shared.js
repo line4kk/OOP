@@ -212,6 +212,7 @@
         getCredentials,
         clearCredentials,
         buildAuthHeader,
+        toBase64,
         getThemePalette,
         determineApiBase,
         buildUrl,
