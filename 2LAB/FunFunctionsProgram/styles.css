@@ -685,6 +685,11 @@ input:checked + .slider:before {
     box-shadow: none;
 }
 
+.danger {
+    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
 .list-card {
     margin-top: 12px;
     display: grid;
@@ -713,6 +718,11 @@ input:checked + .slider:before {
     color: var(--text);
     box-shadow: 0 18px 42px rgba(0,0,0,0.32);
     transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.function-item.selected {
+    border-color: rgba(34,211,238,0.55);
+    box-shadow: 0 22px 54px rgba(37,99,235,0.35);
 }
 
 .function-item:hover:not(:disabled) {
@@ -975,6 +985,13 @@ input:checked + .slider:before {
     gap: 6px;
 }
 
+.inline-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
 .grid.two-cols {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1086,6 +1103,50 @@ input:checked + .slider:before {
     background: rgba(255,255,255,0.05);
     color: var(--muted);
     line-height: 1.6;
+}
+
+.empty-placeholder {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,0.16);
+    color: var(--muted);
+    background: rgba(255,255,255,0.03);
+}
+
+.composition-block {
+    display: grid;
+    gap: 10px;
+}
+
+.composition-head h3 {
+    margin: 0 0 6px;
+}
+
+.composition-list {
+    display: grid;
+    gap: 10px;
+}
+
+.composition-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+    gap: 10px;
+}
+
+.composition-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.composition-actions .icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
 }
 
 .modal .feedback:not(:empty) {
