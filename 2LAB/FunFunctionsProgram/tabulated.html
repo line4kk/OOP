@@ -23,7 +23,8 @@
         </div>
         <div class="toolbar" aria-label="Действия с функциями">
             <button id="createFunction" type="button" class="ghost">Создать функцию</button>
-            <button id="openCharts" type="button" class="ghost">Графики</button>
+            <button id="functionOperations" type="button" class="ghost">Операции над функциями</button>
+            <button id="openCharts" type="button" class="ghost">Общий график</button>
         </div>
     </header>
 
@@ -198,6 +199,94 @@
                     <canvas id="functionChart" aria-label="График выбранной функции"></canvas>
                 </div>
                 <div id="functionChartStatus" class="feedback muted" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="operationsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="operationsTitle">
+    <div class="modal-overlay" data-close-operations-modal></div>
+    <div class="modal-window wide">
+        <div class="modal-header">
+            <div class="modal-title-block">
+                <p class="eyebrow">Операции</p>
+                <h2 id="operationsTitle">Комбинация табулированных функций</h2>
+                <p class="subtitle">Выберите две функции, задайте операцию и посмотрите на результат на графике.</p>
+            </div>
+            <button id="closeOperationsModal" type="button" class="icon-btn" aria-label="Закрыть окно операций">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="grid two-cols">
+                <div class="field">
+                    <label for="operationFirst">Первая функция</label>
+                    <select id="operationFirst" name="operationFirst"></select>
+                </div>
+                <div class="field">
+                    <label for="operationSecond">Вторая функция</label>
+                    <select id="operationSecond" name="operationSecond"></select>
+                </div>
+                <div class="field">
+                    <label for="operationType">Операция</label>
+                    <select id="operationType" name="operationType">
+                        <option value="" disabled selected>Выберите операцию</option>
+                        <option value="add">Сложение (+)</option>
+                        <option value="subtract">Вычитание (−)</option>
+                        <option value="multiplication">Умножение (×)</option>
+                        <option value="division">Деление (/)</option>
+                    </select>
+                </div>
+                <div class="field align-end">
+                    <button id="previewOperation" type="button" class="full-width">Показать результат</button>
+                </div>
+            </div>
+
+            <div id="operationsFeedback" class="feedback" role="status"></div>
+
+            <div class="operations-grid">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3>Первая функция</h3>
+                            <p class="subtitle">Точки выбранной функции отображаются на графике.</p>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="operationFirstCanvas" aria-label="График первой функции"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3>Вторая функция</h3>
+                            <p class="subtitle">Вторая функция для операции.</p>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="operationSecondCanvas" aria-label="График второй функции"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3>Результат</h3>
+                            <p class="subtitle">График функции после выполнения операции.</p>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="operationResultCanvas" aria-label="Результат операции"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="operationChartsStatus" class="feedback muted" role="status"></div>
+
+            <div class="grid two-cols">
+                <div class="field">
+                    <label for="operationResultName">Имя новой функции</label>
+                    <input id="operationResultName" name="operationResultName" type="text" placeholder="Например, SumAB" autocomplete="off">
+                </div>
+                <div class="field align-end">
+                    <button id="saveOperationResult" type="button" class="full-width">Сохранить результат</button>
+                </div>
             </div>
         </div>
     </div>

@@ -65,10 +65,9 @@ public class AnalyticalFunctionController {
                 return ResponseEntity.status(409).body("Композиция с таким именем уже существует");
             }
 
-            Set<Long> seenComponents = new HashSet<>();
             List<Functions> orderedComponents = new ArrayList<>();
             for (Long componentId : components) {
-                if (componentId == null || componentId <= 0 || !seenComponents.add(componentId)) {
+                if (componentId == null || componentId <= 0) {
                     return ResponseEntity.status(400).body("Некорректный ID функции в списке");
                 }
                 Optional<Functions> componentOpt = singleSearchService.findFunctionById(componentId);
