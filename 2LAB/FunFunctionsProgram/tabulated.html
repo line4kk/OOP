@@ -68,22 +68,29 @@
                         <div>
                             <h3>Введите точки</h3>
                             <p class="subtitle">Сначала задано две точки. Добавляйте новые через кнопку «+» справа.</p>
-                        </div>
+                            </div>
                         <button type="button" id="addPoint" class="icon-btn" aria-label="Добавить точку">+</button>
                     </div>
                     <div class="points-grid" role="group" aria-label="Значения точек">
-                        <div class="points-row">
-                            <div class="row-label">x</div>
-                            <div id="xRow" class="points-cells" aria-label="Координаты x"></div>
-                            <div class="row-addon"></div>
-                        </div>
-                        <div class="points-row">
-                            <div class="row-label">y</div>
-                            <div id="yRow" class="points-cells" aria-label="Координаты y"></div>
-                            <div class="row-addon"></div>
+                        <div class="points-scroll">
+                            <div class="points-row">
+                                <div class="row-label">x</div>
+                                <div id="xRow" class="points-cells" aria-label="Координаты x"></div>
+                                <div class="row-addon"></div>
+                            </div>
+                            <div class="points-row">
+                                <div class="row-label">y</div>
+                                <div id="yRow" class="points-cells" aria-label="Координаты y"></div>
+                                <div class="row-addon"></div>
+                            </div>
+                            <div class="points-row action-row">
+                                <div class="row-label">–</div>
+                                <div id="manualActionsRow" class="points-cells" aria-label="Удаление точек"></div>
+                                <div class="row-addon"></div>
+                            </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <div id="manualFeedback" class="feedback" role="status"></div>
                 <button id="submitManual" type="button">Создать функцию</button>
@@ -123,6 +130,110 @@
                 <div id="samplingFeedback" class="feedback" role="status"></div>
                 <button id="submitSampling" type="button">Создать с дискретизацией</button>
             </div>
+        </div>
+    </div>
+</div>
+<div id="functionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="functionModalTitle">
+    <div class="modal-overlay" data-close-function-modal></div>
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-title-block">
+                <p class="eyebrow">Работа с функцией</p>
+                <h2 id="functionModalTitle">Функция</h2>
+                <p id="functionMeta" class="subtitle"></p>
+            </div>
+            <button id="closeFunctionModal" type="button" class="icon-btn" aria-label="Закрыть окно">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="points-wrapper">
+                <div class="points-header">
+                    <div>
+                        <h3>Точки функции</h3>
+                        <p class="subtitle">Значения x фиксированы, редактируйте только y. Добавляйте новые точки через «+».</p>
+                    </div>
+                    <button type="button" id="addFunctionPoint" class="icon-btn" aria-label="Добавить точку">+</button>
+                </div>
+                <div class="points-grid">
+                    <div class="points-scroll">
+                        <div class="points-row">
+                            <div class="row-label">x</div>
+                            <div id="functionXRow" class="points-cells" aria-label="Координаты x"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                        <div class="points-row">
+                            <div class="row-label">y</div>
+                            <div id="functionYRow" class="points-cells" aria-label="Координаты y"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                        <div class="points-row action-row">
+                            <div class="row-label">–</div>
+                            <div id="functionActionsRow" class="points-cells" aria-label="Удаление точек"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="functionFeedback" class="feedback" role="status"></div>
+
+            <div class="action-grid">
+                <button id="applyFunctionChanges" type="button">Применить изменения</button>
+                <div class="danger-actions">
+                    <button id="deleteAllPoints" type="button" class="ghost danger-btn full-width">Удалить все точки функции</button>
+                    <button id="deleteFunction" type="button" class="ghost danger-btn full-width">Удалить функцию</button>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h3>График функции</h3>
+                        <p class="subtitle">Точки берутся прямо из текущей таблицы. Используйте колесо мыши для зума и удерживайте левую кнопку для перетаскивания.</p>
+                    </div>
+                    <div class="chart-actions">
+                        <button id="refreshFunctionChart" type="button" class="ghost">Обновить точки</button>
+                        <button id="resetFunctionChart" type="button" class="ghost">Сбросить масштаб</button>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="functionChart" aria-label="График выбранной функции"></canvas>
+                </div>
+                <div id="functionChartStatus" class="feedback muted" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="chartsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="chartsModalTitle">
+    <div class="modal-overlay" data-close-charts-modal></div>
+    <div class="modal-window wide">
+        <div class="modal-header">
+            <div class="modal-title-block">
+                <p class="eyebrow">Общий график</p>
+                <h2 id="chartsModalTitle">Полотно для табулированных функций</h2>
+                <p class="subtitle">Добавляйте любые функции на общее полотно, меняйте их цвета и сравнивайте значения.</p>
+            </div>
+            <button id="closeChartsModal" type="button" class="icon-btn" aria-label="Закрыть окно графиков">×</button>
+        </div>
+        <div class="modal-body charts-body">
+            <div class="charts-toolbar" role="group" aria-label="Управление общим графиком">
+                <div class="toolbar-field">
+                    <label for="chartFunctionSelect">Добавить функцию</label>
+                    <div class="toolbar-row">
+                        <select id="chartFunctionSelect" name="chartFunctionSelect"></select>
+                        <button id="addFunctionToChart" type="button">Добавить</button>
+                    </div>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="resetGlobalChart" type="button" class="ghost">Сбросить масштаб</button>
+                    <button id="clearChartCanvas" type="button" class="ghost">Очистить полотно</button>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-canvas-wrapper">
+                    <canvas id="globalChart" aria-label="Общий график табулированных функций"></canvas>
+                </div>
+                <div class="chart-legend" id="chartLegend" aria-label="Выбранные функции"></div>
+            </div>
+            <div id="chartsStatus" class="feedback muted" role="status"></div>
         </div>
     </div>
 </div>
