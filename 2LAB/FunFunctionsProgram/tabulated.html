@@ -128,6 +128,59 @@
         </div>
     </div>
 </div>
+<div id="functionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="functionModalTitle">
+    <div class="modal-overlay" data-close-function-modal></div>
+    <div class="modal-window">
+        <div class="modal-header">
+            <div class="modal-title-block">
+                <p class="eyebrow">Работа с функцией</p>
+                <h2 id="functionModalTitle">Функция</h2>
+                <p id="functionMeta" class="subtitle"></p>
+            </div>
+            <button id="closeFunctionModal" type="button" class="icon-btn" aria-label="Закрыть окно">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="points-wrapper">
+                <div class="points-header">
+                    <div>
+                        <h3>Точки функции</h3>
+                        <p class="subtitle">Значения x фиксированы, редактируйте только y. Добавляйте новые точки через «+».</p>
+                    </div>
+                    <button type="button" id="addFunctionPoint" class="icon-btn" aria-label="Добавить точку">+</button>
+                </div>
+                <div class="points-grid">
+                    <div class="points-scroll">
+                        <div class="points-row">
+                            <div class="row-label">x</div>
+                            <div id="functionXRow" class="points-cells" aria-label="Координаты x"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                        <div class="points-row">
+                            <div class="row-label">y</div>
+                            <div id="functionYRow" class="points-cells" aria-label="Координаты y"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                        <div class="points-row action-row">
+                            <div class="row-label">–</div>
+                            <div id="functionActionsRow" class="points-cells" aria-label="Удаление точек"></div>
+                            <div class="row-addon"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="functionFeedback" class="feedback" role="status"></div>
+
+            <div class="action-grid">
+                <button id="applyFunctionChanges" type="button">Применить изменения</button>
+                <div class="danger-actions">
+                    <button id="deleteAllPoints" type="button" class="ghost danger-btn full-width">Удалить все точки функции</button>
+                    <button id="deleteFunction" type="button" class="ghost danger-btn full-width">Удалить функцию</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="shared.js"></script>
 <script src="tabulated.js"></script>
 </body>

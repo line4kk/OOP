@@ -790,6 +790,11 @@ input:checked + .slider:before {
     margin-bottom: 12px;
 }
 
+.modal-title-block {
+    display: grid;
+    gap: 6px;
+}
+
 .modal-body {
     display: grid;
     gap: 16px;
@@ -913,6 +918,25 @@ input:checked + .slider:before {
 
 .row-addon { width: 42px; height: 1px; }
 
+.action-row .points-cells {
+    align-items: stretch;
+}
+
+.point-remove-btn {
+    height: 42px;
+    min-width: 120px;
+    display: grid;
+    place-items: center;
+    background: rgba(239,68,68,0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.35);
+    box-shadow: none;
+}
+
+.point-remove-btn:hover:not(:disabled) {
+    background: rgba(239,68,68,0.2);
+}
+
 .info-callout {
     padding: 12px 14px;
     border-radius: 12px;
@@ -930,6 +954,22 @@ input:checked + .slider:before {
     width: auto;
 }
 
+.action-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.danger-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.full-width {
+    width: 100%;
+}
+
 @media (max-width: 680px) {
     .modal {
         padding: 12px;
@@ -942,6 +982,10 @@ input:checked + .slider:before {
     .row-label {
         width: 36px;
         height: 36px;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
     }
 }
 

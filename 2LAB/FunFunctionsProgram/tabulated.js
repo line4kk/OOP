@@ -29,14 +29,29 @@ const xToInput = document.getElementById('xTo');
 const pointsCountInput = document.getElementById('pointsCount');
 const analyticSelect = document.getElementById('analyticSelect');
 const submitSamplingButton = document.getElementById('submitSampling');
+const functionModal = document.getElementById('functionModal');
+const functionTitle = document.getElementById('functionModalTitle');
+const functionMeta = document.getElementById('functionMeta');
+const functionFeedback = document.getElementById('functionFeedback');
+const functionXRow = document.getElementById('functionXRow');
+const functionYRow = document.getElementById('functionYRow');
+const functionActionsRow = document.getElementById('functionActionsRow');
+const addFunctionPointButton = document.getElementById('addFunctionPoint');
+const applyFunctionChangesButton = document.getElementById('applyFunctionChanges');
+const deleteAllPointsButton = document.getElementById('deleteAllPoints');
+const deleteFunctionButton = document.getElementById('deleteFunction');
+const closeFunctionModalButton = document.getElementById('closeFunctionModal');
+const functionModalOverlay = document.querySelector('[data-close-function-modal]');
 
 const apiBase = shared?.determineApiBase?.() || determineApiBase();
 const BASIC_AUTH_KEY = 'funfunctions_basic_credentials';
 const FACTORY_TYPE_KEY = 'funfunctions_factory_type';
 let analyticFunctionsLoaded = false;
+let currentFunction = null;
 
 attachActions();
 initCreationModal();
+initFunctionModal();
 loadFunctions();
 
 function attachActions() {
@@ -97,6 +112,27 @@ function initCreationModal() {
     switchMode('manual');
 }
 
+function initFunctionModal() {
+    if (!functionModal) return;
+
+    addFunctionPointButton?.addEventListener('click', () => {
+        addFunctionPointColumn();
+        validateFunctionForm();
+    });
+
+    applyFunctionChangesButton?.addEventListener('click', applyFunctionChanges);
+    deleteAllPointsButton?.addEventListener('click', deleteAllFunctionPoints);
+    deleteFunctionButton?.addEventListener('click', deleteFunctionHandler);
+    closeFunctionModalButton?.addEventListener('click', closeFunctionModal);
+    functionModalOverlay?.addEventListener('click', closeFunctionModal);
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !functionModal.classList.contains('hidden')) {
+            closeFunctionModal();
+        }
+    });
+}
+
 function informComingSoon(message) {
     updateStatus(message, 'muted');
 }
@@ -146,8 +182,7 @@ function renderFunctions(functions) {
 }
 
 function handleFunctionClick(fn) {
-    const safeName = fn?.name ? `"${fn.name}"` : 'без названия';
-    updateStatus(`Откройте окно функции ${safeName} (ID: ${fn?.id ?? 'неизвестно'}) после подключения интерфейса.`, 'muted');
+    openFunctionModal(fn);
 }
 
 function openCreationModal(mode = 'manual') {
@@ -361,6 +396,263 @@ async function handleSamplingSubmit() {
     }
 }
 
+async function openFunctionModal(fn) {
+    if (!functionModal) return;
+    currentFunction = fn;
+
+    functionTitle.textContent = fn?.name || 'Без названия';
+    functionMeta.textContent = buildFunctionMeta(fn);
+    resetFunctionModal();
+    functionModal.classList.remove('hidden');
+
+    if (!fn?.id) {
+        showFormFeedback(functionFeedback, 'Не удалось определить идентификатор функции.', 'error');
+        return;
+    }
+
+    setFunctionBusy(true);
+    showFormFeedback(functionFeedback, 'Загружаем точки функции...', 'muted');
+    try {
+        const response = await getJson(`/functions/${fn.id}/points`);
+        const points = Array.isArray(response) ? response : response?.points || [];
+        renderFunctionPoints(points);
+        showFormFeedback(functionFeedback, `Найдено точек: ${points.length}.`, 'muted');
+    } catch (error) {
+        renderFunctionPoints([]);
+        showFormFeedback(functionFeedback, error?.message || 'Не удалось загрузить точки функции.', 'error');
+    } finally {
+        setFunctionBusy(false);
+        validateFunctionForm();
+    }
+}
+
+function closeFunctionModal() {
+    if (!functionModal) return;
+    functionModal.classList.add('hidden');
+    currentFunction = null;
+    resetFunctionModal();
+}
+
+function resetFunctionModal() {
+    clearFunctionRows();
+    showFormFeedback(functionFeedback, '');
+}
+
+function renderFunctionPoints(points = []) {
+    if (!functionXRow || !functionYRow || !functionActionsRow) return;
+    clearFunctionRows();
+
+    const list = Array.isArray(points) ? points : [];
+    if (list.length === 0) {
+        addFunctionPointColumn();
+        addFunctionPointColumn();
+        return;
+    }
+
+    list.forEach(point => addFunctionPointColumn(point, true));
+}
+
+function clearFunctionRows() {
+    if (functionXRow) functionXRow.innerHTML = '';
+    if (functionYRow) functionYRow.innerHTML = '';
+    if (functionActionsRow) functionActionsRow.innerHTML = '';
+}
+
+function addFunctionPointColumn(point = {}, lockX = false) {
+    if (!functionXRow || !functionYRow || !functionActionsRow) return;
+    const columnId = `col-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    const xInput = buildFunctionPointInput('x', columnId, point?.x, lockX || Boolean(point?.id));
+    const yInput = buildFunctionPointInput('y', columnId, point?.y, false);
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.dataset.columnId = columnId;
+    removeButton.className = 'point-remove-btn';
+    removeButton.textContent = 'Удалить точку';
+    removeButton.addEventListener('click', () => {
+        removeFunctionPoint(columnId);
+        validateFunctionForm();
+    });
+
+    functionXRow.appendChild(xInput);
+    functionYRow.appendChild(yInput);
+    functionActionsRow.appendChild(removeButton);
+}
+
+function removeFunctionPoint(columnId) {
+    if (!functionXRow || !functionYRow || !functionActionsRow) return;
+    [functionXRow, functionYRow, functionActionsRow].forEach(row => {
+        const target = Array.from(row.children).find(el => el.dataset?.columnId === columnId);
+        if (target) {
+            target.remove();
+        }
+    });
+}
+
+function buildFunctionPointInput(prefix, columnId, value, lockX = false) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `${prefix}${(functionXRow?.children.length || 0) + 1}`;
+    input.inputMode = 'decimal';
+    input.autocomplete = 'off';
+    input.dataset.columnId = columnId;
+    if (typeof value !== 'undefined') {
+        input.value = value;
+    }
+    if (prefix === 'x' && lockX) {
+        input.readOnly = true;
+    }
+    input.addEventListener('input', validateFunctionForm);
+    return input;
+}
+
+function validateFunctionForm() {
+    const { valid, message } = readFunctionPoints();
+    showFormFeedback(functionFeedback, message, valid ? 'muted' : 'error');
+    if (applyFunctionChangesButton) applyFunctionChangesButton.disabled = !valid;
+    return valid;
+}
+
+function readFunctionPoints() {
+    if (!functionXRow || !functionYRow) {
+        return { valid: false, message: 'Добавьте точки.' };
+    }
+
+    const xInputs = Array.from(functionXRow.querySelectorAll('input'));
+    const yInputs = Array.from(functionYRow.querySelectorAll('input'));
+
+    if (xInputs.length === 0 || yInputs.length === 0) {
+        return { valid: false, message: 'Добавьте минимум две точки.' };
+    }
+
+    const points = [];
+    const usedX = new Set();
+
+    for (let i = 0; i < Math.min(xInputs.length, yInputs.length); i++) {
+        const xVal = parseNumber(xInputs[i].value);
+        const yVal = parseNumber(yInputs[i].value);
+
+        if (!xVal.valid || !yVal.valid) {
+            return { valid: false, message: 'Точки должны содержать только числа. Для дробей используйте точку или запятую.' };
+        }
+
+        if (usedX.has(xVal.value)) {
+            return { valid: false, message: 'Значения x должны быть уникальны.' };
+        }
+
+        usedX.add(xVal.value);
+        points.push({ x: xVal.value, y: yVal.value });
+    }
+
+    if (points.length < 2) {
+        return { valid: false, message: 'Нужно минимум две точки для сохранения функции.' };
+    }
+
+    return { valid: true, message: '', points };
+}
+
+async function applyFunctionChanges() {
+    const validation = readFunctionPoints();
+    if (!validation.valid) {
+        showFormFeedback(functionFeedback, validation.message, 'error');
+        return;
+    }
+
+    if (!currentFunction?.id) {
+        showFormFeedback(functionFeedback, 'Не удалось определить идентификатор функции.', 'error');
+        return;
+    }
+
+    setFunctionBusy(true);
+    try {
+        await deleteJson(`/functions/${currentFunction.id}/points`);
+        await postJson(`/functions/${currentFunction.id}/points`, validation.points);
+        showFormFeedback(functionFeedback, 'Изменения сохранены.', 'success');
+        updateStatus('Точки функции обновлены.', 'success');
+        await loadFunctions(true);
+    } catch (error) {
+        showFormFeedback(functionFeedback, error?.message || 'Не удалось применить изменения.', 'error');
+    } finally {
+        setFunctionBusy(false);
+    }
+}
+
+async function deleteAllFunctionPoints() {
+    if (!currentFunction?.id) {
+        showFormFeedback(functionFeedback, 'Функция не найдена.', 'error');
+        return;
+    }
+
+    const confirmed = window.confirm('Удалить все точки функции? Действие нельзя отменить.');
+    if (!confirmed) return;
+
+    setFunctionBusy(true);
+    try {
+        await deleteJson(`/functions/${currentFunction.id}/points`);
+        renderFunctionPoints([]);
+        showFormFeedback(functionFeedback, 'Все точки удалены. Добавьте новые и нажмите «Применить изменения».', 'success');
+        updateStatus('Все точки функции удалены.', 'muted');
+    } catch (error) {
+        showFormFeedback(functionFeedback, error?.message || 'Не удалось удалить точки функции.', 'error');
+    } finally {
+        setFunctionBusy(false);
+        validateFunctionForm();
+    }
+}
+
+async function deleteFunctionHandler() {
+    if (!currentFunction?.id) {
+        showFormFeedback(functionFeedback, 'Функция не найдена.', 'error');
+        return;
+    }
+
+    const confirmed = window.confirm('Удалить функцию целиком? Точки и данные будут потеряны.');
+    if (!confirmed) return;
+
+    setFunctionBusy(true);
+    try {
+        await deleteJson(`/functions/${currentFunction.id}`);
+        showFormFeedback(functionFeedback, 'Функция удалена.', 'success');
+        updateStatus('Функция удалена.', 'muted');
+        closeFunctionModal();
+        await loadFunctions(true);
+    } catch (error) {
+        showFormFeedback(functionFeedback, error?.message || 'Не удалось удалить функцию.', 'error');
+    } finally {
+        setFunctionBusy(false);
+    }
+}
+
+function setFunctionBusy(state) {
+    [applyFunctionChangesButton, addFunctionPointButton, deleteAllPointsButton, deleteFunctionButton].forEach(btn => {
+        if (btn) btn.disabled = state;
+    });
+
+    const inputs = functionModal?.querySelectorAll('input');
+    if (inputs) {
+        inputs.forEach(input => {
+            if (state) {
+                input.dataset.prevDisabled = input.disabled ? '1' : '';
+                input.disabled = true;
+            } else {
+                if (!input.dataset.prevDisabled) {
+                    input.disabled = false;
+                }
+                delete input.dataset.prevDisabled;
+            }
+        });
+    }
+}
+
+function buildFunctionMeta(fn) {
+    const type = formatFunctionType(fn?.type);
+    const source = formatFunctionSource(fn?.source);
+    const idText = fn?.id ? `ID: ${fn.id}` : '';
+    const parts = [idText, `Тип: ${type}`].filter(Boolean);
+    if (source) parts.push(source);
+    return parts.join(' · ');
+}
+
 async function ensureAnalyticFunctions() {
     if (analyticFunctionsLoaded || !analyticSelect) return;
     showFormFeedback(samplingFeedback, 'Загружаем аналитические функции...', 'muted');
@@ -430,16 +722,25 @@ function parseNumber(value) {
 }
 
 
-async function getJson(endpoint) {
+async function requestJson(endpoint, { method = 'GET', payload } = {}) {
     const url = buildUrl(endpoint);
     let response;
 
     const headers = {};
+    if (payload !== undefined) {
+        headers['Content-Type'] = 'application/json';
+    }
+
     const authHeader = buildAuthHeader(endpoint);
     if (authHeader) headers['Authorization'] = authHeader;
 
+    const options = { method, headers };
+    if (payload !== undefined) {
+        options.body = JSON.stringify(payload);
+    }
+
     try {
-        response = await fetch(url, { method: 'GET', headers });
+        response = await fetch(url, options);
     } catch (networkError) {
         const cleanMessage = stripHtml(networkError.message || networkError.toString());
         const message = `Не удалось связаться с сервером: ${cleanMessage}. Повторите попытку позже.`;
@@ -454,35 +755,16 @@ async function getJson(endpoint) {
     return data;
 }
 
+async function getJson(endpoint) {
+    return await requestJson(endpoint, { method: 'GET' });
+}
+
 async function postJson(endpoint, payload) {
-    const url = buildUrl(endpoint);
-    let response;
+    return await requestJson(endpoint, { method: 'POST', payload });
+}
 
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-
-    const authHeader = buildAuthHeader(endpoint);
-    if (authHeader) headers['Authorization'] = authHeader;
-
-    try {
-        response = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload)
-        });
-    } catch (networkError) {
-        const cleanMessage = stripHtml(networkError.message || networkError.toString());
-        const message = `Не удалось связаться с сервером: ${cleanMessage}. Повторите попытку позже.`;
-        throw new Error(message);
-    }
-
-    const data = await parseResponse(response);
-    if (!response.ok) {
-        const message = data?.message || response.statusText || `Ошибка ${response.status}`;
-        throw new Error(message);
-    }
-    return data;
+async function deleteJson(endpoint) {
+    return await requestJson(endpoint, { method: 'DELETE' });
 }
 
 async function parseResponse(response) {
