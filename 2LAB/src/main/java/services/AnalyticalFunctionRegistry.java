@@ -15,10 +15,7 @@ import java.util.Set;
 public final class AnalyticalFunctionRegistry {
     private static final Logger logger = LoggerFactory.getLogger(AnalyticalFunctionRegistry.class);
     private static final Map<String, MathFunction> REGISTERED_FUNCTIONS = new HashMap<>();
-
-    static {
-        scanPackage("functions");
-    }
+    private static final String FUNCTIONS_PACKAGE = "functions";
 
     private AnalyticalFunctionRegistry() {
     }
@@ -40,9 +37,28 @@ public final class AnalyticalFunctionRegistry {
         }
     }
 
+    private static synchronized void ensureInitialized() {
+        if (REGISTERED_FUNCTIONS.isEmpty()) {
+            reload();
+        }
+    }
+
+    public static synchronized void reload() {
+        REGISTERED_FUNCTIONS.clear();
+        scanPackage(FUNCTIONS_PACKAGE);
+    }
+
     public static MathFunction getFunction(String name) {
         Objects.requireNonNull(name, "Имя функции не может быть null");
+        ensureInitialized();
+
         MathFunction function = REGISTERED_FUNCTIONS.get(name);
+        if (function == null) {
+            logger.info("Функция {} не найдена, обновляем список аналитических функций", name);
+            reload();
+            function = REGISTERED_FUNCTIONS.get(name);
+        }
+
         if (function == null) {
             throw new IllegalArgumentException("Аналитическая функция не найдена: " + name);
         }
@@ -50,6 +66,7 @@ public final class AnalyticalFunctionRegistry {
     }
 
     public static Map<String, MathFunction> getRegisteredFunctions() {
+        ensureInitialized();
         return Collections.unmodifiableMap(REGISTERED_FUNCTIONS);
     }
 }
